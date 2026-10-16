@@ -8,6 +8,8 @@ const { detectHazards } = require("./src/services/hazardService");
 const { optimizeRoutes } = require("./src/services/optimizer");
 const { initAISStream, getVesselsList, addSseClient, removeSseClient } = require("./src/services/aisStreamService");
 const { getLatestNdbcObservations, getObservationsNear } = require("./src/services/ndbcService");
+const { getRates, DEFAULT_SUPPORTED_CURRENCIES } = require("./src/services/currencyService");
+const { calculateShipperCost, compareCostsAcrossRoutes } = require("./src/services/shipperCostService");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
@@ -31,7 +33,12 @@ app.get("/", (_req, res) => {
       "GET /api/ais/vessels",
       "GET /api/ais/stream (SSE)",
       "GET /api/weather/marine?latitude=15&longitude=70",
+      "GET /api/weather/observations",
+      "GET /api/weather/corridor",
       "GET /api/gdacs?eventlist=TC",
+      "GET /api/currency/rates?base=USD",
+      "POST /api/cost/estimate",
+      "POST /api/cost/compare",
       "GET /api/routes?source=Mumbai&destination=Singapore",
       "POST /api/optimize"
     ]
@@ -360,6 +367,64 @@ app.get("/api/hazards", (req, res) => {
     dataMode: "simulated-demo",
     message: "Replace simulated hazards in src/services/hazardService.js with verified weather/official warning feeds."
   });
+});
+
+// 5. Currency Exchange Rates Endpoint
+app.get("/api/currency/rates", async (req, res) => {
+  const base = (req.query.base || "USD").toUpperCase();
+  try {
+    const ratesData = await getRates(base, DEFAULT_SUPPORTED_CURRENCIES);
+    res.json({
+      success: true,
+      supportedCurrencies: DEFAULT_SUPPORTED_CURRENCIES,
+      ...ratesData
+    });
+  } catch (err) {
+    res.status(500).json({ error: "CURRENCY_RATES_ERROR", message: err.message });
+  }
+});
+
+// 6. Shipper Cost Estimate Endpoint (Multi-currency Commercial Breakdown)
+app.post("/api/cost/estimate", async (req, res) => {
+  try {
+    const { route, shipment, originPort, destinationPort, selectedCurrency, options } = req.body;
+    if (!shipment || !shipment.quantity) {
+      return res.status(400).json({ error: "INVALID_SHIPMENT", message: "Shipment details with quantity are required." });
+    }
+    const estimate = await calculateShipperCost({
+      route,
+      shipment,
+      originPort,
+      destinationPort,
+      selectedCurrency: selectedCurrency || "USD",
+      options: options || {}
+    });
+    res.json({ success: true, estimate });
+  } catch (err) {
+    const status = err.code === "UNSUPPORTED_CURRENCY" || err.code === "INVALID_QUANTITY" ? 400 : 500;
+    res.status(status).json({ error: err.code || "COST_ESTIMATE_ERROR", message: err.message });
+  }
+});
+
+// 7. Compare Costs Across Multiple Routes
+app.post("/api/cost/compare", async (req, res) => {
+  try {
+    const { routes, shipment, originPort, destinationPort, selectedCurrency, options } = req.body;
+    if (!Array.isArray(routes) || routes.length === 0) {
+      return res.status(400).json({ error: "INVALID_ROUTES", message: "Array of candidate routes is required." });
+    }
+    const comparison = await compareCostsAcrossRoutes({
+      routes,
+      shipment,
+      originPort,
+      destinationPort,
+      selectedCurrency: selectedCurrency || "USD",
+      options: options || {}
+    });
+    res.json({ success: true, comparison });
+  } catch (err) {
+    res.status(500).json({ error: err.code || "COST_COMPARE_ERROR", message: err.message });
+  }
 });
 
 // Consistent JSON response for invalid endpoints.
