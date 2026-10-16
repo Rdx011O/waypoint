@@ -1,0 +1,68 @@
+{
+  "_metadata": {
+    "status": "illustrative_placeholder",
+    "disclaimer": "Illustrative baseline rates for prototype demonstration only. Not verified carrier quotes or official port tariffs.",
+    "lastUpdated": "2026-10-16"
+  },
+  "ports": {
+    "BOM": {
+      "portName": "Mumbai",
+      "terminalHandlingUsd": 280,
+      "documentationFeeUsd": 75,
+      "securityFeeUsd": 45,
+      "totalPortChargeUsd": 400
+    },
+    "SIN": {
+      "portName": "Singapore",
+      "terminalHandlingUsd": 340,
+      "documentationFeeUsd": 90,
+      "securityFeeUsd": 50,
+      "totalPortChargeUsd": 480
+    },
+    "DXB": {
+      "portName": "Dubai",
+      "terminalHandlingUsd": 310,
+      "documentationFeeUsd": 80,
+      "securityFeeUsd": 40,
+      "totalPortChargeUsd": 430
+    }
+  },
+  "freightRates": {
+    "Mumbai|Singapore": {
+      "TEU": 950,
+      "FEU": 1850,
+      "tonne": 45,
+      "cbm": 35
+    },
+    "Mumbai|Dubai": {
+      "TEU": 620,
+      "FEU": 1200,
+      "tonne": 32,
+      "cbm": 25
+    }
+  },
+  "passageFees": {
+    "Strait of Malacca": {
+      "feeUsd": 150,
+      "mandatory": false,
+      "notes": "Illustrative navigation safety levy"
+    },
+    "Suez Canal": {
+      "feeUsd": 2500,
+      "mandatory": true,
+      "notes": "Illustrative canal transit toll"
+    },
+    "Panama Canal": {
+      "feeUsd": 3200,
+      "mandatory": true,
+      "notes": "Illustrative locks passage fee"
+    }
+  },
+  "delayDailyRatesUsd": {
+    "TEU": 120,
+    "FEU": 220,
+    "tonne": 8,
+    "cbm": 6,
+    "default": 150
+  }
+}

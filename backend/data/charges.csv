@@ -1,0 +1,4 @@
+port_id,port_name,terminal_handling_usd,documentation_fee_usd,security_fee_usd,currency,data_status
+BOM,Mumbai,280,75,45,USD,illustrative
+SIN,Singapore,340,90,50,USD,illustrative
+DXB,Dubai,310,80,40,USD,illustrative
