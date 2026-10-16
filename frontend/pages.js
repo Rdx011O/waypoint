@@ -9,14 +9,16 @@ window.PAGES = {
   renderDashboard() {
     const kpis = window.WAYPOINT_DATA.dashboardKpis;
     const alerts = window.WAYPOINT_DATA.alerts.slice(0, 4);
+    const trackedCargos = window.WAYPOINT_DATA.trackedCargos || [];
 
     return `
       <div class="page-header">
         <div>
           <h1 class="page-title">Maritime Overview</h1>
-          <p class="page-desc">Global fleet operations, active shipping corridors, and real-time hazard intelligence.</p>
+          <p class="page-desc">Global fleet operations, active shipping corridors, live GPS cargo tracking, and hazard intelligence.</p>
         </div>
         <div class="page-actions">
+          <button class="btn btn-safe" onclick="navigate('tracker')">🛰️ Live GPS Cargo Tracker</button>
           <button class="btn btn-primary" onclick="navigate('plan')">📦 Plan New Shipment</button>
           <button class="btn btn-outline" onclick="navigate('riskmap')">🗺️ Full Risk Map</button>
         </div>
@@ -42,18 +44,72 @@ window.PAGES = {
         `).join('')}
       </div>
 
+      <!-- Live Tracked Cargos in Transit Strip -->
+      <div class="dashboard-cargos-section">
+        <div class="section-head">
+          <div class="section-title-wrap">
+            <h2 class="section-title">🛰️ Active Cargoes & Ships in Transit (Live GPS)</h2>
+            <span class="live-pulse-badge"><span class="pulse-dot"></span> Live Satellite AIS</span>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="navigate('tracker')">
+            Open Interactive GPS Tracker ➔
+          </button>
+        </div>
+        <div class="dashboard-cargo-grid">
+          ${trackedCargos.slice(0, 4).map(c => `
+            <div class="dash-cargo-card ${c.statusClass}" onclick="openSpecificTrackedCargo('${c.id}')">
+              <div class="dash-cargo-top">
+                <span class="dash-cargo-id mono">${c.id}</span>
+                <span class="tag tag-${c.statusClass}">${c.statusClass === 'safe' ? 'ON SCHEDULE' : 'REROUTING'}</span>
+              </div>
+              <div class="dash-cargo-title">${c.title}</div>
+              <div class="dash-cargo-ship">
+                <span>🚢 ${c.ship.name}</span>
+                <span class="mono text-dim">${c.ship.flag}</span>
+              </div>
+              <div class="dash-cargo-lane">
+                <span>${c.originPort.name.split(' ')[0]}</span>
+                <span class="lane-arrow">➔</span>
+                <span>${c.destinationPort.name.split(' ')[0]}</span>
+              </div>
+              <div class="dash-cargo-telemetry">
+                <div class="telemetry-item">
+                  <span class="t-lbl">Live GPS</span>
+                  <span class="t-val mono">${c.ship.lat.toFixed(2)}°N, ${c.ship.lng.toFixed(2)}°E</span>
+                </div>
+                <div class="telemetry-item">
+                  <span class="t-lbl">Speed / COG</span>
+                  <span class="t-val mono">${c.ship.speedKnots} kts • ${c.ship.heading}°</span>
+                </div>
+                <div class="telemetry-item">
+                  <span class="t-lbl">ETA</span>
+                  <span class="t-val mono text-safe">${c.etaCountdown}</span>
+                </div>
+              </div>
+              <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" style="width: ${c.progressPercent}%"></div>
+              </div>
+              <div class="dash-cargo-bottom">
+                <span class="text-muted" style="font-size:11px;">${c.progressPercent}% completed (${c.remainingDistanceNm} nm left)</span>
+                <span class="text-accent" style="font-size:12px; font-weight:600;">Track Live GPS ➔</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
       <!-- Dashboard Layout: Interactive Map + Active Risk Alerts Panel -->
       <div class="dashboard-layout">
         <div class="map-card">
           <div class="map-toolbar">
             <div class="map-title">
-              <span>🌐 Global Marine Corridors</span>
+              <span>🌐 Global Marine Corridors & Active Fleet</span>
               <span class="tag tag-demo">Demo Layer</span>
             </div>
             <!-- Section 4.1 Layer Toggles -->
             <div class="layer-chips">
               <button class="layer-chip active" id="layer-routes" onclick="toggleMapLayer('routes')">Shipping Routes</button>
-              <button class="layer-chip active" id="layer-vessels" onclick="toggleMapLayer('vessels')">Vessels</button>
+              <button class="layer-chip active" id="layer-vessels" onclick="toggleMapLayer('vessels')">Live Vessels</button>
               <button class="layer-chip active" id="layer-hazards" onclick="toggleMapLayer('hazards')">Weather Hazards</button>
               <button class="layer-chip active" id="layer-ports" onclick="toggleMapLayer('ports')">Ports</button>
               <button class="layer-chip" id="layer-risks" onclick="toggleMapLayer('risks')">Risk Zones</button>
@@ -89,6 +145,448 @@ window.PAGES = {
             </button>
           </div>
         </div>
+      </div>
+    `;
+  },
+
+  // =========================================================================
+  // 1B. LIVE GPS CARGO & VESSEL TRACKER (SHIPPER & OPERATOR WORKSPACE)
+  // =========================================================================
+  renderLiveTracker() {
+    const cargos = window.WAYPOINT_DATA.trackedCargos || [];
+    const currentId = (window.appState && window.appState.tracker && window.appState.tracker.selectedCargoId) || 'CRG-8921-X';
+    const cargo = cargos.find(c => c.id === currentId) || cargos[0];
+
+    // Helper for marine formatting
+    const latDeg = Math.floor(Math.abs(cargo.ship.lat));
+    const latMin = ((Math.abs(cargo.ship.lat) - latDeg) * 60).toFixed(3);
+    const latDir = cargo.ship.lat >= 0 ? 'N' : 'S';
+
+    const lngDeg = Math.floor(Math.abs(cargo.ship.lng));
+    const lngMin = ((Math.abs(cargo.ship.lng) - lngDeg) * 60).toFixed(3);
+    const lngDir = cargo.ship.lng >= 0 ? 'E' : 'W';
+
+    const marineCoordsStr = `${latDeg}° ${latMin}' ${latDir} &nbsp; ${lngDeg}° ${lngMin}' ${lngDir}`;
+    const decimalCoordsStr = `${cargo.ship.lat.toFixed(5)}° ${latDir}, ${cargo.ship.lng.toFixed(5)}° ${lngDir}`;
+
+    return `
+      <div class="page-header">
+        <div>
+          <div class="breadcrumb-chip">
+            <span class="live-pulse-badge"><span class="pulse-dot"></span> SATELLITE GPS LOCK ACQUIRED</span>
+            <span class="text-muted" style="margin-left:8px; font-size:12px;">Constellation: DGPS / Dual Galileo Multi-Band • HDOP 0.8m</span>
+          </div>
+          <h1 class="page-title">Live GPS Cargo & Ship Tracking</h1>
+          <p class="page-desc">Real-time satellite GPS/AIS coordinates, speed over ground, voyage progress, and cold-chain telematics for shippers.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="openShareTrackingModal('${cargo.id}')">
+            🔗 Share Live Tracking Link
+          </button>
+          <button class="btn btn-outline" onclick="openPublicTrackingView('${cargo.id}')">
+            📄 Consignment Slip
+          </button>
+          <button class="btn btn-outline" onclick="recenterTrackerMap()">
+            🧭 Center on Ship
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Shipment Selector & Direct Search Bar -->
+      <div class="tracker-selector-bar">
+        <div class="tracker-search-wrap">
+          <span class="tracker-search-icon">🔍</span>
+          <input
+            type="text"
+            id="tracker-search-input"
+            class="tracker-search-field"
+            placeholder="Search by Cargo ID (e.g. CRG-8921-X), B/L #, Container ID, or Ship Name..."
+            oninput="handleTrackerSearch(this.value)"
+          />
+        </div>
+        <div class="tracker-shipments-scroll" id="tracker-shipments-list">
+          ${cargos.map(c => `
+            <div
+              class="tracker-shipment-pill ${c.id === cargo.id ? 'active' : ''}"
+              onclick="selectTrackedCargo('${c.id}')"
+              id="pill-${c.id}"
+            >
+              <div class="pill-head">
+                <span class="pill-id mono">${c.id}</span>
+                <span class="tag tag-${c.statusClass} pill-tag">${c.statusClass === 'safe' ? 'LIVE' : 'REROUTE'}</span>
+              </div>
+              <div class="pill-vessel">🚢 ${c.ship.name}</div>
+              <div class="pill-route">${c.originPort.name.split(' ')[0]} ➔ ${c.destinationPort.name.split(' ')[0]}</div>
+              <div class="pill-meta mono">
+                <span>${c.ship.speedKnots} kts</span>
+                <span class="text-safe">${c.etaCountdown}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Main Dual-Pane Tracker Cockpit -->
+      <div class="tracker-cockpit-grid">
+
+        <!-- LEFT COLUMN: Live Telemetry, GPS, Sensors & Milestones -->
+        <div class="tracker-sidebar-col">
+
+          <!-- 1. Digital Marine GPS Readout Card -->
+          <div class="cockpit-card gps-hero-card">
+            <div class="cockpit-card-head">
+              <div class="cockpit-card-title">
+                <span>🛰️ Live Marine GPS Coordinates</span>
+                <span class="tag tag-safe" id="tracker-lock-badge">LIVE LOCK</span>
+              </div>
+              <button class="btn-copy-coords" onclick="copyGpsCoords()" title="Copy GPS Coordinates">
+                📋 Copy
+              </button>
+            </div>
+            <div class="gps-coords-box">
+              <div class="gps-readout-marine mono" id="gps-marine-readout">
+                ${marineCoordsStr}
+              </div>
+              <div class="gps-readout-decimal mono" id="gps-decimal-readout">
+                ${decimalCoordsStr}
+              </div>
+            </div>
+            <div class="gps-telemetry-meta">
+              <div class="meta-row">
+                <span class="meta-lbl">Carrying Vessel:</span>
+                <span class="meta-val mono" id="meta-ship-name"><strong>${cargo.ship.name}</strong> (${cargo.ship.flag})</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-lbl">IMO / MMSI:</span>
+                <span class="meta-val mono" id="meta-ship-imo">IMO ${cargo.ship.imo} • MMSI ${cargo.ship.mmsi}</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-lbl">Transponder Source:</span>
+                <span class="meta-val mono" id="meta-gps-source">${cargo.ship.gpsSource}</span>
+              </div>
+              <div class="meta-row">
+                <span class="meta-lbl">Last GPS Ping:</span>
+                <span class="meta-val text-safe mono" id="tracker-ping-age">Just now (via SAT-AIS)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Navigation Dynamics: Speed & Heading Gauges -->
+          <div class="cockpit-card">
+            <div class="cockpit-card-head">
+              <div class="cockpit-card-title">🧭 Navigation Dynamics (SOG & COG)</div>
+              <span class="tag tag-demo">Vessel Telemetry</span>
+            </div>
+            <div class="dynamics-gauges-row">
+              <!-- Speed Gauge -->
+              <div class="gauge-card">
+                <div class="gauge-label">Speed Over Ground</div>
+                <div class="gauge-value mono" id="tracker-sog-val">${cargo.ship.speedKnots} <span class="gauge-unit">kts</span></div>
+                <div class="gauge-sub mono text-muted" id="tracker-sog-kmh">${(cargo.ship.speedKnots * 1.852).toFixed(1)} km/h</div>
+                <div class="gauge-status text-safe">● Full Ahead Sea Speed</div>
+              </div>
+
+              <!-- Heading Compass Card -->
+              <div class="gauge-card compass-gauge-card">
+                <div class="gauge-label">Course Over Ground (COG)</div>
+                <div class="compass-wrap">
+                  <div class="compass-dial" id="compass-dial" style="transform: rotate(${cargo.ship.heading}deg);">
+                    <div class="compass-needle-north"></div>
+                    <div class="compass-needle-south"></div>
+                    <div class="compass-tick north">N</div>
+                    <div class="compass-tick east">E</div>
+                    <div class="compass-tick south">S</div>
+                    <div class="compass-tick west">W</div>
+                  </div>
+                </div>
+                <div class="gauge-value mono" id="tracker-cog-val">${cargo.ship.heading}° <span class="gauge-unit">True</span></div>
+                <div class="gauge-sub mono text-dim" id="tracker-heading-desc">${getHeadingSector(cargo.ship.heading)}</div>
+              </div>
+            </div>
+            <div class="nav-status-badge mono" id="tracker-nav-status">
+              Nav Status: <span>${cargo.ship.navStatus}</span>
+            </div>
+          </div>
+
+          <!-- 3. Voyage Progress & Distance Card -->
+          <div class="cockpit-card">
+            <div class="cockpit-card-head">
+              <div class="cockpit-card-title">🚢 Voyage Trajectory & ETA</div>
+              <span class="tag tag-safe" id="tracker-voyage-status">ON SCHEDULE</span>
+            </div>
+            <div class="voyage-route-strip">
+              <div class="route-endpoint">
+                <span class="port-code mono">${cargo.originPort.id}</span>
+                <span class="port-name">${cargo.originPort.name.split(' ')[0]}</span>
+                <span class="port-time mono">${cargo.originPort.departureTime.split(' ')[0]}</span>
+              </div>
+              <div class="route-track-line">
+                <div class="route-ship-icon" style="left: ${cargo.progressPercent}%;">🚢</div>
+              </div>
+              <div class="route-endpoint text-right">
+                <span class="port-code mono">${cargo.destinationPort.id}</span>
+                <span class="port-name">${cargo.destinationPort.name.split(' ')[0]}</span>
+                <span class="port-time mono text-safe">ETA ${cargo.destinationPort.eta.split(' ')[0]}</span>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar-wrap" style="height:8px; margin: 12px 0 6px 0;">
+              <div class="progress-bar-fill" id="tracker-progress-fill" style="width: ${cargo.progressPercent}%;"></div>
+            </div>
+            <div class="progress-meta-row">
+              <span class="mono text-muted" id="tracker-dist-completed">${cargo.completedDistanceNm.toLocaleString()} nm traversed</span>
+              <span class="mono text-accent" id="tracker-progress-pct">${cargo.progressPercent}% completed</span>
+              <span class="mono text-safe" id="tracker-dist-remaining">${cargo.remainingDistanceNm.toLocaleString()} nm to go</span>
+            </div>
+
+            <div class="eta-countdown-card">
+              <div class="eta-col">
+                <span class="eta-lbl">Estimated Arrival (ETA)</span>
+                <span class="eta-date mono" id="tracker-eta-date">${cargo.etaFormatted}</span>
+              </div>
+              <div class="eta-countdown-col text-right">
+                <span class="eta-lbl">Time to Port</span>
+                <span class="eta-timer mono text-safe" id="tracker-eta-timer">${cargo.etaCountdown}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Cargo Specifications & Sensor Telemetry -->
+          <div class="cockpit-card">
+            <div class="cockpit-card-head">
+              <div class="cockpit-card-title">📦 Cargo Manifest & IoT Sensors</div>
+              <span class="tag tag-demo">Sensor Stream</span>
+            </div>
+            <div class="cargo-manifest-grid">
+              <div class="manifest-item">
+                <span class="m-lbl">Bill of Lading (B/L):</span>
+                <span class="m-val mono">${cargo.blNumber}</span>
+              </div>
+              <div class="manifest-item">
+                <span class="m-lbl">Container & Seal:</span>
+                <span class="m-val mono">${cargo.containerId} • ${cargo.sealNumber}</span>
+              </div>
+              <div class="manifest-item">
+                <span class="m-lbl">Shipper:</span>
+                <span class="m-val">${cargo.shipper}</span>
+              </div>
+              <div class="manifest-item">
+                <span class="m-lbl">Consignee:</span>
+                <span class="m-val">${cargo.consignee}</span>
+              </div>
+              <div class="manifest-item">
+                <span class="m-lbl">Gross Weight / Type:</span>
+                <span class="m-val mono">${cargo.weightTons} MT • ${cargo.containerType}</span>
+              </div>
+            </div>
+
+            <div class="sensors-row">
+              <div class="sensor-pill ${cargo.category.includes('Cold-Chain') ? 'cold' : 'ambient'}">
+                <div class="sensor-icon">🌡️</div>
+                <div class="sensor-data">
+                  <span class="s-name">Cargo Temperature</span>
+                  <span class="s-val mono" id="sensor-temp">${cargo.sensorData.tempC}°C</span>
+                  <span class="s-sub">${cargo.sensorData.tempStatus}</span>
+                </div>
+              </div>
+              <div class="sensor-pill">
+                <div class="sensor-icon">💧</div>
+                <div class="sensor-data">
+                  <span class="s-name">Relative Humidity</span>
+                  <span class="s-val mono" id="sensor-humidity">${cargo.sensorData.humidityPercent}% RH</span>
+                  <span class="s-sub">Optimal Dry</span>
+                </div>
+              </div>
+              <div class="sensor-pill">
+                <div class="sensor-icon">🛡️</div>
+                <div class="sensor-data">
+                  <span class="s-name">Shock & Impact</span>
+                  <span class="s-val mono" id="sensor-shock">${cargo.sensorData.shockG} G</span>
+                  <span class="s-sub">No Cargo Shift</span>
+                </div>
+              </div>
+              <div class="sensor-pill">
+                <div class="sensor-icon">🔒</div>
+                <div class="sensor-data">
+                  <span class="s-name">Container Seal</span>
+                  <span class="s-val text-safe mono">TAMPER-VERIFIED</span>
+                  <span class="s-sub">${cargo.sensorData.doorStatus}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Sea & Meteorological Conditions at GPS Position -->
+          <div class="cockpit-card">
+            <div class="cockpit-card-head">
+              <div class="cockpit-card-title">🌊 Live Sea Conditions at Vessel Coordinates</div>
+              <span class="tag tag-demo">ECMWF / NOAA</span>
+            </div>
+            <div class="metoc-grid">
+              <div class="metoc-item">
+                <span class="met-icon">💨</span>
+                <div>
+                  <div class="met-val mono" id="met-wind">${cargo.seaConditions.windKnots} kts ${cargo.seaConditions.windDirection}</div>
+                  <div class="met-lbl">True Wind</div>
+                </div>
+              </div>
+              <div class="metoc-item">
+                <span class="met-icon">🌊</span>
+                <div>
+                  <div class="met-val mono" id="met-waves">${cargo.seaConditions.waveHeightM} m</div>
+                  <div class="met-lbl">Significant Wave Height</div>
+                </div>
+              </div>
+              <div class="metoc-item">
+                <span class="met-icon">🌡️</span>
+                <div>
+                  <div class="met-val mono" id="met-seatemp">${cargo.seaConditions.seaTempC}°C</div>
+                  <div class="met-lbl">Sea Surface Temp</div>
+                </div>
+              </div>
+              <div class="metoc-item">
+                <span class="met-icon">⏲️</span>
+                <div>
+                  <div class="met-val mono" id="met-baro">${cargo.seaConditions.barometerHpa} hPa</div>
+                  <div class="met-lbl">Atmospheric Pressure</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. Voyage Checkpoints & Milestones -->
+          <div class="cockpit-card">
+            <div class="cockpit-card-head">
+              <div class="cockpit-card-title">📍 Verified Voyage Milestones</div>
+              <span class="tag tag-safe">AIS Automated</span>
+            </div>
+            <div class="milestones-timeline">
+              ${cargo.milestones.map((m, i) => `
+                <div class="milestone-step ${m.done ? 'completed' : ''} ${m.current ? 'current' : ''}">
+                  <div class="milestone-marker">
+                    ${m.done ? (m.current ? '📍' : '✓') : (i + 1)}
+                  </div>
+                  <div class="milestone-content">
+                    <div class="milestone-name">${m.name}</div>
+                    <div class="milestone-time mono">${m.time}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: Interactive Leaflet Map & Live Satellite Event Log -->
+        <div class="tracker-main-col">
+
+          <!-- Interactive Map Container -->
+          <div class="map-card tracker-map-card">
+            <div class="map-toolbar tracker-map-toolbar">
+              <div class="map-title">
+                <span class="mono text-accent">● LIVE AIS TRACK:</span>
+                <span style="font-weight:700;">${cargo.ship.name}</span>
+                <span class="tag tag-demo">Satellite Fix</span>
+              </div>
+              <div class="layer-chips">
+                <button class="layer-chip active" id="btn-auto-follow" onclick="toggleTrackerAutoFollow()">
+                  🎯 Auto-Follow Vessel
+                </button>
+                <button class="layer-chip active" id="btn-breadcrumbs" onclick="toggleTrackerBreadcrumbs()">
+                  📍 Breadcrumbs (${cargo.breadcrumbs.length})
+                </button>
+                <button class="layer-chip active" id="btn-route-path" onclick="toggleTrackerRoutePath()">
+                  🧭 Planned Corridor
+                </button>
+                <button class="layer-chip active" id="btn-hazards-overlay" onclick="toggleTrackerHazards()">
+                  ⚠️ Sea Hazards
+                </button>
+              </div>
+            </div>
+
+            <!-- Leaflet Map Element -->
+            <div id="tracker-map" class="map-container" style="height: 540px;"></div>
+
+            <!-- Live GPS Simulation Controls Bar -->
+            <div class="tracker-sim-toolbar">
+              <div class="sim-left-controls">
+                <button
+                  class="btn btn-sm btn-primary"
+                  id="btn-toggle-sim"
+                  onclick="toggleGpsSimulation()"
+                  title="Pause or Resume live simulated GPS advancement"
+                >
+                  ⏸️ Pause Live Feed
+                </button>
+                <div class="sim-speed-group">
+                  <span class="speed-lbl">Sim Speed:</span>
+                  <button class="sim-speed-btn active" id="sim-speed-1" onclick="setSimulationSpeed(1)">1x</button>
+                  <button class="sim-speed-btn" id="sim-speed-5" onclick="setSimulationSpeed(5)">5x</button>
+                  <button class="sim-speed-btn" id="sim-speed-15" onclick="setSimulationSpeed(15)">15x</button>
+                </div>
+                <button class="btn btn-sm btn-outline" onclick="triggerManualGpsPing()">
+                  📡 Manual GPS Ping
+                </button>
+              </div>
+              <div class="sim-status-right mono">
+                <span class="pulse-dot"></span>
+                <span id="sim-status-text">Streaming Satellite AIS Telemetry every 2.5s</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Satellite AIS Telemetry Stream Console -->
+          <div class="panel-card telemetry-console-card">
+            <div class="panel-header">
+              <div class="panel-title">
+                <span>📡 Live Satellite Telemetry & AIS Packet Stream</span>
+                <span class="tag tag-safe mono">115200 BAUD</span>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-outline btn-xs" onclick="clearTelemetryLog()">Clear Stream</button>
+                <button class="btn btn-outline btn-xs" onclick="copyTelemetryLog()">Copy Log</button>
+              </div>
+            </div>
+            <div class="terminal-window mono" id="telemetry-terminal-stream">
+              <!-- Dynamically populated by JS stream -->
+              <div class="terminal-line system">[SYSTEM] Satellite Telemetry Stream connected to Inmarsat-C DGPS / Class-A AIS.</div>
+              <div class="terminal-line fix">[03:00:01] GPS FIX: ${cargo.ship.lat.toFixed(5)}°N, ${cargo.ship.lng.toFixed(5)}°E | SOG: ${cargo.ship.speedKnots} kts | COG: ${cargo.ship.heading}° | HDOP: 0.8</div>
+              <div class="terminal-line sensor">[03:00:03] SENSOR PING: Container ${cargo.containerId} Temp: ${cargo.sensorData.tempC}°C | Seal: INTACT</div>
+              <div class="terminal-line info">[03:00:05] VOYAGE UPDATE: ${cargo.remainingDistanceNm} nm remaining to ${cargo.destinationPort.name.split(' ')[0]} | ETA: ${cargo.etaFormatted}</div>
+            </div>
+          </div>
+
+          <!-- Quick Consignment Details Summary -->
+          <div class="cockpit-card" style="margin-top:16px;">
+            <div class="cockpit-card-head">
+              <div class="cockpit-card-title">📜 Shipper Consignment & Customs Reference</div>
+              <button class="btn btn-sm btn-safe" onclick="openShareTrackingModal('${cargo.id}')">
+                Provide Tracking to Consignee ➔
+              </button>
+            </div>
+            <div class="consignment-summary-grid">
+              <div>
+                <span class="text-muted" style="font-size:11px;">Shipper Reference:</span>
+                <div class="mono" style="font-size:13px; font-weight:600;">${cargo.bookingRef}</div>
+              </div>
+              <div>
+                <span class="text-muted" style="font-size:11px;">Ocean Carrier:</span>
+                <div style="font-size:13px; font-weight:600;">WAYPOINT Maritime Freight Network</div>
+              </div>
+              <div>
+                <span class="text-muted" style="font-size:11px;">Bill of Lading:</span>
+                <div class="mono text-accent" style="font-size:13px; font-weight:600;">${cargo.blNumber}</div>
+              </div>
+              <div>
+                <span class="text-muted" style="font-size:11px;">Consignee Destination Port:</span>
+                <div style="font-size:13px; font-weight:600;">${cargo.destinationPort.name}</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
       </div>
     `;
   },

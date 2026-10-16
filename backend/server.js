@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const { ports, ships } = require("./src/data/demoData");
+const { ports, ships, trackedCargos } = require("./src/data/demoData");
 const { getCandidateRoutes } = require("./src/services/routeService");
 const { detectHazards } = require("./src/services/hazardService");
 const { optimizeRoutes } = require("./src/services/optimizer");
@@ -18,11 +18,16 @@ app.use(express.json({ limit: "1mb" }));
 app.get("/", (_req, res) => {
   res.json({
     name: "WAYPOINT API",
-    description: "Smart Maritime Route Optimizer",
+    description: "Smart Maritime Route Optimizer & Live GPS Tracking API",
     endpoints: [
       "GET /api/health",
       "GET /api/ports",
       "GET /api/ships",
+      "GET /api/tracking/cargos",
+      "GET /api/tracking/cargos/:id",
+      "GET /api/tracking/ships",
+      "GET /api/tracking/ships/:id",
+      "POST /api/tracking/gps-ping",
       "GET /api/routes?source=Mumbai&destination=Singapore",
       "POST /api/optimize",
       "GET /api/hazards?source=Mumbai&destination=Singapore"
@@ -40,6 +45,71 @@ app.get("/api/ports", (_req, res) => {
 
 app.get("/api/ships", (_req, res) => {
   res.json({ ships, demoData: true });
+});
+
+// Live GPS Tracking APIs for Shippers & Logistics Operators
+app.get("/api/tracking/cargos", (_req, res) => {
+  const enriched = trackedCargos.map(cargo => {
+    const ship = ships.find(s => s.id === cargo.shipId);
+    return { ...cargo, ship };
+  });
+  res.json({ cargos: enriched, total: enriched.length, liveGpsTracking: true });
+});
+
+app.get("/api/tracking/cargos/:id", (req, res) => {
+  const id = String(req.params.id || "").trim().toLowerCase();
+  const cargo = trackedCargos.find(c =>
+    c.id.toLowerCase() === id ||
+    c.blNumber.toLowerCase() === id ||
+    c.containerId.toLowerCase() === id
+  );
+
+  if (!cargo) {
+    return res.status(404).json({
+      error: "CARGO_NOT_FOUND",
+      message: `No active shipment found matching tracking identifier "${req.params.id}".`
+    });
+  }
+
+  const ship = ships.find(s => s.id === cargo.shipId);
+  res.json({
+    ...cargo,
+    ship,
+    trackingUrl: `http://localhost:5173/?track=${cargo.id}`,
+    liveGpsStatus: "LOCKED_DGPS",
+    satelliteTimestamp: new Date().toISOString()
+  });
+});
+
+app.get("/api/tracking/ships", (_req, res) => {
+  res.json({ ships, total: ships.length, liveGpsTracking: true });
+});
+
+app.get("/api/tracking/ships/:id", (req, res) => {
+  const id = String(req.params.id || "").trim().toLowerCase();
+  const ship = ships.find(s => s.id.toLowerCase() === id || s.imo === id || s.name.toLowerCase().includes(id));
+  if (!ship) {
+    return res.status(404).json({ error: "SHIP_NOT_FOUND", message: `Ship with ID "${req.params.id}" not found.` });
+  }
+
+  const cargoManifest = trackedCargos.filter(c => c.shipId === ship.id);
+  res.json({ ...ship, cargoManifest });
+});
+
+app.post("/api/tracking/gps-ping", (req, res) => {
+  const { shipId, latitude, longitude, speedKnots, heading } = req.body;
+  const ship = ships.find(s => s.id === shipId);
+  if (!ship) {
+    return res.status(404).json({ error: "SHIP_NOT_FOUND", message: `Ship "${shipId}" not found.` });
+  }
+
+  if (latitude != null) ship.latitude = Number(latitude);
+  if (longitude != null) ship.longitude = Number(longitude);
+  if (speedKnots != null) ship.speedKnots = Number(speedKnots);
+  if (heading != null) ship.heading = Number(heading);
+  ship.lastUpdated = new Date().toISOString();
+
+  res.json({ success: true, updatedShip: ship, message: "GPS telemetry ping acknowledged." });
 });
 
 function readPortPair(req, res) {
