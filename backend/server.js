@@ -6,32 +6,96 @@ const { ports, ships } = require("./src/data/demoData");
 const { getCandidateRoutes } = require("./src/services/routeService");
 const { detectHazards } = require("./src/services/hazardService");
 const { optimizeRoutes } = require("./src/services/optimizer");
+const { initAISStream, getVesselsList, addSseClient, removeSseClient } = require("./src/services/aisStreamService");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
 
 app.use(cors({
-  origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173"
+  origin: "*"
 }));
 app.use(express.json({ limit: "1mb" }));
+
+// Initialize AISStream background connection
+initAISStream();
 
 app.get("/", (_req, res) => {
   res.json({
     name: "WAYPOINT API",
-    description: "Smart Maritime Route Optimizer",
+    description: "Smart Maritime Route Optimizer & Telemetry Gateway",
     endpoints: [
       "GET /api/health",
       "GET /api/ports",
       "GET /api/ships",
+      "GET /api/ais/vessels",
+      "GET /api/ais/stream (SSE)",
+      "GET /api/weather/marine?latitude=15&longitude=70",
+      "GET /api/gdacs?eventlist=TC",
       "GET /api/routes?source=Mumbai&destination=Singapore",
-      "POST /api/optimize",
-      "GET /api/hazards?source=Mumbai&destination=Singapore"
+      "POST /api/optimize"
     ]
   });
 });
 
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", service: "WAYPOINT API", demoData: true });
+  res.json({ status: "ok", service: "WAYPOINT API", liveTelemetry: true });
+});
+
+// 1. AIS Live Vessels Endpoint
+app.get("/api/ais/vessels", (_req, res) => {
+  const vessels = getVesselsList();
+  res.json({ count: vessels.length, vessels, timestamp: Date.now() });
+});
+
+// AIS Real-time SSE Stream
+app.get("/api/ais/stream", (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
+  addSseClient(res);
+
+  req.on("close", () => {
+    removeSseClient(res);
+  });
+});
+
+// 2. Open-Meteo Marine Weather Proxy
+app.get("/api/weather/marine", async (req, res) => {
+  const lat = req.query.latitude || req.query.lat || 15;
+  const lon = req.query.longitude || req.query.lon || 70;
+  const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_direction,wave_period,swell_wave_height&timezone=auto&forecast_days=3`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Open-Meteo responded with status ${response.status}`);
+    }
+    const data = await response.json();
+    res.json({ success: true, source: "Open-Meteo Marine (CC BY 4.0)", data });
+  } catch (err) {
+    res.status(502).json({ error: "WEATHER_API_ERROR", message: err.message });
+  }
+});
+
+// 3. GDACS Storm & Disaster Alerts Proxy
+app.get("/api/gdacs", async (req, res) => {
+  const eventlist = req.query.eventlist || "TC";
+  const url = `https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist=${eventlist}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: { "User-Agent": "WAYPOINT-Maritime-Platform/1.0" }
+    });
+    if (!response.ok) {
+      throw new Error(`GDACS responded with status ${response.status}`);
+    }
+    const data = await response.json();
+    res.json({ success: true, source: "GDACS Global Disaster Alerts", data });
+  } catch (err) {
+    res.status(502).json({ error: "GDACS_API_ERROR", message: err.message });
+  }
 });
 
 app.get("/api/ports", (_req, res) => {
