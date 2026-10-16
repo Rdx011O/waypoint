@@ -16,7 +16,8 @@ import {
   fetchMarineWeather, 
   fetchGdacsAlerts, 
   connectAisStream, 
-  fetchNdbcObservations 
+  fetchNdbcObservations,
+  fetchContainers
 } from '../services/telemetryService';
 import Icon from './Icon';
 
@@ -42,6 +43,7 @@ export default function MarineMap({
     ports: propActiveLayers?.ports !== undefined ? propActiveLayers.ports : true,
     vessels: propActiveLayers?.vessels !== undefined ? propActiveLayers.vessels : showVessels,
     hazards: propActiveLayers?.hazards !== undefined ? propActiveLayers.hazards : showHazards,
+    containers: propActiveLayers?.containers !== undefined ? propActiveLayers.containers : true,
     seamarks: false, // OpenSeaMap seamark overlay
     waves: true,     // Open-Meteo marine wave stations
     gdacs: true      // GDACS storm alerts
@@ -52,6 +54,7 @@ export default function MarineMap({
   const [observedBuoys, setObservedBuoys] = useState([]);
   const [gdacsAlerts, setGdacsAlerts] = useState([]);
   const [liveVessels, setLiveVessels] = useState(WAYPOINT_DATA.vessels || []);
+  const [liveContainers, setLiveContainers] = useState([]);
   const [selectedStation, setSelectedStation] = useState(null);
 
   // Sync prop changes
@@ -85,6 +88,12 @@ export default function MarineMap({
       // 2. Fetch GDACS Tropical Cyclone alerts
       const alerts = await fetchGdacsAlerts();
       setGdacsAlerts(alerts);
+
+      // 3. Fetch 50 IoT Containers from live API
+      const containers = await fetchContainers();
+      if (containers && containers.length > 0) {
+        setLiveContainers(containers);
+      }
     }
 
     loadTelemetry();
@@ -388,6 +397,38 @@ export default function MarineMap({
       });
     }
 
+    // --- F. Live IoT Shipping Containers Layer (from containers.csv API) ---
+    if (layers.containers && liveContainers.length > 0) {
+      liveContainers.forEach(c => {
+        const isCold = c.tempC < 0;
+        const color = isCold ? '#38BDF8' : '#10B981';
+
+        const marker = L.circleMarker([c.lat, c.lon], {
+          radius: 5,
+          fillColor: color,
+          color: '#070D18',
+          weight: 1.5,
+          fillOpacity: 0.95
+        }).addTo(overlayGroup);
+
+        marker.bindPopup(`
+          <div style="font-family:Inter,sans-serif; font-size:12px; min-width:190px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong style="color:${color}; font-size:12px;">${c.containerId}</strong>
+              <span style="background:rgba(56,189,248,0.2); color:#38BDF8; font-weight:700; padding:1px 5px; border-radius:3px; font-size:9px;">IoT ACTIVE</span>
+            </div>
+            <div><strong>Device:</strong> <code style="color:#38BDF8;">${c.deviceCode}</code></div>
+            <div><strong>Vessel:</strong> ${c.shipName}</div>
+            <div><strong>Cargo:</strong> ${c.cargoType}</div>
+            <div><strong>Chamber:</strong> ${c.tempC}°C | ${c.humidityPct}% RH</div>
+            <div><strong>Seal:</strong> <span style="color:#10B981;">${c.sealStatus}</span></div>
+            <div><strong>Battery:</strong> ${c.batteryPct}%</div>
+            <div style="margin-top:4px; font-size:10px; color:#94A3B8;">GPS: ${c.lat.toFixed(4)}°N, ${c.lon.toFixed(4)}°E</div>
+          </div>
+        `);
+      });
+    }
+
     // Invalidate size on resize
     const resizeObserver = new ResizeObserver(() => {
       map.invalidateSize();
@@ -397,7 +438,7 @@ export default function MarineMap({
     return () => {
       resizeObserver.disconnect();
     };
-  }, [center, zoom, baseTileType, layers, focusedRouteId, routes, waveStations, gdacsAlerts, liveVessels]);
+  }, [center, zoom, baseTileType, layers, focusedRouteId, routes, waveStations, gdacsAlerts, liveVessels, liveContainers]);
 
   const toggleLayer = (layerKey) => {
     setLayers(prev => ({ ...prev, [layerKey]: !prev[layerKey] }));
@@ -533,7 +574,29 @@ export default function MarineMap({
           title="Toggle AISStream live commercial vessels"
         >
           <Icon name="Ship" size={12} />
-          <span>AISStream ({liveVessels.length})</span>
+          <span>Fleet ({liveVessels.length})</span>
+        </button>
+
+        {/* IoT Containers Toggle */}
+        <button
+          onClick={() => toggleLayer('containers')}
+          style={{
+            padding: '4px 8px',
+            borderRadius: 'var(--radius-xs)',
+            border: `1px solid ${layers.containers ? 'var(--accent-cyan)' : 'var(--border-subtle)'}`,
+            background: layers.containers ? 'rgba(56, 189, 248, 0.18)' : 'var(--bg-surface-elevated)',
+            color: layers.containers ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+            fontSize: '11px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+          title="Toggle live IoT shipping containers"
+        >
+          <Icon name="Radio" size={12} />
+          <span>Containers ({liveContainers.length})</span>
         </button>
       </div>
 
