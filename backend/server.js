@@ -2,9 +2,9 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const { ports, ships } = require("./src/data/demoData");
-const { getCandidateRoutes } = require("./src/services/routeService");
-const { detectHazards } = require("./src/services/hazardService");
+const { getPorts, findPort, getShips, getAlerts } = require("./src/services/dataService");
+const { getCandidateRoutesAsync } = require("./src/services/routeService");
+const { detectHazardsAsync } = require("./src/services/hazardService");
 const { optimizeRoutes } = require("./src/services/optimizer");
 
 const app = express();
@@ -18,31 +18,60 @@ app.use(express.json({ limit: "1mb" }));
 app.get("/", (_req, res) => {
   res.json({
     name: "WAYPOINT API",
-    description: "Smart Maritime Route Optimizer",
+    description: "Smart Maritime Route Optimizer & Intelligence Platform",
+    dataSource: "Firebase Cloud Firestore & Dynamic Maritime Datasets",
     endpoints: [
       "GET /api/health",
       "GET /api/ports",
       "GET /api/ships",
-      "GET /api/routes?source=Mumbai&destination=Singapore",
+      "GET /api/routes?source=Kolkata&destination=Singapore",
       "POST /api/optimize",
-      "GET /api/hazards?source=Mumbai&destination=Singapore"
+      "GET /api/hazards?source=Kolkata&destination=Singapore"
     ]
   });
 });
 
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", service: "WAYPOINT API", demoData: true });
+app.get("/api/health", async (_req, res) => {
+  try {
+    const ports = await getPorts();
+    res.json({
+      status: "ok",
+      service: "WAYPOINT API",
+      portsLoaded: ports.length,
+      dataSource: "Firebase Firestore"
+    });
+  } catch (err) {
+    res.status(500).json({ status: "degraded", error: err.message });
+  }
 });
 
-app.get("/api/ports", (_req, res) => {
-  res.json({ ports, demoData: true });
+app.get("/api/ports", async (_req, res) => {
+  try {
+    const ports = await getPorts();
+    res.json({
+      ports,
+      total: ports.length,
+      dataSource: "Firebase Firestore"
+    });
+  } catch (err) {
+    res.status(500).json({ error: "FETCH_FAILED", message: err.message });
+  }
 });
 
-app.get("/api/ships", (_req, res) => {
-  res.json({ ships, demoData: true });
+app.get("/api/ships", async (_req, res) => {
+  try {
+    const ships = await getShips();
+    res.json({
+      ships,
+      total: ships.length,
+      dataSource: "Firebase Firestore"
+    });
+  } catch (err) {
+    res.status(500).json({ error: "FETCH_FAILED", message: err.message });
+  }
 });
 
-function readPortPair(req, res) {
+async function readPortPair(req, res) {
   const source = String(req.query.source || "").trim();
   const destination = String(req.query.destination || "").trim();
 
@@ -62,14 +91,19 @@ function readPortPair(req, res) {
     return null;
   }
 
-  const sourcePort = ports.find(p => p.name.toLowerCase() === source.toLowerCase());
-  const destinationPort = ports.find(p => p.name.toLowerCase() === destination.toLowerCase());
+  const [sourcePort, destinationPort] = await Promise.all([
+    findPort(source),
+    findPort(destination)
+  ]);
 
   if (!sourcePort || !destinationPort) {
+    const allPorts = await getPorts();
     res.status(400).json({
       error: "UNKNOWN_PORT",
-      message: "One or both ports are not in the current port list.",
-      availablePorts: ports.map(p => p.name)
+      message: "One or both ports were not found in the maritime database.",
+      missingSource: !sourcePort ? source : null,
+      missingDestination: !destinationPort ? destination : null,
+      availableSamplePorts: allPorts.slice(0, 10).map(p => p.name)
     });
     return null;
   }
@@ -77,113 +111,155 @@ function readPortPair(req, res) {
   return { sourcePort, destinationPort };
 }
 
-function buildRouteResponse(sourcePort, destinationPort, options = {}) {
-  const candidates = getCandidateRoutes(sourcePort, destinationPort);
-  const routes = candidates.map(route => {
-    const hazards = detectHazards(route);
-    return { ...route, hazards, hazardExposure: hazards.length > 0 };
-  });
-  return optimizeRoutes(routes, options);
+async function buildRouteResponse(sourcePort, destinationPort, options = {}) {
+  const [candidates, alerts] = await Promise.all([
+    getCandidateRoutesAsync(sourcePort, destinationPort, options),
+    getAlerts()
+  ]);
+
+  const routesWithHazards = await Promise.all(
+    candidates.map(async (route) => {
+      const hazards = await detectHazardsAsync(route, alerts);
+      return {
+        ...route,
+        hazards,
+        hazardExposure: hazards.length > 0
+      };
+    })
+  );
+
+  return optimizeRoutes(routesWithHazards, options);
 }
 
-app.get("/api/routes", (req, res) => {
-  const pair = readPortPair(req, res);
-  if (!pair) return;
+app.get("/api/routes", async (req, res) => {
+  try {
+    const pair = await readPortPair(req, res);
+    if (!pair) return;
 
-  const result = buildRouteResponse(pair.sourcePort, pair.destinationPort);
-  if (!result.routes.length) {
-    return res.status(404).json({
-      error: "NO_DEMO_ROUTE",
-      message: "No candidate route is configured for this port pair yet.",
-      supportedDemoPairs: ["Mumbai → Singapore", "Mumbai → Dubai"]
+    const result = await buildRouteResponse(pair.sourcePort, pair.destinationPort);
+    if (!result.routes.length) {
+      return res.status(404).json({
+        error: "NO_ROUTE_FOUND",
+        message: "No navigable route could be calculated for this port pair."
+      });
+    }
+
+    res.json({
+      source: pair.sourcePort,
+      destination: pair.destinationPort,
+      ...result,
+      dataSource: "Firebase Firestore",
+      disclaimer: "Figures are calculated for comparative decision support and navigational optimization."
     });
+  } catch (err) {
+    console.error("Route calculation error:", err);
+    res.status(500).json({ error: "INTERNAL_ERROR", message: err.message });
   }
-
-  res.json({
-    source: pair.sourcePort,
-    destination: pair.destinationPort,
-    ...result,
-    demoData: true,
-    disclaimer: "Illustrative prototype data only. Not a live navigation or shipping quote service."
-  });
 });
 
-app.post("/api/optimize", (req, res) => {
-  const source = String(req.body.source || "").trim();
-  const destination = String(req.body.destination || "").trim();
-  const sourcePort = ports.find(p => p.name.toLowerCase() === source.toLowerCase());
-  const destinationPort = ports.find(p => p.name.toLowerCase() === destination.toLowerCase());
+app.post("/api/optimize", async (req, res) => {
+  try {
+    const source = String(req.body.source || "").trim();
+    const destination = String(req.body.destination || "").trim();
 
-  if (!sourcePort || !destinationPort) {
-    return res.status(400).json({
-      error: "INVALID_PORTS",
-      message: "Choose valid source and destination ports from GET /api/ports."
+    if (!source || !destination) {
+      return res.status(400).json({
+        error: "MISSING_PORTS",
+        message: "Source and destination are required in the request body."
+      });
+    }
+
+    const [sourcePort, destinationPort] = await Promise.all([
+      findPort(source),
+      findPort(destination)
+    ]);
+
+    if (!sourcePort || !destinationPort) {
+      return res.status(400).json({
+        error: "INVALID_PORTS",
+        message: "Choose valid source and destination ports from GET /api/ports."
+      });
+    }
+
+    if (sourcePort.name.toLowerCase() === destinationPort.name.toLowerCase()) {
+      return res.status(400).json({
+        error: "SAME_PORT",
+        message: "Source and destination must be different."
+      });
+    }
+
+    const cargoTons = req.body.cargoTons == null ? null : Number(req.body.cargoTons);
+    const budgetUsd = req.body.budgetUsd == null ? null : Number(req.body.budgetUsd);
+    const shipSpeedKnots = req.body.shipSpeedKnots == null ? 14 : Number(req.body.shipSpeedKnots);
+
+    if (cargoTons !== null && (!Number.isFinite(cargoTons) || cargoTons <= 0)) {
+      return res.status(400).json({ error: "INVALID_CARGO", message: "cargoTons must be greater than 0." });
+    }
+    if (budgetUsd !== null && (!Number.isFinite(budgetUsd) || budgetUsd < 0)) {
+      return res.status(400).json({ error: "INVALID_BUDGET", message: "budgetUsd must be zero or greater." });
+    }
+    if (!Number.isFinite(shipSpeedKnots) || shipSpeedKnots <= 0 || shipSpeedKnots > 40) {
+      return res.status(400).json({ error: "INVALID_SPEED", message: "shipSpeedKnots must be between 0 and 40." });
+    }
+
+    const result = await buildRouteResponse(sourcePort, destinationPort, {
+      cargoTons,
+      budgetUsd,
+      shipSpeedKnots
     });
-  }
-  if (sourcePort.name === destinationPort.name) {
-    return res.status(400).json({
-      error: "SAME_PORT",
-      message: "Source and destination must be different."
+
+    if (!result.routes.length) {
+      return res.status(404).json({
+        error: "NO_ROUTE_FOUND",
+        message: "No navigable route could be calculated for this port pair."
+      });
+    }
+
+    res.json({
+      source: sourcePort,
+      destination: destinationPort,
+      cargoTons,
+      budgetUsd,
+      shipSpeedKnots,
+      ...result,
+      dataSource: "Firebase Firestore",
+      disclaimer: "Maritime route optimization estimates for strategic planning and comparison."
     });
+  } catch (err) {
+    console.error("Optimize error:", err);
+    res.status(500).json({ error: "INTERNAL_ERROR", message: err.message });
   }
-
-  const cargoTons = req.body.cargoTons == null ? null : Number(req.body.cargoTons);
-  const budgetUsd = req.body.budgetUsd == null ? null : Number(req.body.budgetUsd);
-  const shipSpeedKnots = req.body.shipSpeedKnots == null ? 14 : Number(req.body.shipSpeedKnots);
-
-  if (cargoTons !== null && (!Number.isFinite(cargoTons) || cargoTons <= 0)) {
-    return res.status(400).json({ error: "INVALID_CARGO", message: "cargoTons must be greater than 0." });
-  }
-  if (budgetUsd !== null && (!Number.isFinite(budgetUsd) || budgetUsd < 0)) {
-    return res.status(400).json({ error: "INVALID_BUDGET", message: "budgetUsd must be zero or greater." });
-  }
-  if (!Number.isFinite(shipSpeedKnots) || shipSpeedKnots <= 0 || shipSpeedKnots > 40) {
-    return res.status(400).json({ error: "INVALID_SPEED", message: "shipSpeedKnots must be between 0 and 40." });
-  }
-
-  const result = buildRouteResponse(sourcePort, destinationPort, {
-    cargoTons,
-    budgetUsd,
-    shipSpeedKnots
-  });
-
-  if (!result.routes.length) {
-    return res.status(404).json({
-      error: "NO_DEMO_ROUTE",
-      message: "No candidate route is configured for this port pair yet."
-    });
-  }
-
-  res.json({
-    source: sourcePort,
-    destination: destinationPort,
-    cargoTons,
-    budgetUsd,
-    shipSpeedKnots,
-    ...result,
-    demoData: true,
-    disclaimer: "Illustrative prototype estimates only. Verify navigability, official warnings, and carrier quotations before real-world use."
-  });
 });
 
-app.get("/api/hazards", (req, res) => {
-  const pair = readPortPair(req, res);
-  if (!pair) return;
+app.get("/api/hazards", async (req, res) => {
+  try {
+    const pair = await readPortPair(req, res);
+    if (!pair) return;
 
-  const candidates = getCandidateRoutes(pair.sourcePort, pair.destinationPort);
-  const routes = candidates.map(route => ({
-    routeId: route.id,
-    routeName: route.name,
-    hazards: detectHazards(route)
-  }));
+    const [candidates, alerts] = await Promise.all([
+      getCandidateRoutesAsync(pair.sourcePort, pair.destinationPort),
+      getAlerts()
+    ]);
 
-  res.json({
-    source: pair.sourcePort.name,
-    destination: pair.destinationPort.name,
-    routes,
-    dataMode: "simulated-demo",
-    message: "Replace simulated hazards in src/services/hazardService.js with verified weather/official warning feeds."
-  });
+    const routes = await Promise.all(
+      candidates.map(async (route) => ({
+        routeId: route.id,
+        routeName: route.name,
+        hazards: await detectHazardsAsync(route, alerts)
+      }))
+    );
+
+    res.json({
+      source: pair.sourcePort.name,
+      destination: pair.destinationPort.name,
+      routes,
+      totalActiveAlerts: alerts.length,
+      dataSource: "Firebase Firestore Active Marine Alerts"
+    });
+  } catch (err) {
+    console.error("Hazards error:", err);
+    res.status(500).json({ error: "INTERNAL_ERROR", message: err.message });
+  }
 });
 
 // Consistent JSON response for invalid endpoints.
