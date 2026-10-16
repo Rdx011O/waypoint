@@ -13,6 +13,27 @@ const appState = {
     ports: true,
     risks: false
   },
+  tracker: {
+    selectedCargoId: 'CRG-8921-X',
+    simulationRunning: true,
+    simulationSpeed: 1,
+    autoFollow: true,
+    showBreadcrumbs: true,
+    showRoute: true,
+    showHazards: true,
+    timerId: null,
+    vesselMarker: null,
+    radarCircle: null,
+    breadcrumbPolyline: null,
+    routePolyline: null,
+    hazardCircles: [],
+    portMarkers: [],
+    waypointMarkers: [],
+    stepFraction: 0,
+    currentLegIndex: 4,
+    lastPingSecondsAgo: 2,
+    telemetryLogs: []
+  },
   mapInstances: {},
   chartInstances: {}
 };
@@ -21,6 +42,26 @@ const appState = {
 // 1. AUTHENTICATION & ROLE-LOCKED NAVIGATION
 // =========================================================================
 appState.signupSelectedRole = 'shipper';
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Check if role selected
+  if (typeof updateRoleCardUI === 'function') updateRoleCardUI();
+
+  // Check URL params for direct cargo tracking link (e.g. ?track=CRG-8921-X or ?id=CRG-7740-R)
+  const urlParams = new URLSearchParams(window.location.search);
+  const trackParam = urlParams.get('track') || urlParams.get('id');
+  if (trackParam) {
+    const cargos = window.WAYPOINT_DATA && window.WAYPOINT_DATA.trackedCargos;
+    const match = cargos && cargos.find(c => c.id.toLowerCase() === trackParam.toLowerCase() || (c.blNumber && c.blNumber.toLowerCase() === trackParam.toLowerCase()));
+    if (match) {
+      appState.tracker.selectedCargoId = match.id;
+    }
+    // Auto-enter app directly for shared shipper tracking links
+    if (typeof doLogin === 'function') doLogin();
+    navigate('tracker');
+    showToast(`Tracking live GPS for ${match ? match.id : trackParam}`);
+  }
+});
 
 function switchAuthTab(tab) {
   const loginForm = document.getElementById('auth-form-login');
@@ -245,12 +286,18 @@ function applyRoleNavigation() {
 // 2. ROUTING & PAGE NAVIGATION
 // =========================================================================
 function navigate(pageId) {
+  // If navigating away from tracker, pause active simulation
+  if (appState.currentPage === 'tracker' && pageId !== 'tracker') {
+    stopGpsSimulation();
+  }
+
   appState.currentPage = pageId;
 
   // Update Breadcrumb
   const breadcrumb = document.getElementById('breadcrumb');
   const labels = {
     dashboard: 'Dashboard',
+    tracker: 'Live Cargo & Ship GPS Tracker',
     plan: 'Plan a Shipment',
     compare: 'Compare Routes',
     riskmap: 'Live Risk Map',
@@ -262,7 +309,7 @@ function navigate(pageId) {
     settings: 'Settings'
   };
   if (breadcrumb) {
-    breadcrumb.innerHTML = `${labels[pageId] || pageId} <span class="breadcrumb-badge mono">DEMO</span>`;
+    breadcrumb.innerHTML = `${labels[pageId] || pageId} <span class="breadcrumb-badge mono">${pageId === 'tracker' ? 'LIVE AIS' : 'DEMO'}</span>`;
   }
 
   // Highlight active nav item
@@ -280,6 +327,10 @@ function navigate(pageId) {
     case 'dashboard':
       contentArea.innerHTML = window.PAGES.renderDashboard();
       setTimeout(initDashboardMap, 60);
+      break;
+    case 'tracker':
+      contentArea.innerHTML = window.PAGES.renderLiveTracker();
+      setTimeout(initTrackerMap, 60);
       break;
     case 'plan':
       contentArea.innerHTML = window.PAGES.renderPlanShipment();
@@ -1081,9 +1132,69 @@ function switchSettingsTab(tabId) {
 }
 
 function focusSearch() {
-  const query = prompt('Search routes, ports, vessels, or hazards:');
-  if (query && query.trim()) {
-    showToast(`Searching for "${query}" across marine database...`);
+  openModal(`
+    <div class="modal-head">
+      <div class="modal-title">🔍 Quick Search Maritime Database & Live GPS</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:12px; font-size:13px; color:var(--text-muted);">
+        Enter a Cargo ID, Bill of Lading (B/L), Container Number, Port, or Ship to jump directly to live tracking:
+      </p>
+      <div style="display:flex; gap:8px; margin-bottom:16px;">
+        <input
+          type="text"
+          id="global-modal-search"
+          class="text-input"
+          placeholder="e.g. CRG-8921-X, MAEU-9021481, MSKU-982145-2, Pacific Pioneer, Mumbai..."
+          onkeydown="if(event.key==='Enter') executeGlobalSearch(this.value)"
+        />
+        <button class="btn btn-primary" onclick="executeGlobalSearch(document.getElementById('global-modal-search').value)">
+          Track GPS ➔
+        </button>
+      </div>
+      <div style="font-size:12px; font-weight:600; color:var(--text-dim); margin-bottom:8px;">ACTIVE SHIPMENTS AVAILABLE:</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        ${(window.WAYPOINT_DATA.trackedCargos || []).map(c => `
+          <div
+            style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--surface-alt); border:1px solid var(--border); border-radius:6px; cursor:pointer;"
+            onclick="closeModal(); openSpecificTrackedCargo('${c.id}')"
+          >
+            <div>
+              <span class="mono text-accent" style="font-weight:600;">${c.id}</span>
+              <span style="margin-left:8px; font-size:12px; color:#fff;">${c.title}</span>
+              <div style="font-size:11px; color:var(--text-muted);">🚢 ${c.ship.name} • ${c.originPort.name.split(' ')[0]} ➔ ${c.destinationPort.name.split(' ')[0]}</div>
+            </div>
+            <span class="tag tag-${c.statusClass} mono">${c.ship.speedKnots} kts</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `);
+  setTimeout(() => {
+    const inp = document.getElementById('global-modal-search');
+    if (inp) inp.focus();
+  }, 100);
+}
+
+function executeGlobalSearch(query) {
+  if (!query || !query.trim()) return;
+  const q = query.trim().toLowerCase();
+  const cargos = window.WAYPOINT_DATA.trackedCargos || [];
+  const match = cargos.find(c =>
+    c.id.toLowerCase().includes(q) ||
+    c.blNumber.toLowerCase().includes(q) ||
+    c.containerId.toLowerCase().includes(q) ||
+    c.ship.name.toLowerCase().includes(q) ||
+    c.originPort.name.toLowerCase().includes(q) ||
+    c.destinationPort.name.toLowerCase().includes(q)
+  );
+
+  closeModal();
+  if (match) {
+    openSpecificTrackedCargo(match.id);
+  } else {
+    showToast(`Navigating to Live Risk Map for query: "${query}"`);
     navigate('riskmap');
   }
 }
@@ -1145,4 +1256,713 @@ function showToast(message) {
     toast.style.opacity = '0';
     toast.style.transform = 'translateY(10px)';
   }, 2800);
+}
+
+// =========================================================================
+// 12. LIVE GPS TRACKER CONTROLLER & SATELLITE AIS SIMULATION ENGINE
+// =========================================================================
+
+function getHeadingSector(deg) {
+  const normalized = (deg % 360 + 360) % 360;
+  if (normalized >= 337.5 || normalized < 22.5) return 'N (000° True North)';
+  if (normalized < 67.5) return 'NE (045° North-East)';
+  if (normalized < 112.5) return 'E (090° Due East)';
+  if (normalized < 157.5) return 'SE (135° South-East)';
+  if (normalized < 202.5) return 'S (180° Due South)';
+  if (normalized < 247.5) return 'SW (225° South-West)';
+  if (normalized < 292.5) return 'W (270° Due West)';
+  return 'NW (315° North-West)';
+}
+
+function formatMarineCoords(lat, lng) {
+  const latDeg = Math.floor(Math.abs(lat));
+  const latMin = ((Math.abs(lat) - latDeg) * 60).toFixed(3);
+  const latDir = lat >= 0 ? 'N' : 'S';
+
+  const lngDeg = Math.floor(Math.abs(lng));
+  const lngMin = ((Math.abs(lng) - lngDeg) * 60).toFixed(3);
+  const lngDir = lng >= 0 ? 'E' : 'W';
+
+  return `${latDeg}° ${latMin}' ${latDir} &nbsp; ${lngDeg}° ${lngMin}' ${lngDir}`;
+}
+
+function openSpecificTrackedCargo(cargoId) {
+  appState.tracker.selectedCargoId = cargoId;
+  navigate('tracker');
+}
+
+function selectTrackedCargo(cargoId) {
+  stopGpsSimulation();
+  appState.tracker.selectedCargoId = cargoId;
+  appState.tracker.stepFraction = 0;
+
+  // Highlight pill
+  document.querySelectorAll('.tracker-shipment-pill').forEach(p => p.classList.remove('active'));
+  const activePill = document.getElementById(`pill-${cargoId}`);
+  if (activePill) activePill.classList.add('active');
+
+  // Re-render tracker DOM
+  const contentArea = document.getElementById('page-content');
+  if (contentArea) {
+    contentArea.innerHTML = window.PAGES.renderLiveTracker();
+  }
+
+  // Re-init map
+  setTimeout(initTrackerMap, 60);
+
+  const cargos = window.WAYPOINT_DATA.trackedCargos || [];
+  const cargo = cargos.find(c => c.id === cargoId);
+  if (cargo) {
+    showToast(`Focused on ${cargo.id} • ${cargo.ship.name}`);
+  }
+}
+
+function initTrackerMap() {
+  const container = document.getElementById('tracker-map');
+  if (!container) return;
+
+  // Cleanup past tracker map
+  if (appState.mapInstances['tracker']) {
+    try { appState.mapInstances['tracker'].remove(); } catch(e){}
+    delete appState.mapInstances['tracker'];
+  }
+
+  const cargos = window.WAYPOINT_DATA.trackedCargos || [];
+  const cargo = cargos.find(c => c.id === appState.tracker.selectedCargoId) || cargos[0];
+
+  const map = L.map('tracker-map', {
+    zoomControl: false,
+    attributionControl: false
+  }).setView([cargo.ship.lat, cargo.ship.lng], 6);
+
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  // CartoDB Dark Matter Marine Basemap
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 18,
+    subdomains: 'abcd'
+  }).addTo(map);
+
+  appState.mapInstances['tracker'] = map;
+  appState.tracker.map = map;
+
+  // 1. Planned Route Polyline
+  if (cargo.routePlannedCoords && cargo.routePlannedCoords.length > 0) {
+    const routePoly = L.polyline(cargo.routePlannedCoords, {
+      color: '#FBBF24',
+      weight: 2.5,
+      opacity: 0.75,
+      dashArray: '6, 6'
+    }).addTo(map);
+    routePoly.bindPopup(`<strong>Planned Shipping Corridor</strong><br/>${cargo.originPort.name} ➔ ${cargo.destinationPort.name}<br/>Total: ${cargo.totalDistanceNm} nm`);
+    appState.tracker.routePolyline = routePoly;
+  }
+
+  // 2. Traveled Breadcrumb Polyline & Dots
+  if (cargo.breadcrumbs && cargo.breadcrumbs.length > 0) {
+    const breadcrumbCoords = cargo.breadcrumbs.map(b => [b.lat, b.lng]);
+    const breadPoly = L.polyline(breadcrumbCoords, {
+      color: '#38BDF8',
+      weight: 3.5,
+      opacity: 0.95
+    }).addTo(map);
+    appState.tracker.breadcrumbPolyline = breadPoly;
+
+    // Past ping markers
+    cargo.breadcrumbs.forEach((b, idx) => {
+      const isLatest = idx === cargo.breadcrumbs.length - 1;
+      if (!isLatest) {
+        L.circleMarker([b.lat, b.lng], {
+          radius: 4,
+          fillColor: '#38BDF8',
+          color: '#0B1220',
+          weight: 1.5,
+          fillOpacity: 0.8
+        }).addTo(map).bindPopup(`
+          <strong>Historical GPS Fix</strong><br/>
+          Time: ${b.time}<br/>
+          Speed: ${b.speed} kts • COG: ${b.heading}°<br/>
+          Location: ${b.label || 'En Route'}
+        `);
+      }
+    });
+  }
+
+  // 3. Weather Hazard Zones (e.g. Cyclone ASANI or swells)
+  if (appState.tracker.showHazards && window.WAYPOINT_DATA.reroutingScenario) {
+    const sc = window.WAYPOINT_DATA.reroutingScenario;
+    const hazardCircle = L.circle(sc.hazardZone.center, {
+      radius: sc.hazardZone.radiusKm,
+      color: '#F87171',
+      fillColor: '#F87171',
+      fillOpacity: 0.18,
+      weight: 2,
+      dashArray: '6, 6'
+    }).addTo(map);
+    hazardCircle.bindPopup(`<strong>⚠️ ${sc.hazardZone.label}</strong><br/>Gale Force Winds > 55 kts<br/>Significant wave height > 5.2m`);
+    appState.tracker.hazardCircles = [hazardCircle];
+  }
+
+  // 4. Ports
+  const originMarker = L.circleMarker([cargo.originPort.lat, cargo.originPort.lng], {
+    radius: 7,
+    fillColor: '#2DD4BF',
+    color: '#fff',
+    weight: 2,
+    fillOpacity: 1
+  }).addTo(map).bindPopup(`<strong>Origin Port: ${cargo.originPort.name}</strong><br/>Departed: ${cargo.originPort.departureTime}`);
+
+  const destMarker = L.circleMarker([cargo.destinationPort.lat, cargo.destinationPort.lng], {
+    radius: 7,
+    fillColor: '#38BDF8',
+    color: '#fff',
+    weight: 2,
+    fillOpacity: 1
+  }).addTo(map).bindPopup(`<strong>Destination Port: ${cargo.destinationPort.name}</strong><br/>Target ETA: ${cargo.destinationPort.eta}`);
+
+  appState.tracker.portMarkers = [originMarker, destMarker];
+
+  // 5. Pulsing Radar Circle at Vessel GPS
+  const radarCircle = L.circle([cargo.ship.lat, cargo.ship.lng], {
+    radius: 26000,
+    color: '#38BDF8',
+    fillColor: '#38BDF8',
+    fillOpacity: 0.1,
+    weight: 1.5,
+    dashArray: '4, 4'
+  }).addTo(map);
+  appState.tracker.radarCircle = radarCircle;
+
+  // 6. Custom Rotating Vessel Icon
+  const shipIcon = L.divIcon({
+    className: 'custom-ship-marker-div',
+    html: `
+      <div class="ship-radar-pulse"></div>
+      <div class="ship-marker-inner" id="tracker-ship-marker-svg" style="transform: rotate(${cargo.ship.heading}deg);">
+        <svg viewBox="0 0 32 32" width="34" height="34" style="filter: drop-shadow(0 0 6px #38BDF8);">
+          <path d="M16 2 L23 12 L21 28 L16 26 L11 28 L9 12 Z" fill="#38BDF8" stroke="#FFFFFF" stroke-width="1.8" stroke-linejoin="round"/>
+          <circle cx="16" cy="14" r="2.5" fill="#07101C"/>
+          <line x1="16" y1="2" x2="16" y2="8" stroke="#FFFFFF" stroke-width="2"/>
+        </svg>
+      </div>
+    `,
+    iconSize: [40, 40],
+    iconAnchor: [20, 20]
+  });
+
+  const vesselMarker = L.marker([cargo.ship.lat, cargo.ship.lng], {
+    icon: shipIcon,
+    zIndexOffset: 1000
+  }).addTo(map);
+
+  vesselMarker.bindPopup(`
+    <div style="font-family: var(--font-sans); color: #F1F5F9; min-width: 190px;">
+      <strong style="color: #38BDF8; font-size:14px;">${cargo.ship.name}</strong><br/>
+      <span style="font-size:12px; color: #94A3B8;">${cargo.ship.flag} • IMO ${cargo.ship.imo}</span><br/>
+      <hr style="border:0; border-top:1px solid #1E3048; margin:6px 0;"/>
+      <div style="font-family:var(--font-mono); font-size:11px; line-height:1.6;">
+        <div>GPS: ${cargo.ship.lat.toFixed(3)}°N, ${cargo.ship.lng.toFixed(3)}°E</div>
+        <div>SOG: <strong style="color:#2DD4BF;">${cargo.ship.speedKnots} kts</strong> | COG: ${cargo.ship.heading}°</div>
+        <div>Cargo: <strong style="color:#38BDF8;">${cargo.id}</strong> (${cargo.weightTons} MT)</div>
+        <div>Status: <span style="color:#2DD4BF;">${cargo.statusClass === 'safe' ? 'ON TIME' : 'REROUTING'}</span></div>
+      </div>
+    </div>
+  `);
+
+  appState.tracker.vesselMarker = vesselMarker;
+
+  // Start live GPS advancement
+  startGpsSimulation();
+}
+
+// Simulation Control
+function startGpsSimulation() {
+  stopGpsSimulation();
+  appState.tracker.simulationRunning = true;
+  updateSimToolbarUI();
+
+  const intervalMs = Math.max(200, Math.round(2500 / appState.tracker.simulationSpeed));
+  appState.tracker.timerId = setInterval(stepGpsSimulation, intervalMs);
+}
+
+function stopGpsSimulation() {
+  if (appState.tracker.timerId) {
+    clearInterval(appState.tracker.timerId);
+    appState.tracker.timerId = null;
+  }
+  appState.tracker.simulationRunning = false;
+  updateSimToolbarUI();
+}
+
+function toggleGpsSimulation() {
+  if (appState.tracker.simulationRunning) {
+    stopGpsSimulation();
+    showToast('Paused live satellite GPS stream.');
+  } else {
+    startGpsSimulation();
+    showToast('Resumed live satellite GPS stream.');
+  }
+}
+
+function setSimulationSpeed(speed) {
+  appState.tracker.simulationSpeed = speed;
+  ['1', '5', '15'].forEach(s => {
+    const btn = document.getElementById(`sim-speed-${s}`);
+    if (btn) btn.classList.toggle('active', Number(s) === speed);
+  });
+  if (appState.tracker.simulationRunning) {
+    startGpsSimulation();
+  }
+  showToast(`Simulation rate set to ${speed}x real-time.`);
+}
+
+function updateSimToolbarUI() {
+  const btn = document.getElementById('btn-toggle-sim');
+  const statusTxt = document.getElementById('sim-status-text');
+  if (btn) {
+    btn.innerHTML = appState.tracker.simulationRunning ? '⏸️ Pause Live Feed' : '▶️ Resume Live Feed';
+  }
+  if (statusTxt) {
+    statusTxt.textContent = appState.tracker.simulationRunning
+      ? `Streaming Satellite AIS Telemetry (${appState.tracker.simulationSpeed}x) • GPS Lock OK`
+      : 'Live Telemetry Paused by Operator';
+  }
+}
+
+function stepGpsSimulation() {
+  const cargos = window.WAYPOINT_DATA.trackedCargos || [];
+  const cargo = cargos.find(c => c.id === appState.tracker.selectedCargoId) || cargos[0];
+  if (!cargo || !cargo.routePlannedCoords || cargo.routePlannedCoords.length < 2) return;
+
+  const planned = cargo.routePlannedCoords;
+  // Find target coord (next waypoint)
+  const curLeg = appState.tracker.currentLegIndex || 4;
+  const targetIdx = Math.min(curLeg + 1, planned.length - 1);
+  const targetPoint = planned[targetIdx];
+
+  const currentLat = cargo.ship.lat;
+  const currentLng = cargo.ship.lng;
+
+  const dLat = targetPoint[0] - currentLat;
+  const dLng = targetPoint[1] - currentLng;
+  const dist = Math.hypot(dLat, dLng);
+
+  // If close to waypoint, advance leg
+  if (dist < 0.08 && targetIdx < planned.length - 1) {
+    appState.tracker.currentLegIndex = targetIdx;
+  }
+
+  // Compute incremental step
+  const stepMagnitude = 0.012 * (appState.tracker.simulationSpeed || 1);
+  const stepRatio = Math.min(0.2, stepMagnitude / Math.max(dist, 0.001));
+
+  const newLat = currentLat + dLat * stepRatio;
+  const newLng = currentLng + dLng * stepRatio;
+
+  // Bearing
+  const y = dLng * Math.cos(newLat * Math.PI / 180);
+  const x = dLat;
+  const bearing = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+  cargo.ship.heading = Math.round(bearing);
+
+  // Speed variance
+  const baseSpeed = 16.4;
+  const speedNoise = Math.sin(Date.now() / 4000) * 0.3;
+  cargo.ship.speedKnots = +((baseSpeed + speedNoise).toFixed(1));
+
+  cargo.ship.lat = newLat;
+  cargo.ship.lng = newLng;
+
+  // Mileage updates
+  const nmDecrement = 0.3 * (appState.tracker.simulationSpeed || 1);
+  cargo.remainingDistanceNm = Math.max(12, Math.round(cargo.remainingDistanceNm - nmDecrement));
+  cargo.completedDistanceNm = cargo.totalDistanceNm - cargo.remainingDistanceNm;
+  cargo.progressPercent = Math.min(99.9, +((cargo.completedDistanceNm / cargo.totalDistanceNm) * 100).toFixed(1));
+
+  // Update Leaflet marker
+  if (appState.tracker.vesselMarker) {
+    appState.tracker.vesselMarker.setLatLng([newLat, newLng]);
+    const svgEl = document.getElementById('tracker-ship-marker-svg');
+    if (svgEl) {
+      svgEl.style.transform = `rotate(${cargo.ship.heading}deg)`;
+    }
+  }
+
+  if (appState.tracker.radarCircle) {
+    appState.tracker.radarCircle.setLatLng([newLat, newLng]);
+  }
+
+  // Update Breadcrumbs
+  if (appState.tracker.breadcrumbPolyline) {
+    appState.tracker.breadcrumbPolyline.addLatLng([newLat, newLng]);
+  }
+
+  // Auto-follow
+  if (appState.tracker.autoFollow && appState.tracker.map) {
+    appState.tracker.map.panTo([newLat, newLng], { animate: true, duration: 0.4 });
+  }
+
+  // Update DOM cockpit
+  updateTrackerDOM(cargo);
+
+  // Stream telemetry packet
+  emitTelemetryPacket(cargo);
+}
+
+function updateTrackerDOM(cargo) {
+  const marineEl = document.getElementById('gps-marine-readout');
+  const decimalEl = document.getElementById('gps-decimal-readout');
+  if (marineEl) marineEl.innerHTML = formatMarineCoords(cargo.ship.lat, cargo.ship.lng);
+  if (decimalEl) decimalEl.textContent = `${cargo.ship.lat.toFixed(5)}° N, ${cargo.ship.lng.toFixed(5)}° E`;
+
+  const sogVal = document.getElementById('tracker-sog-val');
+  const sogKmh = document.getElementById('tracker-sog-kmh');
+  const cogVal = document.getElementById('tracker-cog-val');
+  const cogDesc = document.getElementById('tracker-heading-desc');
+  const compassDial = document.getElementById('compass-dial');
+
+  if (sogVal) sogVal.innerHTML = `${cargo.ship.speedKnots} <span class="gauge-unit">kts</span>`;
+  if (sogKmh) sogKmh.textContent = `${(cargo.ship.speedKnots * 1.852).toFixed(1)} km/h`;
+  if (cogVal) cogVal.innerHTML = `${cargo.ship.heading}° <span class="gauge-unit">True</span>`;
+  if (cogDesc) cogDesc.textContent = getHeadingSector(cargo.ship.heading);
+  if (compassDial) compassDial.style.transform = `rotate(${cargo.ship.heading}deg)`;
+
+  const distComp = document.getElementById('tracker-dist-completed');
+  const distRem = document.getElementById('tracker-dist-remaining');
+  const progPct = document.getElementById('tracker-progress-pct');
+  const progFill = document.getElementById('tracker-progress-fill');
+
+  if (distComp) distComp.textContent = `${cargo.completedDistanceNm.toLocaleString()} nm traversed`;
+  if (distRem) distRem.textContent = `${cargo.remainingDistanceNm.toLocaleString()} nm to go`;
+  if (progPct) progPct.textContent = `${cargo.progressPercent}% completed`;
+  if (progFill) progFill.style.width = `${cargo.progressPercent}%`;
+
+  const pingAge = document.getElementById('tracker-ping-age');
+  if (pingAge) pingAge.textContent = `Just now (GPS Lock • 14 Sats)`;
+}
+
+function emitTelemetryPacket(cargo) {
+  const terminal = document.getElementById('telemetry-terminal-stream');
+  if (!terminal) return;
+
+  const now = new Date();
+  const timeStr = now.toTimeString().split(' ')[0];
+
+  const lines = [
+    `<div class="terminal-line fix">[${timeStr}] GPS FIX: ${cargo.ship.lat.toFixed(4)}°N, ${cargo.ship.lng.toFixed(4)}°E | SOG: ${cargo.ship.speedKnots} kts | COG: ${cargo.ship.heading}° | HDOP: 0.8 | SATS: 14</div>`,
+    `<div class="terminal-line sensor">[${timeStr}] TELEMETRY: Container ${cargo.containerId} Temp: ${cargo.sensorData.tempC}°C | Seal: OK | Batter: 96%</div>`
+  ];
+
+  // Randomly emit one
+  const chosenLine = lines[Math.floor(Math.random() * lines.length)];
+  terminal.insertAdjacentHTML('beforeend', chosenLine);
+
+  // Keep terminal capped at 50 lines
+  while (terminal.children.length > 50) {
+    terminal.removeChild(terminal.firstChild);
+  }
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+function triggerManualGpsPing() {
+  const cargos = window.WAYPOINT_DATA.trackedCargos || [];
+  const cargo = cargos.find(c => c.id === appState.tracker.selectedCargoId) || cargos[0];
+  if (!cargo) return;
+
+  const now = new Date();
+  const timeStr = now.toTimeString().split(' ')[0];
+  const terminal = document.getElementById('telemetry-terminal-stream');
+  if (terminal) {
+    terminal.insertAdjacentHTML('beforeend', `
+      <div class="terminal-line fix" style="color:#5EEAD4; font-weight:bold;">
+        [${timeStr}] MANUAL SATELLITE POLL: Iridium Transponder Ack Received | Lat: ${cargo.ship.lat.toFixed(5)}°N, Lng: ${cargo.ship.lng.toFixed(5)}°E | Fix: 3D DGPS
+      </div>
+    `);
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+
+  showToast(`Manual satellite GPS ping acknowledged for ${cargo.ship.name}`);
+  const pingAge = document.getElementById('tracker-ping-age');
+  if (pingAge) pingAge.textContent = 'Just now (Manual Poll Verified)';
+}
+
+function toggleTrackerAutoFollow() {
+  appState.tracker.autoFollow = !appState.tracker.autoFollow;
+  const btn = document.getElementById('btn-auto-follow');
+  if (btn) btn.classList.toggle('active', appState.tracker.autoFollow);
+  showToast(appState.tracker.autoFollow ? 'Auto-Follow Enabled: Map will center on vessel' : 'Auto-Follow Disabled');
+}
+
+function toggleTrackerBreadcrumbs() {
+  appState.tracker.showBreadcrumbs = !appState.tracker.showBreadcrumbs;
+  const btn = document.getElementById('btn-breadcrumbs');
+  if (btn) btn.classList.toggle('active', appState.tracker.showBreadcrumbs);
+  if (appState.tracker.breadcrumbPolyline) {
+    if (appState.tracker.showBreadcrumbs) {
+      appState.tracker.breadcrumbPolyline.addTo(appState.tracker.map);
+    } else {
+      appState.tracker.breadcrumbPolyline.remove();
+    }
+  }
+}
+
+function toggleTrackerRoutePath() {
+  appState.tracker.showRoute = !appState.tracker.showRoute;
+  const btn = document.getElementById('btn-route-path');
+  if (btn) btn.classList.toggle('active', appState.tracker.showRoute);
+  if (appState.tracker.routePolyline) {
+    if (appState.tracker.showRoute) {
+      appState.tracker.routePolyline.addTo(appState.tracker.map);
+    } else {
+      appState.tracker.routePolyline.remove();
+    }
+  }
+}
+
+function toggleTrackerHazards() {
+  appState.tracker.showHazards = !appState.tracker.showHazards;
+  const btn = document.getElementById('btn-hazards-overlay');
+  if (btn) btn.classList.toggle('active', appState.tracker.showHazards);
+  (appState.tracker.hazardCircles || []).forEach(c => {
+    if (appState.tracker.showHazards) {
+      c.addTo(appState.tracker.map);
+    } else {
+      c.remove();
+    }
+  });
+}
+
+function recenterTrackerMap() {
+  const cargos = window.WAYPOINT_DATA.trackedCargos || [];
+  const cargo = cargos.find(c => c.id === appState.tracker.selectedCargoId) || cargos[0];
+  if (appState.tracker.map && cargo) {
+    appState.tracker.map.setView([cargo.ship.lat, cargo.ship.lng], 7, { animate: true });
+    showToast(`Centered map on ${cargo.ship.name}`);
+  }
+}
+
+function copyGpsCoords() {
+  const cargos = window.WAYPOINT_DATA.trackedCargos || [];
+  const cargo = cargos.find(c => c.id === appState.tracker.selectedCargoId) || cargos[0];
+  if (!cargo) return;
+
+  const latDeg = Math.floor(Math.abs(cargo.ship.lat));
+  const latMin = ((Math.abs(cargo.ship.lat) - latDeg) * 60).toFixed(3);
+  const latDir = cargo.ship.lat >= 0 ? 'N' : 'S';
+
+  const lngDeg = Math.floor(Math.abs(cargo.ship.lng));
+  const lngMin = ((Math.abs(cargo.ship.lng) - lngDeg) * 60).toFixed(3);
+  const lngDir = cargo.ship.lng >= 0 ? 'E' : 'W';
+
+  const coordsText = `${latDeg}° ${latMin}' ${latDir}, ${lngDeg}° ${lngMin}' ${lngDir} (${cargo.ship.lat.toFixed(5)}, ${cargo.ship.lng.toFixed(5)})`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(coordsText);
+  }
+  showToast(`Copied GPS: ${coordsText}`);
+}
+
+function handleTrackerSearch(query) {
+  const q = (query || '').trim().toLowerCase();
+  const pills = document.querySelectorAll('.tracker-shipment-pill');
+  pills.forEach(pill => {
+    const text = pill.textContent.toLowerCase();
+    pill.style.display = (!q || text.includes(q)) ? 'block' : 'none';
+  });
+}
+
+function clearTelemetryLog() {
+  const terminal = document.getElementById('telemetry-terminal-stream');
+  if (terminal) {
+    terminal.innerHTML = '<div class="terminal-line system">[STREAM RESET] Log cleared by operator. Resuming satellite telemetry...</div>';
+  }
+}
+
+function copyTelemetryLog() {
+  const terminal = document.getElementById('telemetry-terminal-stream');
+  if (terminal && navigator.clipboard) {
+    navigator.clipboard.writeText(terminal.innerText);
+    showToast('Copied satellite telemetry stream to clipboard.');
+  }
+}
+
+// Shipper Share Tracking Modal with QR Code
+function openShareTrackingModal(cargoId) {
+  const cargos = window.WAYPOINT_DATA.trackedCargos || [];
+  const cargo = cargos.find(c => c.id === cargoId) || cargos[0];
+  const trackingUrl = `${window.location.origin}${window.location.pathname}?track=${cargo.id}`;
+
+  openModal(`
+    <div class="modal-head">
+      <div class="modal-title">🔗 Share Live GPS Cargo Tracking</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+        Provide this secure real-time tracking link to consignees, buyers, or logistics dispatchers to monitor live ship GPS location without internal login.
+      </p>
+
+      <div style="background:var(--surface-alt); padding:16px; border:1px solid var(--border); border-radius:10px; margin-bottom:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <span style="font-size:11px; text-transform:uppercase; color:var(--text-dim); font-weight:700;">Consignment Information</span>
+          <span class="tag tag-${cargo.statusClass}">LIVE TRACKING ACTIVE</span>
+        </div>
+        <div style="font-size:15px; font-weight:700; color:#fff; margin-bottom:4px;">${cargo.title}</div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.6;">
+          • <strong>Carrying Ship:</strong> ${cargo.ship.name} (${cargo.ship.flag})<br/>
+          • <strong>Bill of Lading:</strong> <span class="mono text-accent">${cargo.blNumber}</span> | Container: <span class="mono">${cargo.containerId}</span><br/>
+          • <strong>Route:</strong> ${cargo.originPort.name} ➔ ${cargo.destinationPort.name}<br/>
+          • <strong>ETA:</strong> <span class="mono text-safe">${cargo.etaFormatted} (${cargo.etaCountdown})</span>
+        </div>
+      </div>
+
+      <div class="field-group" style="margin-bottom:18px;">
+        <label class="field-label">Shareable Live Tracking URL</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" class="text-input mono" id="share-link-input" value="${trackingUrl}" readonly style="font-size:12px;"/>
+          <button class="btn btn-primary" onclick="copyShareTrackingLink()">
+            📋 Copy Link
+          </button>
+        </div>
+      </div>
+
+      <!-- Live QR Code Card -->
+      <div style="display:flex; gap:16px; align-items:center; background:var(--surface-card); padding:14px; border:1px solid var(--border); border-radius:8px;">
+        <div style="background:#fff; padding:8px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
+          <!-- SVG QR Code representation -->
+          <svg viewBox="0 0 100 100" width="80" height="80">
+            <rect width="100" height="100" fill="#ffffff"/>
+            <!-- Corners -->
+            <rect x="10" y="10" width="24" height="24" fill="#07101C"/>
+            <rect x="14" y="14" width="16" height="16" fill="#ffffff"/>
+            <rect x="18" y="18" width="8" height="8" fill="#07101C"/>
+
+            <rect x="66" y="10" width="24" height="24" fill="#07101C"/>
+            <rect x="70" y="14" width="16" height="16" fill="#ffffff"/>
+            <rect x="74" y="18" width="8" height="8" fill="#07101C"/>
+
+            <rect x="10" y="66" width="24" height="24" fill="#07101C"/>
+            <rect x="14" y="70" width="16" height="16" fill="#ffffff"/>
+            <rect x="18" y="74" width="8" height="8" fill="#07101C"/>
+
+            <!-- Data patterns -->
+            <rect x="42" y="12" width="6" height="6" fill="#07101C"/>
+            <rect x="52" y="16" width="6" height="6" fill="#07101C"/>
+            <rect x="42" y="24" width="16" height="6" fill="#07101C"/>
+            <rect x="12" y="42" width="6" height="16" fill="#07101C"/>
+            <rect x="24" y="46" width="12" height="6" fill="#07101C"/>
+            <rect x="42" y="42" width="16" height="16" fill="#38BDF8"/>
+            <rect x="66" y="44" width="12" height="6" fill="#07101C"/>
+            <rect x="80" y="52" width="8" height="12" fill="#07101C"/>
+            <rect x="42" y="66" width="6" height="14" fill="#07101C"/>
+            <rect x="54" y="72" width="14" height="6" fill="#07101C"/>
+            <rect x="74" y="70" width="14" height="14" fill="#07101C"/>
+          </svg>
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.5;">
+          <strong style="color:#fff;">Smartphone Instant Scan</strong><br/>
+          Consignees can scan this QR code on any mobile device to open live marine GPS tracking directly without downloading an app.
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">Close</button>
+      <button class="btn btn-safe" onclick="openPublicTrackingView('${cargo.id}')">Open Consignment Slip</button>
+    </div>
+  `);
+}
+
+function copyShareTrackingLink() {
+  const inp = document.getElementById('share-link-input');
+  if (inp) {
+    inp.select();
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(inp.value);
+    }
+    showToast('Tracking link copied to clipboard!');
+  }
+}
+
+// Official Shipper Public Consignment Tracking Pass / Certificate
+function openPublicTrackingView(cargoId) {
+  const cargos = window.WAYPOINT_DATA.trackedCargos || [];
+  const cargo = cargos.find(c => c.id === cargoId) || cargos[0];
+
+  openModal(`
+    <div class="modal-head">
+      <div class="modal-title">📄 Ocean Bill of Lading & GPS Tracking Pass</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body printable-slip" style="max-height:75vh; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; border-bottom:2px solid var(--accent); padding-bottom:12px; margin-bottom:16px;">
+        <div>
+          <div style="font-size:18px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+            <span>⚓ WAYPOINT</span>
+            <span style="font-size:12px; font-weight:500; color:var(--text-muted);">MARITIME TELEMATICS</span>
+          </div>
+          <div style="font-size:11px; color:var(--text-dim);">GLOBAL FREIGHT AUDIT & SATELLITE GPS VERIFICATION</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="mono text-safe" style="font-weight:700; font-size:13px;">STATUS: IN TRANSIT (LIVE)</div>
+          <div class="mono" style="font-size:11px; color:var(--text-muted);">Issued: 17 Oct 2026 UTC</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+        <div style="background:var(--surface-alt); padding:12px; border-radius:8px; border:1px solid var(--border);">
+          <div style="font-size:11px; font-weight:700; color:var(--text-dim); text-transform:uppercase;">Shipper / Consignor</div>
+          <div style="font-weight:600; color:#fff; font-size:13px; margin-top:2px;">${cargo.shipper}</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Port of Loading: ${cargo.originPort.name}</div>
+        </div>
+        <div style="background:var(--surface-alt); padding:12px; border-radius:8px; border:1px solid var(--border);">
+          <div style="font-size:11px; font-weight:700; color:var(--text-dim); text-transform:uppercase;">Consignee / Notify Party</div>
+          <div style="font-weight:600; color:#fff; font-size:13px; margin-top:2px;">${cargo.consignee}</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Port of Discharge: ${cargo.destinationPort.name}</div>
+        </div>
+      </div>
+
+      <div style="background:var(--surface-card); padding:14px; border-radius:8px; border:1px solid var(--border); margin-bottom:16px;">
+        <div style="font-size:12px; font-weight:700; color:var(--accent); margin-bottom:10px;">CARGO TELEMETRY & CONTAINER INTEGRITY</div>
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; font-size:12px;">
+          <div>
+            <span class="text-dim" style="font-size:11px;">Container No:</span>
+            <div class="mono" style="font-weight:600; color:#fff;">${cargo.containerId}</div>
+          </div>
+          <div>
+            <span class="text-dim" style="font-size:11px;">Customs Seal:</span>
+            <div class="mono text-safe" style="font-weight:600;">${cargo.sealNumber}</div>
+          </div>
+          <div>
+            <span class="text-dim" style="font-size:11px;">Cargo Temp:</span>
+            <div class="mono" style="font-weight:600; color:#fff;">${cargo.sensorData.tempC}°C</div>
+          </div>
+          <div>
+            <span class="text-dim" style="font-size:11px;">G-Shock Load:</span>
+            <div class="mono text-safe" style="font-weight:600;">${cargo.sensorData.shockG} G (Nominal)</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--surface-alt); padding:14px; border-radius:8px; border:1px solid var(--border); margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:12px; font-weight:700; color:#fff;">CURRENT SATELLITE GPS POSITION</span>
+          <span class="tag tag-safe mono">${cargo.ship.speedKnots} KTS • ${cargo.ship.heading}° COG</span>
+        </div>
+        <div class="mono text-accent" style="font-size:15px; font-weight:700;">
+          ${cargo.ship.lat.toFixed(5)}° N, ${cargo.ship.lng.toFixed(5)}° E
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+          Carried by <strong>${cargo.ship.name}</strong> (${cargo.ship.flag}) • IMO ${cargo.ship.imo} • Source: ${cargo.ship.gpsSource}
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--text-muted); border-top:1px solid var(--border); padding-top:12px;">
+        <div>Verified Carrier Digital Certificate: <span class="mono text-dim">SHA256: 8f9b...a412</span></div>
+        <div class="mono text-safe" style="font-weight:700;">ETA: ${cargo.etaFormatted}</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal()">Close</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print Tracking Certificate</button>
+    </div>
+  `);
 }
