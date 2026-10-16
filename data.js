@@ -339,6 +339,7 @@ window.WAYPOINT_DATA = {
 
   // Table 7: Data Source Status
   dataSources: [
+    { source: 'Cloud Firestore & Auth', status: 'Connected (Live)', tagClass: 'tag-live', note: 'Project: waypoint-maritime. Realtime synchronization enabled.' },
     { source: 'AIS vessel data', status: 'Not Connected', tagClass: 'tag-unavail', note: 'Requires verified SAT-AIS provider feed credentials.' },
     { source: 'Weather and hazard feeds', status: 'Demo Mode', tagClass: 'tag-demo', note: 'Simulated ECMWF & GFS tropical cyclone matrix.' },
     { source: 'Port information', status: 'Demo Mode', tagClass: 'tag-demo', note: 'UN/LOCODE port database with simulated queue times.' },

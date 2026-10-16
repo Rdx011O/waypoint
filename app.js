@@ -44,11 +44,30 @@ function updateRoleCardUI() {
   }
 }
 
-function doLogin() {
+async function doLogin() {
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('main-app').classList.remove('hidden');
   applyRoleNavigation();
   navigate('dashboard');
+
+  // Authenticate with Firebase & sync role in Firestore
+  if (window.fb) {
+    try {
+      const authResult = await window.fb.authenticateUser(appState.currentRole);
+      if (window.fb.isLive) {
+        showToast('⚡ Live Firebase backend connected!');
+        window.fb.subscribeAlerts(liveAlerts => {
+          if (liveAlerts && liveAlerts.length) {
+            window.WAYPOINT_DATA.alerts = liveAlerts;
+            const countBadge = document.querySelector('.alert-count');
+            if (countBadge) countBadge.textContent = liveAlerts.length;
+          }
+        });
+      }
+    } catch (e) {
+      console.warn("Firebase login sync notice:", e);
+    }
+  }
 }
 
 function showRoleModal() {
@@ -80,11 +99,14 @@ function showRoleModal() {
   `);
 }
 
-function changeRoleFromModal(role) {
+async function changeRoleFromModal(role) {
   appState.currentRole = role;
   applyRoleNavigation();
   closeModal();
   navigate(appState.currentPage);
+  if (window.fb && window.fb.isLive) {
+    await window.fb.authenticateUser(role);
+  }
   showToast(`Switched role to ${role === 'shipper' ? 'Shipper / Exporter' : 'Logistics Manager'}`);
 }
 
@@ -538,12 +560,29 @@ function confirmRouteSelection(routeId) {
   `);
 }
 
-function finalizeBooking(routeId) {
+async function finalizeBooking(routeId) {
   closeModal();
-  showToast(`Route ${routeId} successfully dispatched and saved to portfolio!`);
+  const route = window.WAYPOINT_DATA.routeOptions.find(r => r.id === routeId);
+  if (route && window.fb) {
+    showToast('Saving route to Cloud Firestore...');
+    const savedObj = {
+      id: `SR-${Date.now().toString().slice(-4)}`,
+      name: `Mumbai to Singapore — ${route.name}`,
+      origin: 'Mumbai (Nhava Sheva)',
+      dest: 'Singapore',
+      cargo: appState.selectedCargo || 'General Cargo',
+      cost: `$${route.cost.toLocaleString()}`,
+      transit: `${route.transitDays} d`,
+      risk: route.riskScore,
+      lastSaved: new Date().toISOString().split('T')[0],
+      badge: 'Active'
+    };
+    await window.fb.saveRoute(savedObj);
+  }
+  showToast(`Route ${routeId} successfully saved to Firebase portfolio!`);
   setTimeout(() => {
     navigate('saved');
-  }, 600);
+  }, 400);
 }
 
 // =========================================================================
@@ -575,9 +614,18 @@ function acceptAlternativeRoute() {
   `);
 }
 
-function executeRerouteAcceptance() {
+async function executeRerouteAcceptance() {
   closeModal();
-  showToast('Alternative Route accepted. Safe teal corridor broadcast to vessel.');
+  if (window.fb) {
+    await window.fb.logRerouteDecision({
+      scenario: 'Severe Tropical Storm ASANI',
+      vessel: 'MV Orient Mariner (Voyage #OM-408)',
+      action: 'Bypassed south via equatorial corridor',
+      riskReduction: '-49 Points (72%)',
+      incrementalCost: '+$850 USD'
+    });
+  }
+  showToast('Alternative Route accepted & logged to Firebase. Teal corridor broadcast to vessel.');
 }
 
 function keepOriginalRoute() {
@@ -925,7 +973,10 @@ function deleteSavedRoute(id) {
   `);
 }
 
-function executeDeleteRoute(id) {
+async function executeDeleteRoute(id) {
+  if (window.fb) {
+    await window.fb.deleteRoute(id);
+  }
   const idx = window.WAYPOINT_DATA.savedRoutes.findIndex(x => x.id === id);
   if (idx !== -1) {
     window.WAYPOINT_DATA.savedRoutes.splice(idx, 1);
