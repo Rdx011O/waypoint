@@ -1,7 +1,9 @@
-// WAYPOINT — Maritime Route Assistant (AI Maritime Copilot)
+// WAYPOINT — Maritime Route Assistant (OpenRouter AI Maritime Copilot)
 import React, { useState, useRef, useEffect } from 'react';
 import Icon from '../components/Icon';
 import { WAYPOINT_DATA } from '../data/maritimeData';
+
+const BACKEND_URL = "http://localhost:5000";
 
 export default function RouteAssistant({ onNavigate }) {
   const [messages, setMessages] = useState([
@@ -9,20 +11,56 @@ export default function RouteAssistant({ onNavigate }) {
       id: 1,
       sender: 'assistant',
       time: '12:00',
-      text: 'Good day, Operator. I am the **WAYPOINT Maritime Intelligence Assistant**. I analyze live hydrographic feeds, vessel telemetry, cyclone advisories, and historical sea lanes.\n\nHow may I assist your route planning or risk mitigation today?'
+      text: 'Good day, Operator. I am the **WAYPOINT OpenRouter AI Maritime Copilot**.\n\nI monitor live hydrographic feeds, NOAA NDBC buoy sensors, vessel telemetry, cyclone advisories, and port bathymetric draft limits.\n\nAsk me about sea states, port draft restrictions, currency conversions, or optimal corridor routing.',
+      source: 'WAYPOINT AI Copilot'
     }
   ]);
   const [inputVal, setInputVal] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [openRouterKey, setOpenRouterKey] = useState(() => localStorage.getItem('waypoint_openrouter_key') || '');
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [keyInput, setKeyInput] = useState('');
+  const [availableModels, setAvailableModels] = useState([
+    { id: "meta-llama/llama-3.3-70b-instruct:free", name: "Llama 3.3 70B (Free)" },
+    { id: "deepseek/deepseek-r1:free", name: "DeepSeek R1 (Free)" },
+    { id: "google/gemini-2.0-flash-exp:free", name: "Gemini 2.0 Flash (Free)" },
+    { id: "mistralai/mistral-7b-instruct:free", name: "Mistral 7B (Free)" },
+    { id: "qwen/qwen-2.5-coder-32b-instruct:free", name: "Qwen 2.5 32B (Free)" }
+  ]);
+  const [selectedModel, setSelectedModel] = useState("meta-llama/llama-3.3-70b-instruct:free");
+  const [hasServerKey, setHasServerKey] = useState(false);
   const chatBottomRef = useRef(null);
 
   const presets = WAYPOINT_DATA.assistantPresets || [];
+
+  // Load models & server key status from backend
+  useEffect(() => {
+    fetch(`${BACKEND_URL}/api/assistant/models`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.models && data.models.length > 0) {
+          setAvailableModels(data.models);
+        }
+        if (data.defaultModel) {
+          setSelectedModel(data.defaultModel);
+        }
+        setHasServerKey(Boolean(data.hasServerApiKey));
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  const handleSend = (textToSend) => {
+  const handleSaveKey = () => {
+    const trimmed = keyInput.trim();
+    setOpenRouterKey(trimmed);
+    localStorage.setItem('waypoint_openrouter_key', trimmed);
+    setShowKeyModal(false);
+  };
+
+  const handleSend = async (textToSend) => {
     const query = textToSend || inputVal.trim();
     if (!query) return;
 
@@ -37,32 +75,31 @@ export default function RouteAssistant({ onNavigate }) {
     setInputVal('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      // Find matching preset or generate contextual maritime answer
-      const matched = presets.find(p => p.q.toLowerCase().includes(query.toLowerCase()) || query.toLowerCase().includes(p.q.toLowerCase().slice(0, 15)));
-      
-      let replyText = '';
-      let action = null;
+    try {
+      // Build previous turn history
+      const historyPayload = messages.slice(-6).map(m => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.text
+      }));
 
-      if (matched) {
-        replyText = matched.a;
-        action = matched.suggestedAction;
-      } else if (query.toLowerCase().includes('draft') || query.toLowerCase().includes('kolkata') || query.toLowerCase().includes('paradip') || query.toLowerCase().includes('chennai') || query.toLowerCase().includes('gangavaram')) {
-        replyText = '**Port Draft & Bathymetric Limits (CSV Dataset):**\n\n• **Gangavaram (INGGV):** 21.0m (Deepest draft, Capesize/VLCC compliant)\n• **Dhamra (INDHA) & Kamarajar (INENR):** 18.0m - 18.5m draft\n• **Chennai (INMAA) & Paradip (INPBD):** 14.5m - 16.5m draft\n• **Kolkata (INCCU):** 8.5m riverine draft (Handysize & Feeder restricted)\n\n*Guidance: Vessels exceeding 14.5m draft must berth at Gangavaram, Dhamra, or Krishnapatnam.*';
-        action = 'catalog';
-      } else if (query.toLowerCase().includes('carrier') || query.toLowerCase().includes('line') || query.toLowerCase().includes('maersk') || query.toLowerCase().includes('msc')) {
-        replyText = '**Active Shipping Lines (shipping_lines_by_port.csv):**\n\n• **Global Container Lines:** Maersk, MSC, CMA CGM, Hapag-Lloyd, ONE, Evergreen, COSCO/OOCL\n• **Regional Feeders:** X-Press Feeders, Sea Consortium, RCL, Samudera, Unifeeder, Bengal Tiger Line\n• **Dry Bulk Operators:** Oldendorff Carriers, Star Bulk, Berge Bulk, Ultrabulk\n\nAll 385 port-carrier pairings are cataloged in the Ports & Trade Directory.';
-        action = 'catalog';
-      } else if (query.toLowerCase().includes('weather') || query.toLowerCase().includes('storm') || query.toLowerCase().includes('cyclone')) {
-        replyText = '**Severe Weather Advisory in Effect:**\n\n• **System:** Tropical Storm ASANI located at 9.5°N, 88.5°E.\n• **Wave Heights:** 4.8m – 5.5m in central quadrant.\n• **Recommended Action:** Vessels bound for Singapore should divert via the equatorial southern bypass (4°N), avoiding northern Bay of Bengal.';
-        action = 'rerouting';
-      } else if (query.toLowerCase().includes('port') || query.toLowerCase().includes('singapore') || query.toLowerCase().includes('wait')) {
-        replyText = '**Port Telemetry Advisory:**\n\n• **Singapore (Jurong / Pasir Panjang):** Elevated queue time of 42 hours.\n• **Chennai / Nhava Sheva:** Normal operations, ~14-18 hours average wait.\n• **Recommendation:** Request virtual arrival slotting to adjust transit speed and conserve bunker fuel.';
-        action = 'plan';
-      } else {
-        replyText = `Understood. Analyzing telemetry for: "${query}".\n\n• **Route Calculation:** Optimal great-circle corridor synthesized from trade_links_east_coast.csv.\n• **Risk Assessment:** No critical piracy or navigational blockage detected on standard track.\n• **Recommendation:** Check our route comparison engine to review cost, draft compatibility, and carrier options.`;
-        action = 'compare';
+      const activeKey = openRouterKey || null;
+
+      const res = await fetch(`${BACKEND_URL}/api/assistant/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: historyPayload,
+          query,
+          apiKey: activeKey,
+          model: selectedModel
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
       }
+
+      const data = await res.json();
 
       setMessages(prev => [
         ...prev,
@@ -70,12 +107,29 @@ export default function RouteAssistant({ onNavigate }) {
           id: Date.now() + 1,
           sender: 'assistant',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          text: replyText,
-          action
+          text: data.replyText,
+          action: data.action,
+          source: data.source,
+          model: data.model
         }
       ]);
+    } catch (err) {
+      console.warn("AI Chat API call failed, falling back to local system response:", err);
+      // Graceful fallback
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          sender: 'assistant',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          text: `**Live Maritime Intelligence Assessment:**\n\n• **Direct Transit:** Mumbai to Singapore standard corridor.\n• **Weather Status:** Cyclone ASANI active in central Bay of Bengal with 4.8m waves.\n• **Port Limits:** Chennai (14.5m draft), Gangavaram (21.0m draft), Kolkata (8.5m riverine draft).\n\n*Check the Rerouting Center for live Southern Bypass options.*`,
+          action: 'rerouting',
+          source: 'Local Telemetry Fallback'
+        }
+      ]);
+    } finally {
       setIsTyping(false);
-    }, 600);
+    }
   };
 
   return (
@@ -103,7 +157,7 @@ export default function RouteAssistant({ onNavigate }) {
             fontWeight: 700,
             marginBottom: '4px'
           }}>
-            AI Route Copilot
+            AI Route Copilot (OpenRouter)
           </div>
           <h1 style={{
             fontSize: '22px',
@@ -116,11 +170,55 @@ export default function RouteAssistant({ onNavigate }) {
           </h1>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span className="badge badge-teal">
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--safe-teal)' }} />
-            ECMWF / NOAA Model Live
-          </span>
+        {/* AI Model & Key Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {/* Free Model Selector */}
+          <select
+            value={selectedModel}
+            onChange={(e) => setSelectedModel(e.target.value)}
+            style={{
+              background: 'var(--bg-surface-elevated)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '5px 10px',
+              fontSize: '11.5px',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+            title="Select OpenRouter free generative AI model"
+          >
+            {availableModels.map(m => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Key Configuration Button */}
+          <button
+            onClick={() => {
+              setKeyInput(openRouterKey);
+              setShowKeyModal(true);
+            }}
+            style={{
+              background: openRouterKey || hasServerKey ? 'rgba(45, 212, 191, 0.15)' : 'var(--bg-surface-elevated)',
+              color: openRouterKey || hasServerKey ? 'var(--safe-teal)' : 'var(--text-secondary)',
+              border: `1px solid ${openRouterKey || hasServerKey ? 'var(--safe-teal)' : 'var(--border-subtle)'}`,
+              borderRadius: 'var(--radius-sm)',
+              padding: '5px 10px',
+              fontSize: '11.5px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+            title="Configure OpenRouter free API key"
+          >
+            <Icon name="Key" size={13} />
+            <span>{openRouterKey || hasServerKey ? 'OpenRouter Connected' : 'Enter Free API Key'}</span>
+          </button>
         </div>
       </div>
 
@@ -229,6 +327,7 @@ export default function RouteAssistant({ onNavigate }) {
                           {m.action === 'compare' && 'Open Route Comparison Engine'}
                           {m.action === 'rerouting' && 'Go to Rerouting Center'}
                           {m.action === 'riskmap' && 'View Live Risk Cockpit'}
+                          {m.action === 'catalog' && 'Explore Port & Trade Network'}
                           {m.action === 'plan' && 'Create New Shipment Plan'}
                         </span>
                       </button>
@@ -239,9 +338,18 @@ export default function RouteAssistant({ onNavigate }) {
                   fontSize: '10px',
                   color: 'var(--text-muted)',
                   marginTop: '4px',
-                  textAlign: isUser ? 'right' : 'left'
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  justifyContent: isUser ? 'flex-end' : 'flex-start'
                 }}>
-                  {m.time}
+                  <span>{m.time}</span>
+                  {!isUser && m.source && (
+                    <>
+                      <span>•</span>
+                      <span style={{ color: 'var(--accent-cyan)' }}>{m.source}</span>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -290,7 +398,7 @@ export default function RouteAssistant({ onNavigate }) {
               alignItems: 'center',
               gap: '6px'
             }}>
-              <span style={{ fontStyle: 'italic' }}>Synthesizing hydrographic analysis...</span>
+              <span style={{ fontStyle: 'italic' }}>OpenRouter AI consulting live hydrographic telemetry...</span>
             </div>
           </div>
         )}
@@ -325,6 +433,59 @@ export default function RouteAssistant({ onNavigate }) {
           <span>Send</span>
         </button>
       </form>
+
+      {/* OpenRouter API Key Modal */}
+      {showKeyModal && (
+        <div className="modal-overlay" onClick={() => setShowKeyModal(false)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+            <div className="modal-header">
+              <div className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Icon name="Key" size={18} color="var(--accent-cyan)" />
+                <span>OpenRouter API Key (100% Free)</span>
+              </div>
+              <button className="modal-close" onClick={() => setShowKeyModal(false)}>
+                <Icon name="X" size={18} />
+              </button>
+            </div>
+
+            <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: '1.5', marginBottom: '14px' }}>
+              WAYPOINT connects directly to OpenRouter's free-tier models (Llama 3.3 70B, DeepSeek R1, Gemini 2.0 Flash) with zero charge.
+            </p>
+
+            <div className="box box-note" style={{ fontSize: '12px', marginBottom: '16px' }}>
+              <strong>How to get your free key:</strong>
+              <ol style={{ margin: '6px 0 0 16px', padding: 0 }}>
+                <li>Sign up at <a href="https://openrouter.ai" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-cyan)' }}>openrouter.ai</a> (No credit card required).</li>
+                <li>Go to <strong>Keys</strong> &gt; <strong>Create Key</strong>.</li>
+                <li>Paste your key below. It is stored securely in your browser's local storage.</li>
+              </ol>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+                OpenRouter Key
+              </label>
+              <input
+                type="password"
+                className="form-control"
+                placeholder="sk-or-v1-..."
+                value={keyInput}
+                onChange={e => setKeyInput(e.target.value)}
+                style={{ width: '100%', fontFamily: 'JetBrains Mono, monospace', fontSize: '12px' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <button className="btn btn-outline" onClick={() => setShowKeyModal(false)}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={handleSaveKey}>
+                Save Key
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

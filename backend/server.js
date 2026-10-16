@@ -10,6 +10,7 @@ const { initAISStream, getVesselsList, addSseClient, removeSseClient } = require
 const { getLatestNdbcObservations, getObservationsNear } = require("./src/services/ndbcService");
 const { getRates, DEFAULT_SUPPORTED_CURRENCIES } = require("./src/services/currencyService");
 const { calculateShipperCost, compareCostsAcrossRoutes } = require("./src/services/shipperCostService");
+const { getMaritimeAssistantReply, FREE_MODELS } = require("./src/services/aiAssistantService");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
@@ -39,6 +40,8 @@ app.get("/", (_req, res) => {
       "GET /api/currency/rates?base=USD",
       "POST /api/cost/estimate",
       "POST /api/cost/compare",
+      "GET /api/assistant/models",
+      "POST /api/assistant/chat",
       "GET /api/routes?source=Mumbai&destination=Singapore",
       "POST /api/optimize"
     ]
@@ -424,6 +427,37 @@ app.post("/api/cost/compare", async (req, res) => {
     res.json({ success: true, comparison });
   } catch (err) {
     res.status(500).json({ error: err.code || "COST_COMPARE_ERROR", message: err.message });
+  }
+});
+
+// 8. OpenRouter AI Assistant Endpoints
+app.get("/api/assistant/models", (_req, res) => {
+  res.json({
+    success: true,
+    provider: "OpenRouter (Free Tier)",
+    defaultModel: process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct:free",
+    models: FREE_MODELS,
+    hasServerApiKey: Boolean(process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY.trim())
+  });
+});
+
+app.post("/api/assistant/chat", async (req, res) => {
+  const { messages, query, apiKey, model } = req.body;
+  if (!query || typeof query !== "string" || !query.trim()) {
+    return res.status(400).json({ error: "QUERY_REQUIRED", message: "User query is required." });
+  }
+
+  try {
+    const response = await getMaritimeAssistantReply({
+      messages: Array.isArray(messages) ? messages : [],
+      query: query.trim(),
+      apiKey: apiKey ? String(apiKey).trim() : null,
+      model: model || null
+    });
+    res.json({ success: true, ...response });
+  } catch (err) {
+    console.error("AI Assistant Execution Error:", err);
+    res.status(500).json({ error: "AI_GENERATION_ERROR", message: err.message });
   }
 });
 
