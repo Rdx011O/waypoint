@@ -63,8 +63,8 @@ async function calculateWeatherReroute(sourcePort, destPort, options = {}) {
   };
 
   const speed = Number(options.shipSpeedKnots) || DEFAULT_SPEED_KNOTS;
-  const vesselName = options.vesselName || "MV Orient Mariner (Voyage #OM-408)";
-  const cargo = options.cargo || "1,200 MT Electronics & Industrial Machinery";
+  const vesselName = options.vesselName || null;  // Resolved dynamically by caller
+  const cargo = options.cargo || "General Maritime Cargo";
 
   // 1. Determine active hazard zone
   let hazard = options.customHazard;
@@ -209,12 +209,7 @@ async function calculateWeatherReroute(sourcePort, destPort, options = {}) {
       distanceChangeNm: `+${distDiffNm} NM`
     },
 
-    decisionHistory: [
-      { id: 'DEC-094', timestamp: '2026-10-17 01:15 UTC', vessel: 'MV Orient Mariner', route: 'Southern Bypass', reason: 'Cyclone ASANI Wave > 4.5m', savings: 'Eliminated severe hull strain risk' },
-      { id: 'DEC-091', timestamp: '2026-10-15 14:20 UTC', vessel: 'MV Pacific Crown', route: 'Rerouted via Sunda Strait', reason: 'Avoided Typhoon Mawar', savings: 'Prevented ~3.5 day delay' },
-      { id: 'DEC-088', timestamp: '2026-10-14 09:10 UTC', vessel: 'Star Voyager', route: 'Deep sea corridor', reason: 'Port congestion avoidance', savings: '$12,400 fuel optimization' },
-      { id: 'DEC-082', timestamp: '2026-10-11 18:45 UTC', vessel: 'Nordic Explorer', route: 'Equatorial route', reason: 'Monsoon sea state > 4.5m', savings: 'Zero cargo damage report' }
-    ]
+    decisionHistory: []  // Populated by server-side dispatch audit log
   };
 }
 
