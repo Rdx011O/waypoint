@@ -111,18 +111,32 @@ export default function MarineMap({
 
     const map = mapInstanceRef.current;
 
-    // 1. Update Base Tiles
+    // 1. Update Base Tiles (Zero API Key Required, No Watermark)
     if (baseTileLayerRef.current) {
       map.removeLayer(baseTileLayerRef.current);
     }
 
-    const tileUrl = baseTileType === 'dark'
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+    let tileUrl;
+    let maxZoom = 18;
+    let subdomains = 'abc';
+
+    if (baseTileType === 'dark') {
+      // High-contrast clean dark maritime canvas (Free, no watermark)
+      tileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+      maxZoom = 16;
+    } else if (baseTileType === 'ocean') {
+      // Bathymetric marine depth contours and ocean ridges (Free, no watermark)
+      tileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}';
+      maxZoom = 13;
+    } else {
+      // Standard OpenStreetMap (Free, CC-BY-SA, no watermark)
+      tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      maxZoom = 18;
+    }
 
     baseTileLayerRef.current = L.tileLayer(tileUrl, {
-      maxZoom: 18,
-      subdomains: baseTileType === 'dark' ? 'abcd' : 'abc'
+      maxZoom,
+      subdomains
     }).addTo(map);
 
     // 2. Update OpenSeaMap Seamarks Overlay
@@ -344,27 +358,32 @@ export default function MarineMap({
         border: '1px solid var(--border-subtle)',
         boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
       }}>
-        {/* Base Tile Switcher */}
-        <button
-          onClick={() => setBaseTileType(prev => prev === 'dark' ? 'osm' : 'dark')}
-          style={{
-            padding: '4px 8px',
-            borderRadius: 'var(--radius-xs)',
-            border: '1px solid var(--border-subtle)',
-            background: baseTileType === 'osm' ? 'var(--accent-cyan)' : 'var(--bg-surface-elevated)',
-            color: baseTileType === 'osm' ? '#070D18' : 'var(--text-primary)',
-            fontSize: '11px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}
-          title="Toggle Dark Matter vs OpenStreetMap Standard tiles"
-        >
-          <Icon name="Map" size={12} />
-          <span>{baseTileType === 'dark' ? 'Dark View' : 'OSM Tiles'}</span>
-        </button>
+        {/* Base Tile Switcher (Dark / Ocean / OSM) */}
+        <div style={{ display: 'flex', background: 'var(--bg-surface-elevated)', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
+          {[
+            { id: 'dark', label: 'Dark View' },
+            { id: 'ocean', label: 'Ocean Depth' },
+            { id: 'osm', label: 'OSM' }
+          ].map(b => (
+            <button
+              key={b.id}
+              onClick={() => setBaseTileType(b.id)}
+              style={{
+                padding: '4px 8px',
+                border: 'none',
+                background: baseTileType === b.id ? 'var(--accent-cyan)' : 'transparent',
+                color: baseTileType === b.id ? '#070D18' : 'var(--text-primary)',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              title={`Switch map to ${b.label}`}
+            >
+              {b.label}
+            </button>
+          ))}
+        </div>
 
         {/* OpenSeaMap Seamarks Toggle */}
         <button
