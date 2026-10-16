@@ -59,7 +59,11 @@ export default function CompareRoutes({ onNavigate }) {
       risk: route.riskScore,
       distanceNm: route.distanceNm,
       lastSaved: new Date().toISOString().split('T')[0],
-      badge: 'Active'
+      badge: 'Active',
+      vessel: scenario.selectedVessel ? scenario.selectedVessel.vesselName : null,
+      carrier: scenario.selectedVessel ? scenario.selectedVessel.carrier : null,
+      departureDate: scenario.departureDate || null,
+      departureTime: scenario.selectedVessel ? scenario.selectedVessel.departureTime : null
     };
 
     const res = await saveRouteToCloud(routeRecord, userProfile?.uid);
@@ -113,6 +117,57 @@ export default function CompareRoutes({ onNavigate }) {
           <span>Adjust Shipment Parameters</span>
         </button>
       </div>
+
+      {/* Confirmed Vessel & Scheduled Departure Callout */}
+      {scenario.selectedVessel && (
+        <div style={{
+          padding: '14px 18px',
+          background: 'rgba(56, 189, 248, 0.08)',
+          border: '1px solid var(--accent-cyan)',
+          borderRadius: 'var(--radius-sm)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '50%',
+              background: 'rgba(56, 189, 248, 0.16)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--accent-cyan)'
+            }}>
+              <Icon name="Ship" size={20} />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--accent-cyan)', fontWeight: 700, letterSpacing: '0.05em' }}>
+                Confirmed Vessel Allocation & Scheduled Call
+              </div>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginTop: '1px' }}>
+                {scenario.selectedVessel.vesselName} <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 400 }}>({scenario.selectedVessel.imoNumber})</span>
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                Carrier: <strong style={{ color: 'var(--text-primary)' }}>{scenario.selectedVessel.carrier}</strong> • Scheduled Departure: <strong style={{ color: 'var(--accent-cyan)' }}>{scenario.departureDate} at {scenario.selectedVessel.departureTime}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ textAlign: 'right', fontSize: '11px' }}>
+              <div style={{ color: 'var(--text-muted)' }}>Corridor Assigned:</div>
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{scenario.selectedVessel.routeCorridor}</div>
+            </div>
+            <span className="badge badge-teal">
+              ✓ Space Locked ({scenario.selectedVessel.capacity.available})
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Save Success Alert */}
       {saveSuccess && (

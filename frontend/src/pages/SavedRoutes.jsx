@@ -416,7 +416,14 @@ export default function SavedRoutes({ onNavigate }) {
                 <tr key={r.id}>
                   <td>
                     <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{r.name}</div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>ID: {r.id} • Saved: {r.lastSaved}</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                      ID: {r.id} • Saved: {r.lastSaved}
+                      {r.vessel && (
+                        <span style={{ color: 'var(--accent-cyan)', marginLeft: '6px' }}>
+                          • Vessel: {r.vessel} ({r.carrier || 'Carrier'}) {r.departureDate ? `• Dep: ${r.departureDate}` : ''}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td>{r.origin}</td>
                   <td style={{ color: 'var(--accent-cyan)', fontWeight: 500 }}>{r.dest}</td>

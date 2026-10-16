@@ -35,10 +35,14 @@ import {
   Send,
   User,
   Building,
-  Menu
+  Menu,
+  Calendar,
+  Check
 } from 'lucide-react';
 
 const iconMap = {
+  Calendar,
+  Check,
   LayoutDashboard,
   Package,
   Scale,

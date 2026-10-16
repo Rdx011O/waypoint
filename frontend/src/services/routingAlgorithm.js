@@ -247,6 +247,8 @@ export function synthesizeMaritimeRoutes({
     destination: destPort,
     cargoType,
     vesselType,
+    departureDate: departureDate || null,
+    selectedVessel: selectedVessel || null,
     requiredDraft,
     portDraft,
     draftFeasible,
