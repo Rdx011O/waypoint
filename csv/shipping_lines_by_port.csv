@@ -1,0 +1,386 @@
+port_id,port_name,shipping_company,service_category,call_type,data_confidence
+EC01,Kolkata (Syama Prasad Mookerjee Port),X-Press Feeders,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Sea Consortium,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),RCL (Regional Container Lines),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),SITC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Samudera Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Emirates Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Advance Container Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Interasia Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Leo Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),KMTC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Unifeeder,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Transworld (TSL),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Shipping Corporation of India (SCI),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Bengal Tiger Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Gold Star Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Maersk,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),MSC,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),CMA CGM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Hapag-Lloyd,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),ONE (Ocean Network Express),container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Evergreen,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),COSCO / OOCL,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Yang Ming,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),HMM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),ZIM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Wan Hai,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),PIL (Pacific International Lines),container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Oldendorff Carriers,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Star Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Golden Ocean,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Pacific Basin,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Western Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Berge Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Mitsui OSK Lines (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),NYK Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),K Line (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),SCI (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC01,Kolkata (Syama Prasad Mookerjee Port),Cargill Ocean Transportation,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,X-Press Feeders,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Sea Consortium,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,RCL (Regional Container Lines),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,SITC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Samudera Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Emirates Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Advance Container Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Interasia Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Leo Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,KMTC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Unifeeder,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Transworld (TSL),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Shipping Corporation of India (SCI),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Bengal Tiger Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Gold Star Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Oldendorff Carriers,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Star Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Golden Ocean,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Pacific Basin,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Western Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Berge Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Mitsui OSK Lines (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,NYK Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,K Line (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,SCI (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Cargill Ocean Transportation,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,SCI (Tankers),tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Teekay,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Frontline,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Sovcomflot,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,BW LPG,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Petronet/Great Eastern Shipping,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Mitsui OSK (Tankers/LNG),tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC02,Haldia Dock Complex,Nakilat (LNG),tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Oldendorff Carriers,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Star Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Golden Ocean,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Pacific Basin,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Western Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Berge Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Mitsui OSK Lines (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,NYK Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,K Line (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,SCI (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Cargill Ocean Transportation,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,SCI (Tankers),tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Teekay,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Frontline,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Sovcomflot,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,BW LPG,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Petronet/Great Eastern Shipping,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Mitsui OSK (Tankers/LNG),tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC03,Paradip,Nakilat (LNG),tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC04,Dhamra,Oldendorff Carriers,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC04,Dhamra,Star Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC04,Dhamra,Golden Ocean,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC04,Dhamra,Pacific Basin,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC04,Dhamra,Western Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC04,Dhamra,Berge Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC04,Dhamra,Mitsui OSK Lines (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC04,Dhamra,NYK Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC04,Dhamra,K Line (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC04,Dhamra,SCI (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC04,Dhamra,Cargill Ocean Transportation,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC05,Gopalpur,Oldendorff Carriers,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC05,Gopalpur,Star Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC05,Gopalpur,Golden Ocean,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC05,Gopalpur,Pacific Basin,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC05,Gopalpur,Western Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC05,Gopalpur,Berge Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC05,Gopalpur,Mitsui OSK Lines (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC05,Gopalpur,NYK Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC05,Gopalpur,K Line (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC05,Gopalpur,SCI (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC05,Gopalpur,Cargill Ocean Transportation,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,X-Press Feeders,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Sea Consortium,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,RCL (Regional Container Lines),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,SITC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Samudera Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Emirates Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Advance Container Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Interasia Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Leo Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,KMTC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Unifeeder,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Transworld (TSL),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Shipping Corporation of India (SCI),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Bengal Tiger Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Gold Star Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Oldendorff Carriers,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Star Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Golden Ocean,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Pacific Basin,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Western Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Berge Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Mitsui OSK Lines (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,NYK Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,K Line (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,SCI (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Cargill Ocean Transportation,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,SCI (Tankers),tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Teekay,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Frontline,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Sovcomflot,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,BW LPG,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Petronet/Great Eastern Shipping,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Mitsui OSK (Tankers/LNG),tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC06,Visakhapatnam,Nakilat (LNG),tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC07,Gangavaram,Oldendorff Carriers,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC07,Gangavaram,Star Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC07,Gangavaram,Golden Ocean,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC07,Gangavaram,Pacific Basin,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC07,Gangavaram,Western Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC07,Gangavaram,Berge Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC07,Gangavaram,Mitsui OSK Lines (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC07,Gangavaram,NYK Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC07,Gangavaram,K Line (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC07,Gangavaram,SCI (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC07,Gangavaram,Cargill Ocean Transportation,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Oldendorff Carriers,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Star Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Golden Ocean,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Pacific Basin,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Western Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Berge Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Mitsui OSK Lines (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,NYK Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,K Line (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,SCI (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Cargill Ocean Transportation,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,X-Press Feeders,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Sea Consortium,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,RCL (Regional Container Lines),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,SITC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Samudera Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Emirates Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Advance Container Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Interasia Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Leo Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,KMTC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Unifeeder,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Transworld (TSL),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Shipping Corporation of India (SCI),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Bengal Tiger Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC08,Kakinada Deep Water,Gold Star Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC09,Kakinada Gateway,Oldendorff Carriers,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC09,Kakinada Gateway,Star Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC09,Kakinada Gateway,Golden Ocean,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC09,Kakinada Gateway,Pacific Basin,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC09,Kakinada Gateway,Western Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC09,Kakinada Gateway,Berge Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC09,Kakinada Gateway,Mitsui OSK Lines (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC09,Kakinada Gateway,NYK Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC09,Kakinada Gateway,K Line (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC09,Kakinada Gateway,SCI (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC09,Kakinada Gateway,Cargill Ocean Transportation,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Oldendorff Carriers,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Star Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Golden Ocean,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Pacific Basin,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Western Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Berge Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Mitsui OSK Lines (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,NYK Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,K Line (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,SCI (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Cargill Ocean Transportation,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,X-Press Feeders,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Sea Consortium,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,RCL (Regional Container Lines),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,SITC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Samudera Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Emirates Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Advance Container Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Interasia Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Leo Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,KMTC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Unifeeder,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Transworld (TSL),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Shipping Corporation of India (SCI),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Bengal Tiger Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Gold Star Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Maersk,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,MSC,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,CMA CGM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Hapag-Lloyd,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,ONE (Ocean Network Express),container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Evergreen,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,COSCO / OOCL,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Yang Ming,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,HMM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,ZIM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,Wan Hai,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC11,Krishnapatnam,PIL (Pacific International Lines),container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Maersk,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,MSC,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,CMA CGM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Hapag-Lloyd,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,ONE (Ocean Network Express),container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Evergreen,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,COSCO / OOCL,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Yang Ming,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,HMM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,ZIM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Wan Hai,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,PIL (Pacific International Lines),container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,X-Press Feeders,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Sea Consortium,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,RCL (Regional Container Lines),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,SITC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Samudera Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Emirates Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Advance Container Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Interasia Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Leo Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,KMTC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Unifeeder,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Transworld (TSL),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Shipping Corporation of India (SCI),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Bengal Tiger Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Gold Star Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Wallenius Wilhelmsen,ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Hoegh Autoliners,ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,NYK Line (Ro-Ro),ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,K Line (Ro-Ro),ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Eukor/Glovis,ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC12,Kattupalli,Mitsui OSK Lines (Ro-Ro),ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Oldendorff Carriers,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Star Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Golden Ocean,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Pacific Basin,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Western Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Berge Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Mitsui OSK Lines (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),NYK Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),K Line (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),SCI (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Cargill Ocean Transportation,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Wallenius Wilhelmsen,ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Hoegh Autoliners,ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),NYK Line (Ro-Ro),ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),K Line (Ro-Ro),ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Eukor/Glovis,ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Mitsui OSK Lines (Ro-Ro),ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),SCI (Tankers),tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Teekay,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Frontline,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Sovcomflot,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),BW LPG,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Petronet/Great Eastern Shipping,tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Mitsui OSK (Tankers/LNG),tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Nakilat (LNG),tanker_gas,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Maersk,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),MSC,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),CMA CGM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Hapag-Lloyd,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),ONE (Ocean Network Express),container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Evergreen,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),COSCO / OOCL,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Yang Ming,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),HMM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),ZIM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),Wan Hai,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC13,Kamarajar (Ennore),PIL (Pacific International Lines),container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Maersk,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,MSC,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,CMA CGM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Hapag-Lloyd,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,ONE (Ocean Network Express),container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Evergreen,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,COSCO / OOCL,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Yang Ming,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,HMM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,ZIM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Wan Hai,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,PIL (Pacific International Lines),container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,X-Press Feeders,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Sea Consortium,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,RCL (Regional Container Lines),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,SITC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Samudera Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Emirates Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Advance Container Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Interasia Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Leo Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,KMTC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Unifeeder,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Transworld (TSL),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Shipping Corporation of India (SCI),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Bengal Tiger Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Gold Star Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Wallenius Wilhelmsen,ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Hoegh Autoliners,ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,NYK Line (Ro-Ro),ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,K Line (Ro-Ro),ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Eukor/Glovis,ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC14,Chennai,Mitsui OSK Lines (Ro-Ro),ro_ro,arrival & departure,indicative - confirm against port call schedules / AIS
+EC16,Karaikal,Oldendorff Carriers,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC16,Karaikal,Star Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC16,Karaikal,Golden Ocean,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC16,Karaikal,Pacific Basin,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC16,Karaikal,Western Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC16,Karaikal,Berge Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC16,Karaikal,Mitsui OSK Lines (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC16,Karaikal,NYK Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC16,Karaikal,K Line (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC16,Karaikal,SCI (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC16,Karaikal,Cargill Ocean Transportation,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Maersk,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),MSC,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),CMA CGM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Hapag-Lloyd,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),ONE (Ocean Network Express),container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Evergreen,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),COSCO / OOCL,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Yang Ming,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),HMM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),ZIM,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Wan Hai,container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),PIL (Pacific International Lines),container_global,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),X-Press Feeders,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Sea Consortium,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),RCL (Regional Container Lines),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),SITC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Samudera Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Emirates Shipping Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Advance Container Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Interasia Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Leo Lines,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),KMTC,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Unifeeder,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Transworld (TSL),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Shipping Corporation of India (SCI),container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Bengal Tiger Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Gold Star Line,container_feeder,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Oldendorff Carriers,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Star Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Golden Ocean,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Pacific Basin,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Western Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Berge Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Mitsui OSK Lines (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),NYK Bulk,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),K Line (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),SCI (Bulk),dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS
+EC18,V.O. Chidambaranar (Tuticorin),Cargill Ocean Transportation,dry_bulk,arrival & departure,indicative - confirm against port call schedules / AIS

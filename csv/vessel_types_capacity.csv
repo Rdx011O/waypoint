@@ -1,0 +1,13 @@
+vessel_category,vessel_type,capacity_range,typical_cargo,east_coast_ports_served
+Container,Feeder,"500-3,000 TEU",Containerised general cargo,"All major ports; Kolkata, Tuticorin, Kattupalli"
+Container,Panamax / Post-Panamax,"3,000-10,000 TEU",Containerised cargo,"Chennai, Kattupalli, Tuticorin"
+Container,Neo-Panamax / ULCV,"10,000-24,000 TEU",Containerised cargo (mostly via Colombo/Singapore),Kattupalli (limited)
+Dry bulk,Handysize / Supramax,"10,000-60,000 DWT","Coal, fertilizer, steel, grain, sugar","Kakinada, Karaikal, Haldia, Gopalpur"
+Dry bulk,Panamax / Kamsarmax,"60,000-85,000 DWT","Coal, iron ore, grain","Paradip, Visakhapatnam, Krishnapatnam"
+Dry bulk,Capesize,"100,000-210,000 DWT","Iron ore, coking & thermal coal","Gangavaram, Dhamra, Krishnapatnam, Kamarajar, Paradip"
+Tanker,Aframax / Suezmax,"80,000-200,000 DWT","Crude oil, petroleum products","Paradip, Visakhapatnam (SPM/jetties)"
+Tanker,VLCC,"200,000-320,000 DWT",Crude oil,"Offshore / SPM (e.g., Paradip)"
+Gas,LPG carrier (VLGC),"~84,000 cbm",LPG,"Paradip, Visakhapatnam"
+Gas,LNG carrier,"125,000-175,000 cbm",LNG,Kamarajar (Ennore) LNG terminal
+Ro-Ro,PCTC,"4,000-8,500 car units (CEU)","Cars, vehicles","Chennai, Kamarajar, Kattupalli"
+General,Multipurpose / Break-bulk,"5,000-30,000 DWT","Steel, project cargo, granite","Kolkata, Chennai, Kakinada"

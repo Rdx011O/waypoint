@@ -1,0 +1,21 @@
+file,field,type,description,example
+ports_east_coast_india,port_id,string,Internal key EC01..,EC06
+ports_east_coast_india,port_name,string,Port name,Visakhapatnam
+ports_east_coast_india,unlocode,string,UN/LOCODE (verify),INVTZ
+ports_east_coast_india,state,string,State/UT,Andhra Pradesh
+ports_east_coast_india,port_type,string,Major (govt) / Non-major (private/state),Major
+ports_east_coast_india,latitude / longitude,float,"Decimal degrees WGS84 (+N, +E)",17.690 / 83.300
+ports_east_coast_india,max_draft_m_approx,float,Approx. permissible vessel draft (m),14.5
+ports_east_coast_india,cargo_capacity_MTPA_approx,float,"Handling capacity, million tonnes/yr (approx)",114
+ports_east_coast_india,container_capacity_TEU_approx,int,Container capacity TEU/yr (0 = no container terminal),1800000
+ports_east_coast_india,traffic_FY2023_24_MT_approx,float,"Cargo throughput FY24 (MT, approx)",79
+ports_east_coast_india,main_cargo_types,string,Dominant cargo,"Coal, iron ore..."
+ports_east_coast_india,coast_region,string,Sub-region grouping,Coromandel
+shipping_lines_by_port,shipping_company,string,Carrier/operator indicatively serving the port,Maersk
+shipping_lines_by_port,service_category,string,container_global / container_feeder / ro_ro / dry_bulk / tanker_gas,container_global
+foreign_partner_ports,*,-,"Trade-partner ports with UN/LOCODE, country, lat, lon",Singapore
+trade_links_east_coast,great_circle_nm / km,int,"Straight-line distance. Real sea route is longer (Palk Strait, Malacca, Suez/Cape detours) - treat as lower bound",1500
+trade_links_east_coast,trade_direction,string,Import / Export / Import & Export,Import
+trade_links_east_coast,commodities,string,Typical goods on the link,Thermal coal
+vessel_types_capacity,*,-,"Vessel classes, capacity ranges, cargo, ports served",Capesize
+ais_ship_dataset_TEMPLATE,*,-,"Empty schema for your own AIS/ship data: ship, position, timestamp fields","mmsi, lat, lon, timestamp_utc"
