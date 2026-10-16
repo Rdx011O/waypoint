@@ -1,6 +1,8 @@
 require("dotenv").config();
 
 const express = require("express");
+const path = require("path");
+const fs = require("fs");
 const cors = require("cors");
 const { ports, ships, trackedCargos } = require("./src/data/demoData");
 const { getPorts, findPort, getShips, getAlerts } = require("./src/services/dataService");
@@ -22,42 +24,60 @@ app.use(cors({
 }));
 app.use(express.json({ limit: "1mb" }));
 
+// Path to built frontend (if available)
+const frontendDistPath = path.join(__dirname, "../frontend/dist");
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
+}
+
 // Initialize AISStream background connection
 initAISStream();
 
-app.get("/", (_req, res) => {
-  res.json({
-    name: "WAYPOINT API",
-    description: "Smart Maritime Route Optimizer, Live GPS Tracking, Weather Rerouting & Telemetry Gateway",
-    dataSource: "Firebase Cloud Firestore & Dynamic Maritime Datasets",
-    endpoints: [
-      "GET /api/health",
-      "GET /api/ports",
-      "GET /api/ports/search?q=Chennai",
-      "GET /api/ships",
-      "GET /api/tracking/cargos",
-      "GET /api/tracking/cargos/:id",
-      "GET /api/tracking/ships",
-      "GET /api/tracking/ships/:id",
-      "POST /api/tracking/gps-ping",
-      "GET /api/ais/vessels",
-      "GET /api/ais/stream (SSE)",
-      "GET /api/weather/marine?latitude=15&longitude=70",
-      "GET /api/weather/observations?lat=15&lon=70",
-      "GET /api/weather/corridor?originLat=13.09&originLon=80.29&destLat=1.26&destLon=103.84",
-      "GET /api/gdacs?eventlist=TC",
-      "GET /api/reroute?source=Chennai&destination=Singapore&speed=14",
-      "POST /api/reroute/accept",
-      "GET /api/currency/rates?base=USD",
-      "POST /api/cost/estimate",
-      "POST /api/cost/compare",
-      "GET /api/assistant/models",
-      "POST /api/assistant/chat",
-      "GET /api/routes?source=Mumbai&destination=Singapore",
-      "POST /api/optimize",
-      "GET /api/hazards?source=Kolkata&destination=Singapore"
-    ]
-  });
+const apiDirectory = {
+  name: "WAYPOINT API",
+  description: "Smart Maritime Route Optimizer, Live GPS Tracking, Weather Rerouting & Telemetry Gateway",
+  dataSource: "Firebase Cloud Firestore & Dynamic Maritime Datasets",
+  endpoints: [
+    "GET /api/health",
+    "GET /api/ports",
+    "GET /api/ports/search?q=Chennai",
+    "GET /api/ships",
+    "GET /api/tracking/cargos",
+    "GET /api/tracking/cargos/:id",
+    "GET /api/tracking/ships",
+    "GET /api/tracking/ships/:id",
+    "POST /api/tracking/gps-ping",
+    "GET /api/ais/vessels",
+    "GET /api/ais/stream (SSE)",
+    "GET /api/weather/marine?latitude=15&longitude=70",
+    "GET /api/weather/observations?lat=15&lon=70",
+    "GET /api/weather/corridor?originLat=13.09&originLon=80.29&destLat=1.26&destLon=103.84",
+    "GET /api/gdacs?eventlist=TC",
+    "GET /api/reroute?source=Chennai&destination=Singapore&speed=14",
+    "POST /api/reroute/accept",
+    "GET /api/currency/rates?base=USD",
+    "POST /api/cost/estimate",
+    "POST /api/cost/compare",
+    "GET /api/assistant/models",
+    "POST /api/assistant/chat",
+    "GET /api/routes?source=Mumbai&destination=Singapore",
+    "POST /api/optimize",
+    "GET /api/hazards?source=Kolkata&destination=Singapore"
+  ]
+};
+
+// API Directory JSON endpoint
+app.get("/api", (_req, res) => {
+  res.json(apiDirectory);
+});
+
+// Root route: serve frontend web application if index.html exists, else JSON
+app.get("/", (req, res) => {
+  const indexHtml = path.join(frontendDistPath, "index.html");
+  if (req.accepts("html") && fs.existsSync(indexHtml)) {
+    return res.sendFile(indexHtml);
+  }
+  res.json(apiDirectory);
 });
 
 app.get("/api/health", async (_req, res) => {
@@ -793,7 +813,15 @@ app.post("/api/assistant/chat", async (req, res) => {
   }
 });
 
-// Consistent JSON response for invalid endpoints.
+// SPA catch-all: route any unmatched non-API web request to frontend index.html
+if (fs.existsSync(frontendDistPath)) {
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api")) return next();
+    res.sendFile(path.join(frontendDistPath, "index.html"));
+  });
+}
+
+// Consistent JSON response for invalid API endpoints.
 app.use((_req, res) => {
   res.status(404).json({ error: "NOT_FOUND", message: "API endpoint not found." });
 });
