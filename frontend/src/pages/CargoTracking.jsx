@@ -9,6 +9,39 @@ import Icon from '../components/Icon';
 import { fetchContainers, fetchContainerByCode } from '../services/telemetryService';
 import { SAMPLE_CODES, INITIAL_CONTAINERS } from '../data/containerData';
 
+// Free, reliable maritime tile providers with ZERO API key required and ZERO watermarks
+const MAP_THEMES = {
+  dark: {
+    id: 'dark',
+    name: 'Dark Canvas',
+    base: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    reference: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+    maxZoom: 16
+  },
+  ocean: {
+    id: 'ocean',
+    name: 'Ocean Depth',
+    base: 'https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}',
+    reference: 'https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Reference/MapServer/tile/{z}/{y}/{x}',
+    maxZoom: 13
+  },
+  osm: {
+    id: 'osm',
+    name: 'OpenStreetMap',
+    base: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    reference: null,
+    maxZoom: 18,
+    subdomains: 'abc'
+  },
+  satellite: {
+    id: 'satellite',
+    name: 'Satellite Coastal',
+    base: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    reference: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+    maxZoom: 17
+  }
+};
+
 export default function CargoTracking({ onNavigate }) {
   const [searchCode, setSearchCode] = useState('TRK-PAC-101');
   const [inputVal, setInputVal] = useState('TRK-PAC-101');
@@ -19,10 +52,13 @@ export default function CargoTracking({ onNavigate }) {
   const [filterShip, setFilterShip] = useState('ALL');
   const [isCopied, setIsCopied] = useState(false);
   const [autoSync, setAutoSync] = useState(true);
+  const [mapTheme, setMapTheme] = useState('dark');
 
   // Map references
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const baseTileLayerRef = useRef(null);
+  const refTileLayerRef = useRef(null);
   const markersLayerRef = useRef(null);
   const routeLineRef = useRef(null);
 
@@ -97,12 +133,6 @@ export default function CargoTracking({ onNavigate }) {
         attributionControl: false
       });
 
-      // CartoDB Dark Matter nautical basemap
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 18,
-        subdomains: 'abcd'
-      }).addTo(map);
-
       // Dedicated layer groups
       markersLayerRef.current = L.layerGroup().addTo(map);
       routeLineRef.current = L.layerGroup().addTo(map);
@@ -113,6 +143,29 @@ export default function CargoTracking({ onNavigate }) {
     const map = mapInstanceRef.current;
     const markersLayer = markersLayerRef.current;
     const routeLayer = routeLineRef.current;
+
+    // Dynamically manage tile layers (Esri Dark Canvas / Ocean / OSM with zero API key requirement)
+    if (baseTileLayerRef.current) {
+      map.removeLayer(baseTileLayerRef.current);
+      baseTileLayerRef.current = null;
+    }
+    if (refTileLayerRef.current) {
+      map.removeLayer(refTileLayerRef.current);
+      refTileLayerRef.current = null;
+    }
+
+    const theme = MAP_THEMES[mapTheme] || MAP_THEMES.dark;
+    baseTileLayerRef.current = L.tileLayer(theme.base, {
+      maxZoom: theme.maxZoom,
+      subdomains: theme.subdomains || 'abc'
+    }).addTo(map);
+
+    if (theme.reference) {
+      refTileLayerRef.current = L.tileLayer(theme.reference, {
+        maxZoom: theme.maxZoom,
+        subdomains: theme.subdomains || 'abc'
+      }).addTo(map);
+    }
 
     markersLayer.clearLayers();
     routeLayer.clearLayers();
@@ -181,19 +234,36 @@ export default function CargoTracking({ onNavigate }) {
 
     const marker = L.marker([lat, lon], { icon: containerIcon }).addTo(markersLayer);
 
-    // Interactive Marker Popup
+    // Interactive Marker Popup with high-contrast, self-contained dark container theme
     const popupContent = `
-      <div style="font-family: var(--font-sans, sans-serif); color: #fff; padding: 4px; min-width: 210px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px;">
-          <strong style="color: ${beaconColor}; font-size: 13px;">${selectedContainer.containerId}</strong>
-          <span style="background: rgba(16, 185, 129, 0.2); color: #10B981; font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: 700;">LIVE DGPS</span>
+      <div style="font-family: var(--font-sans, system-ui, sans-serif); color: #F8FAFC; background: #0B132B; padding: 10px 12px; border-radius: 8px; min-width: 230px; box-shadow: 0 8px 24px rgba(0,0,0,0.6);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 6px;">
+          <strong style="color: ${beaconColor}; font-size: 13.5px; letter-spacing: 0.3px;">${selectedContainer.containerId}</strong>
+          <span style="background: rgba(16, 185, 129, 0.2); color: #10B981; font-size: 9px; padding: 2px 7px; border-radius: 10px; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.4);">LIVE DGPS</span>
         </div>
-        <div style="font-size: 11px; margin-bottom: 3px;"><strong>Device:</strong> ${selectedContainer.deviceCode}</div>
-        <div style="font-size: 11px; margin-bottom: 3px;"><strong>Vessel:</strong> ${selectedContainer.shipName || 'Carrying Vessel'}</div>
-        <div style="font-size: 11px; margin-bottom: 3px;"><strong>Cargo:</strong> ${selectedContainer.cargoType}</div>
-        <div style="font-size: 11px; margin-bottom: 3px;"><strong>Temp:</strong> ${selectedContainer.tempC}°C | <strong>Humidity:</strong> ${selectedContainer.humidityPct}%</div>
-        <div style="font-size: 11px; margin-bottom: 3px;"><strong>Speed:</strong> ${selectedContainer.speedKnots} kts | <strong>Heading:</strong> ${selectedContainer.headingDeg}°</div>
-        <div style="font-size: 10px; color: #94A3B8; margin-top: 6px;">GPS: ${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E</div>
+        <div style="font-size: 11.5px; margin-bottom: 4px; display: flex; justify-content: space-between;">
+          <span style="color: #94A3B8;">Device Code:</span>
+          <span style="color: #38BDF8; font-weight: 700; font-family: monospace;">${selectedContainer.deviceCode}</span>
+        </div>
+        <div style="font-size: 11.5px; margin-bottom: 4px; display: flex; justify-content: space-between;">
+          <span style="color: #94A3B8;">Vessel:</span>
+          <span style="color: #F8FAFC; font-weight: 600;">${selectedContainer.shipName || 'Carrying Vessel'}</span>
+        </div>
+        <div style="font-size: 11px; margin-bottom: 5px; color: #CBD5E1;">
+          <span style="color: #94A3B8;">Cargo:</span> ${selectedContainer.cargoType}
+        </div>
+        <div style="font-size: 11px; margin-bottom: 5px; padding: 4px 6px; background: rgba(255,255,255,0.06); border-radius: 4px; display: flex; justify-content: space-between;">
+          <span>🌡️ <strong style="color: #38BDF8;">${selectedContainer.tempC}°C</strong></span>
+          <span>💧 <strong style="color: #38BDF8;">${selectedContainer.humidityPct}%</strong></span>
+          <span>🔋 <strong style="color: #10B981;">${selectedContainer.batteryPct}%</strong></span>
+        </div>
+        <div style="font-size: 11px; margin-bottom: 5px; display: flex; justify-content: space-between; color: #CBD5E1;">
+          <span>Speed: <strong style="color: #F8FAFC;">${selectedContainer.speedKnots} kts</strong></span>
+          <span>Heading: <strong style="color: #F8FAFC;">${selectedContainer.headingDeg}°</strong></span>
+        </div>
+        <div style="font-size: 10px; color: #94A3B8; margin-top: 6px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.08); font-family: monospace; text-align: center;">
+          GPS: ${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E
+        </div>
       </div>
     `;
     marker.bindPopup(popupContent).openPopup();
@@ -244,7 +314,7 @@ export default function CargoTracking({ onNavigate }) {
       dashArray: '6, 8'
     }).addTo(routeLayer);
 
-  }, [selectedContainer]);
+  }, [selectedContainer, mapTheme]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -538,15 +608,48 @@ export default function CargoTracking({ onNavigate }) {
               )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11px', color: 'var(--text-secondary)' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
-                Completed Track
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#38BDF8', display: 'inline-block' }}></span>
-                Remaining Transit
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+              {/* Map Theme Switcher (Zero API Key, No Watermark) */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2px',
+                background: 'rgba(255, 255, 255, 0.06)',
+                padding: '3px',
+                borderRadius: '6px',
+                border: '1px solid rgba(255, 255, 255, 0.08)'
+              }}>
+                {Object.values(MAP_THEMES).map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setMapTheme(t.id)}
+                    style={{
+                      background: mapTheme === t.id ? 'var(--accent-cyan)' : 'transparent',
+                      color: mapTheme === t.id ? '#070D18' : 'var(--text-secondary)',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '3px 8px',
+                      fontSize: '10.5px',
+                      fontWeight: mapTheme === t.id ? 700 : 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {t.name}
+                  </button>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11px', color: 'var(--text-secondary)' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
+                  Completed Track
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#38BDF8', display: 'inline-block' }}></span>
+                  Remaining Transit
+                </span>
+              </div>
             </div>
           </div>
 

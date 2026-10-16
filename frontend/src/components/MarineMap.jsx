@@ -34,6 +34,7 @@ export default function MarineMap({
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const baseTileLayerRef = useRef(null);
+  const refTileLayerRef = useRef(null);
   const seaMarksLayerRef = useRef(null);
 
   // Map Layer States
@@ -132,6 +133,11 @@ export default function MarineMap({
     // 1. Update Base Tiles (Zero API Key Required, No Watermark)
     if (baseTileLayerRef.current) {
       map.removeLayer(baseTileLayerRef.current);
+      baseTileLayerRef.current = null;
+    }
+    if (refTileLayerRef.current) {
+      map.removeLayer(refTileLayerRef.current);
+      refTileLayerRef.current = null;
     }
 
     let tileUrl;
@@ -142,10 +148,16 @@ export default function MarineMap({
       // High-contrast clean dark maritime canvas (Free, no watermark)
       tileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}';
       maxZoom = 16;
+      refTileLayerRef.current = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 16
+      }).addTo(map);
     } else if (baseTileType === 'ocean') {
       // Bathymetric marine depth contours and ocean ridges (Free, no watermark)
       tileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}';
       maxZoom = 13;
+      refTileLayerRef.current = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Reference/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 13
+      }).addTo(map);
     } else {
       // Standard OpenStreetMap (Free, CC-BY-SA, no watermark)
       tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
