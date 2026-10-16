@@ -183,6 +183,37 @@ export async function deleteRouteFromCloud(routeId) {
   }
 }
 
+// Update route
+export async function updateRouteInCloud(routeId, data) {
+  try {
+    await setDoc(doc(db, "saved_routes", routeId), {
+      ...data,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    return { success: true };
+  } catch (err) {
+    console.warn("Cloud update error:", err);
+    return { success: false };
+  }
+}
+
+// Fetch saved routes
+export async function fetchSavedRoutesFromCloud(userId) {
+  try {
+    const q = query(collection(db, "saved_routes"));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      const routes = [];
+      snap.forEach(d => routes.push({ id: d.id, ...d.data() }));
+      return routes;
+    }
+  } catch (err) {
+    console.warn("Cloud fetch saved routes fallback:", err.message);
+  }
+  return [];
+}
+
+
 // ==========================================
 // CSV Maritime Data Fetchers from Firestore
 // ==========================================
