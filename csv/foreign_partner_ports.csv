@@ -1,0 +1,48 @@
+fport_id,foreign_port,unlocode,country,latitude,longitude
+FP01,Colombo,LKCMB,Sri Lanka,6.95,79.85
+FP02,Singapore,SGSIN,Singapore,1.264,103.84
+FP03,Port Klang,MYPKG,Malaysia,3.0,101.4
+FP04,Tanjung Pelepas,MYTPP,Malaysia,1.363,103.55
+FP05,Penang,MYPEN,Malaysia,5.42,100.35
+FP06,Laem Chabang,THLCH,Thailand,13.08,100.88
+FP07,Chittagong,BDCGP,Bangladesh,22.33,91.8
+FP08,Mongla,BDMGL,Bangladesh,22.47,89.6
+FP09,Yangon,MMRGN,Myanmar,16.77,96.16
+FP10,Jakarta (Tanjung Priok),IDJKT,Indonesia,-6.1,106.88
+FP11,Belawan,IDBLW,Indonesia,3.78,98.7
+FP12,Balikpapan,IDBPN,Indonesia,-1.27,116.8
+FP13,Cai Mep (Vietnam),VNCMT,Vietnam,10.53,107.02
+FP14,Hong Kong,HKHKG,Hong Kong,22.3,114.15
+FP15,Shanghai,CNSHA,China,31.23,121.48
+FP16,Ningbo,CNNGB,China,29.94,121.85
+FP17,Qingdao,CNTAO,China,36.07,120.32
+FP18,Busan,KRPUS,South Korea,35.1,129.04
+FP19,Kaohsiung,TWKHH,Taiwan,22.61,120.27
+FP20,Yokohama,JPYOK,Japan,35.44,139.64
+FP21,Jebel Ali,AEJEA,UAE,25.01,55.06
+FP22,Fujairah,AEFJR,UAE,25.17,56.36
+FP23,Salalah,OMSLL,Oman,16.94,54.01
+FP24,Jeddah,SAJED,Saudi Arabia,21.48,39.17
+FP25,Dammam / Ras Tanura,SADMM,Saudi Arabia,26.43,50.11
+FP26,Umm Qasr / Basra,IQUQR,Iraq,30.03,47.95
+FP27,Ras Laffan,QARLF,Qatar,25.92,51.55
+FP28,Bandar Abbas,IRBND,Iran,27.18,56.28
+FP29,Port Said,EGPSD,Egypt,31.26,32.3
+FP30,Durban,ZADUR,South Africa,-29.87,31.02
+FP31,Richards Bay,ZARCB,South Africa,-28.8,32.08
+FP32,Mombasa,KEMBA,Kenya,-4.06,39.67
+FP33,Rotterdam,NLRTM,Netherlands,51.95,4.14
+FP34,Hamburg,DEHAM,Germany,53.54,9.97
+FP35,Antwerp,BEANR,Belgium,51.28,4.3
+FP36,Felixstowe,GBFXT,UK,51.95,1.35
+FP37,Genoa,ITGOA,Italy,44.4,8.92
+FP38,Piraeus,GRPIR,Greece,37.94,23.64
+FP39,New York / Newark,USNYC,USA,40.67,-74.15
+FP40,Savannah,USSAV,USA,32.08,-81.09
+FP41,Houston,USHOU,USA,29.73,-95.27
+FP42,Los Angeles,USLAX,USA,33.73,-118.26
+FP43,Newcastle (NSW),AUNTL,Australia,-32.92,151.79
+FP44,Gladstone / Hay Point,AUGLT,Australia,-23.84,151.26
+FP45,Fremantle,AUFRE,Australia,-32.05,115.74
+FP46,Lagos,NGLOS,Nigeria,6.44,3.39
+FP47,Cotonou,BJCOO,Benin,6.35,2.44

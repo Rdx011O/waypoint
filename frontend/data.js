@@ -2,7 +2,7 @@
 // All data points are based on the WAYPOINT ASD-STE100 Operator Manual (Demo Data)
 
 window.WAYPOINT_DATA = {
-  // Navigation links based on Table 1 & user roles
+  // Navigation links distinctly divided by role (Table 1 of Operator Manual)
   navItems: {
     shared: [
       { id: 'dashboard', label: 'Dashboard', icon: '📊', sub: 'Maritime Overview' },
@@ -15,15 +15,23 @@ window.WAYPOINT_DATA = {
       { id: 'settings', label: 'Settings', icon: '⚙️', sub: 'Config & Data Sources' }
     ],
     shipper: [
+      { id: 'dashboard', label: 'Overview & Shipments', icon: '📊', sub: 'Active Bookings' },
       { id: 'tracker', label: 'Live Cargo Tracker', icon: '🛰️', sub: 'Track Active Shipments', isLive: true },
       { id: 'plan', label: 'Plan a Shipment', icon: '📦', sub: 'Cargo & Lane Input' },
-      { id: 'compare', label: 'Compare Routes', icon: '⚖️', sub: 'Cost & Risk Intelligence' }
+      { id: 'compare', label: 'Compare Routes', icon: '⚖️', sub: 'Cost & Risk Intelligence' },
+      { id: 'saved', label: 'Saved Routes', icon: '📑', sub: 'Bookings & Portfolio' },
+      { id: 'assistant', label: 'Route Assistant', icon: '🤖', sub: 'AI Maritime Copilot' },
+      { id: 'settings', label: 'Account & Preferences', icon: '⚙️', sub: 'Shipper Config' }
     ],
     manager: [
+      { id: 'dashboard', label: 'Operations Command', icon: '📊', sub: 'Fleet Status' },
       { id: 'tracker', label: 'Fleet & Cargo GPS', icon: '🛰️', sub: 'AIS Live Transponder', isLive: true },
+      { id: 'riskmap', label: 'Live Risk Map', icon: '🗺️', sub: 'Hazard & Route Monitor' },
       { id: 'rerouting', label: 'Rerouting Center', icon: '🔄', sub: 'Disruption & Alternate' },
-      { id: 'plan', label: 'Plan a Shipment', icon: '📦', sub: 'Cargo & Lane Input' },
-      { id: 'compare', label: 'Compare Routes', icon: '⚖️', sub: 'Cost & Risk Intelligence' }
+      { id: 'alerts', label: 'Alerts Center', icon: '🚨', sub: 'Active Sea Warnings' },
+      { id: 'analytics', label: 'Maritime Analytics', icon: '📈', sub: 'Fleet & Risk Metrics' },
+      { id: 'assistant', label: 'Route Assistant', icon: '🤖', sub: 'AI Maritime Copilot' },
+      { id: 'settings', label: 'Fleet Configuration', icon: '⚙️', sub: 'Telemetry Sources' }
     ]
   },
 
@@ -796,6 +804,7 @@ window.WAYPOINT_DATA = {
 
   // Table 7: Data Source Status
   dataSources: [
+    { source: 'Cloud Firestore & Auth', status: 'Connected (Live)', tagClass: 'tag-live', note: 'Project: waypoint-maritime. Realtime synchronization enabled.' },
     { source: 'AIS vessel data', status: 'Not Connected', tagClass: 'tag-unavail', note: 'Requires verified SAT-AIS provider feed credentials.' },
     { source: 'Weather and hazard feeds', status: 'Demo Mode', tagClass: 'tag-demo', note: 'Simulated ECMWF & GFS tropical cyclone matrix.' },
     { source: 'Port information', status: 'Demo Mode', tagClass: 'tag-demo', note: 'UN/LOCODE port database with simulated queue times.' },
