@@ -11,14 +11,16 @@ function optimizeRoutes(routes, options = {}) {
 
     // Sample operating cost scales with the sample base cost and travel time.
     // Replace with validated fuel burn, fuel price, port charges and other costs.
+    const baseEta = route.baseEtaDays > 0 ? route.baseEtaDays : (etaDays > 0 ? etaDays : 1);
     const estimatedCostUsd = Math.round(
-      route.baseOperatingCostUsd * (etaDays / route.baseEtaDays)
+      route.baseOperatingCostUsd * (etaDays / baseEta)
     );
 
-    const riskPenalty = route.hazards.length > 0 ? 1000 : 0;
-    const riskLevel = route.hazards.some(h => h.severity === "High")
+    const hazards = Array.isArray(route.hazards) ? route.hazards : [];
+    const riskPenalty = hazards.length > 0 ? 1000 : 0;
+    const riskLevel = hazards.some(h => h.severity === "High")
       ? "High"
-      : route.riskLevel;
+      : (route.riskLevel || "Low");
 
     // Lower score is better. Risk is deliberately prioritized for this demo.
     const score = Number((
