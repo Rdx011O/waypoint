@@ -1,0 +1,10 @@
+# ILLUSTRATIVE PLACEHOLDER COST & WEIGHT ASSUMPTIONS - SOURCED BY MEMBER 3
+parameter,value,unit,description
+fuel_price_usd_per_tonne,650,USD/tonne,Very Low Sulfur Fuel Oil (VLSFO) benchmark
+idle_fuel_tonnes_per_day,3.0,tonnes/day,Auxiliary engine fuel burn while at anchor/berth
+default_buffer_hours,24,hours,Port turnaround and customs buffer
+default_port_charges_usd,15000,USD,Standard port handling and pilotage charges
+weight_cost,0.40,ratio,Ranking weight for estimated cost (must sum to 1.0)
+weight_time,0.35,ratio,Ranking weight for estimated voyage time (must sum to 1.0)
+weight_risk,0.25,ratio,Ranking weight for risk score (must sum to 1.0)
+distance_tolerance_ratio,0.05,ratio,Max expected discrepancy between engine distance and waypoint sum

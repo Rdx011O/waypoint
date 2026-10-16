@@ -1,0 +1,6 @@
+# ILLUSTRATIVE PLACEHOLDER DATA - OWNED BY MEMBER 2 (Real cleaned data will replace this)
+vessel_id,name,type,speed_knots,fuel_consumption_tonnes_per_day,draft_meters,daily_operating_cost_usd
+VESSEL_01,Pacific Trader,Container,14.0,35.0,12.5,15000
+VESSEL_02,Ocean Giant,Capesize Bulk,12.0,42.0,18.0,22000
+VESSEL_03,Nordic Tanker,VLCC Tanker,13.5,55.0,21.5,30000
+VESSEL_04,Feeder Star,Feeder,11.0,18.0,8.5,8000
