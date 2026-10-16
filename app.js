@@ -18,23 +18,37 @@ const appState = {
 };
 
 // =========================================================================
-// 1. INITIALIZATION & AUTH / ROLE SELECTION
+// 1. AUTHENTICATION & ROLE-LOCKED NAVIGATION
 // =========================================================================
-window.addEventListener('DOMContentLoaded', () => {
-  // Check if role selected
-  updateRoleCardUI();
-});
+appState.signupSelectedRole = 'shipper';
 
-function selectRole(role) {
-  appState.currentRole = role;
-  updateRoleCardUI();
+function switchAuthTab(tab) {
+  const loginForm = document.getElementById('auth-form-login');
+  const signupForm = document.getElementById('auth-form-signup');
+  const loginTab = document.getElementById('tab-login-btn');
+  const signupTab = document.getElementById('tab-signup-btn');
+  const banner = document.getElementById('auth-banner');
+  if (banner) banner.classList.add('hidden');
+
+  if (tab === 'login') {
+    loginForm.classList.remove('hidden');
+    signupForm.classList.add('hidden');
+    loginTab.classList.add('active');
+    signupTab.classList.remove('active');
+  } else {
+    signupForm.classList.remove('hidden');
+    loginForm.classList.add('hidden');
+    signupTab.classList.add('active');
+    loginTab.classList.remove('active');
+  }
 }
 
-function updateRoleCardUI() {
-  const shipperCard = document.getElementById('role-shipper');
-  const managerCard = document.getElementById('role-manager');
+function selectSignupRole(role) {
+  appState.signupSelectedRole = role;
+  const shipperCard = document.getElementById('signup-role-shipper');
+  const managerCard = document.getElementById('signup-role-manager');
   if (shipperCard && managerCard) {
-    if (appState.currentRole === 'shipper') {
+    if (role === 'shipper') {
       shipperCard.classList.add('active');
       managerCard.classList.remove('active');
     } else {
@@ -44,107 +58,178 @@ function updateRoleCardUI() {
   }
 }
 
-async function doLogin() {
-  document.getElementById('login-screen').classList.add('hidden');
-  document.getElementById('main-app').classList.remove('hidden');
-  applyRoleNavigation();
-  navigate('dashboard');
+function showAuthBanner(message, type = 'error') {
+  const banner = document.getElementById('auth-banner');
+  if (!banner) return;
+  banner.className = `auth-banner ${type}`;
+  banner.textContent = message;
+  banner.classList.remove('hidden');
+}
 
-  // Authenticate with Firebase & sync role in Firestore
-  if (window.fb) {
-    try {
-      const authResult = await window.fb.authenticateUser(appState.currentRole);
-      if (window.fb.isLive) {
-        showToast('⚡ Live Firebase backend connected!');
-        window.fb.subscribeAlerts(liveAlerts => {
-          if (liveAlerts && liveAlerts.length) {
-            window.WAYPOINT_DATA.alerts = liveAlerts;
-            const countBadge = document.querySelector('.alert-count');
-            if (countBadge) countBadge.textContent = liveAlerts.length;
-          }
-        });
-      }
-    } catch (e) {
-      console.warn("Firebase login sync notice:", e);
+// Sign In with Email & Password
+async function handleSignIn() {
+  const emailInput = document.getElementById('login-email');
+  const passInput = document.getElementById('login-password');
+  const email = emailInput ? emailInput.value.trim() : '';
+  const password = passInput ? passInput.value.trim() : '';
+
+  if (!email || !password) {
+    showAuthBanner('Please enter both your work email and password.');
+    return;
+  }
+
+  const btn = document.getElementById('login-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Authenticating...';
+  }
+
+  try {
+    const res = await window.fb.signInUser(email, password);
+    if (res.success) {
+      enterPortalWithProfile(res.profile);
+    } else {
+      showAuthBanner(res.error || 'Invalid credentials. Please verify your email and password.');
+    }
+  } catch (err) {
+    showAuthBanner('Authentication failed: ' + err.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Sign In to WAYPOINT →';
     }
   }
 }
 
-function showRoleModal() {
-  openModal(`
-    <div class="modal-head">
-      <div class="modal-title">Switch Active Role</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <p style="margin-bottom:14px; font-size:13px; color:var(--text-muted);">
-        Select the operating profile to switch role-specific capabilities according to Table 1 of the manual.
-      </p>
-      <div class="role-cards">
-        <div class="role-card ${appState.currentRole==='shipper'?'active':''}" onclick="changeRoleFromModal('shipper')">
-          <div class="role-card-icon">📦</div>
-          <div class="role-card-title">Shipper / Exporter</div>
-          <div class="role-card-desc">Plan shipments, compare routes, export reports</div>
-        </div>
-        <div class="role-card ${appState.currentRole==='manager'?'active':''}" onclick="changeRoleFromModal('manager')">
-          <div class="role-card-icon">🎯</div>
-          <div class="role-card-title">Logistics Manager</div>
-          <div class="role-card-desc">Fleet / route monitor, alerts, rerouting center</div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-outline" onclick="closeModal()">Close</button>
-    </div>
-  `);
+// Sign Up with Name, Org, Email, Password, and Role
+async function handleSignUp() {
+  const name = document.getElementById('signup-name')?.value.trim();
+  const org = document.getElementById('signup-org')?.value.trim();
+  const email = document.getElementById('signup-email')?.value.trim();
+  const password = document.getElementById('signup-password')?.value.trim();
+  const role = appState.signupSelectedRole || 'shipper';
+
+  if (!name || !org || !email || !password) {
+    showAuthBanner('Please complete all required fields.');
+    return;
+  }
+  if (password.length < 6) {
+    showAuthBanner('Password must be at least 6 characters.');
+    return;
+  }
+
+  const btn = document.getElementById('signup-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Creating Account...';
+  }
+
+  try {
+    const res = await window.fb.signUpUser(name, org, email, password, role);
+    if (res.success) {
+      enterPortalWithProfile(res.profile);
+    } else {
+      showAuthBanner(res.error || 'Failed to create account.');
+    }
+  } catch (err) {
+    showAuthBanner('Registration failed: ' + err.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Create Account & Launch Portal →';
+    }
+  }
 }
 
-async function changeRoleFromModal(role) {
-  appState.currentRole = role;
+// Quick Demo Login (Divided by Role)
+async function quickDemoLogin(role) {
+  showToast(`Accessing demo workspace as ${role === 'shipper' ? 'Shipper' : 'Logistics Manager'}...`);
+  const res = await window.fb.quickDemoAuth(role);
+  if (res.success) {
+    enterPortalWithProfile(res.profile);
+  }
+}
+
+// Enter portal with role locked
+function enterPortalWithProfile(profile) {
+  appState.currentRole = profile.role;
+  appState.userProfile = profile;
+
+  // Update user badge in sidebar footer
+  const nameEl = document.getElementById('sidebar-user-name');
+  const emailEl = document.getElementById('sidebar-user-email');
+  const avatarEl = document.getElementById('sidebar-user-avatar');
+  if (nameEl) nameEl.textContent = profile.name || (profile.role === 'shipper' ? 'James Dao' : 'Logistics Controller');
+  if (emailEl) emailEl.textContent = profile.email || `${profile.role}@waypoint-maritime.app`;
+  if (avatarEl) {
+    const initials = (profile.name || 'OP').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    avatarEl.textContent = initials || (profile.role === 'shipper' ? 'JD' : 'LC');
+  }
+
+  // Hide login screen and display app
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('main-app').classList.remove('hidden');
+
+  // Apply role navigation & navigate
   applyRoleNavigation();
-  closeModal();
-  navigate(appState.currentPage);
+  navigate('dashboard');
+
+  // Connect real-time alerts
   if (window.fb && window.fb.isLive) {
-    await window.fb.authenticateUser(role);
+    window.fb.subscribeAlerts(liveAlerts => {
+      if (liveAlerts && liveAlerts.length) {
+        window.WAYPOINT_DATA.alerts = liveAlerts;
+        const countBadge = document.querySelector('.alert-count');
+        if (countBadge) countBadge.textContent = liveAlerts.length;
+      }
+    });
   }
-  showToast(`Switched role to ${role === 'shipper' ? 'Shipper / Exporter' : 'Logistics Manager'}`);
+
+  showToast(`Welcome! Signed in as ${profile.role === 'shipper' ? 'Shipper / Exporter' : 'Logistics Manager'}`);
 }
 
+// Log Out
+async function handleSignOut() {
+  if (window.fb) {
+    await window.fb.signOutUser();
+  }
+  appState.userProfile = null;
+  document.getElementById('main-app').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+  switchAuthTab('login');
+  showToast('Logged out of WAYPOINT.');
+}
+
+// Apply role navigation: Strictly divided features, NO switch option!
 function applyRoleNavigation() {
-  const roleLabel = document.getElementById('active-role-label');
-  if (roleLabel) {
-    roleLabel.textContent = appState.currentRole === 'shipper' ? 'Shipper' : 'Logistics Mgr';
+  const role = appState.currentRole;
+  const isShipper = role === 'shipper';
+
+  // Update locked role badge
+  const badgeWrap = document.getElementById('role-badge-locked');
+  const badgeIcon = document.getElementById('role-badge-icon');
+  const badgeText = document.getElementById('role-badge-text');
+
+  if (badgeWrap && badgeIcon && badgeText) {
+    if (isShipper) {
+      badgeWrap.className = 'role-badge-locked';
+      badgeIcon.textContent = '📦';
+      badgeText.textContent = 'Shipper Workspace';
+    } else {
+      badgeWrap.className = 'role-badge-locked manager';
+      badgeIcon.textContent = '🎯';
+      badgeText.textContent = 'Logistics Manager Console';
+    }
   }
 
+  // Render ONLY this role's navigation links
   const navContainer = document.getElementById('sidebar-nav');
   if (!navContainer) return;
 
-  const data = window.WAYPOINT_DATA.navItems;
-  const roleSpecific = data[appState.currentRole] || [];
-  const shared = data.shared;
+  const roleNavItems = window.WAYPOINT_DATA.navItems[role] || [];
+  let html = `<div class="nav-group-title">${isShipper ? 'Shipper Operations' : 'Fleet Command'}</div>`;
 
-  let html = `<div class="nav-group-title">Main Workspaces</div>`;
-  shared.slice(0, 3).forEach(item => {
-    html += `
-      <div class="nav-item ${appState.currentPage === item.id ? 'active' : ''}" onclick="navigate('${item.id}')">
-        <span class="nav-icon">${item.icon}</span>
-        <span class="nav-label">${item.label}</span>
-      </div>
-    `;
-  });
-
-  html += `<div class="nav-group-title">${appState.currentRole === 'shipper' ? 'Shipper Tools' : 'Logistics Operations'}</div>`;
-  roleSpecific.forEach(item => {
-    html += `
-      <div class="nav-item ${appState.currentPage === item.id ? 'active' : ''}" onclick="navigate('${item.id}')">
-        <span class="nav-icon">${item.icon}</span>
-        <span class="nav-label">${item.label}</span>
-      </div>
-    `;
-  });
-
-  html += `<div class="nav-group-title">Analytics & Config</div>`;
-  shared.slice(3).forEach(item => {
+  roleNavItems.forEach(item => {
     html += `
       <div class="nav-item ${appState.currentPage === item.id ? 'active' : ''}" onclick="navigate('${item.id}')">
         <span class="nav-icon">${item.icon}</span>

@@ -27,54 +27,151 @@ window.fb = {
   auth,
   db,
   currentUser: null,
+  userProfile: null,
   isLive: false,
 
-  // 1. Authenticate user & sync role in Firestore
-  async authenticateUser(role = 'shipper') {
-    if (!auth) return { uid: 'demo-operator', role };
+  // 1. Sign Up a new user with Email, Password and Role
+  async signUpUser(name, org, email, password, role = 'shipper') {
+    if (!auth) {
+      this.userProfile = { name, org, email, role };
+      return { success: true, profile: this.userProfile };
+    }
 
     try {
-      let userCredential;
-      if (auth.currentUser) {
-        userCredential = { user: auth.currentUser };
-      } else {
-        userCredential = await auth.signInAnonymously();
-      }
-
-      this.currentUser = userCredential.user;
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      this.currentUser = cred.user;
       this.isLive = true;
 
-      // Sync user profile & active role in Firestore
-      if (db) {
-        await db.collection('users').doc(this.currentUser.uid).set({
-          uid: this.currentUser.uid,
-          role: role,
-          name: role === 'shipper' ? 'James Dao' : 'Logistics Controller',
-          email: `${role}@waypoint-maritime.app`,
-          lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+      const profile = {
+        uid: cred.user.uid,
+        name: name.trim(),
+        org: org.trim(),
+        email: email.trim(),
+        role: role, // 'shipper' or 'manager'
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
 
-        // Seed sample data in Firestore if empty
+      if (db) {
+        await db.collection('users').doc(cred.user.uid).set(profile);
         this.seedFirestoreIfEmpty();
       }
 
-      console.log("Firebase Auth connected:", this.currentUser.uid, "Role:", role);
+      this.userProfile = profile;
       this.updateStatusBadge(true);
-      return { uid: this.currentUser.uid, role };
-    } catch (error) {
-      console.warn("Firebase Auth fallback to local demo:", error.message);
-      this.updateStatusBadge(false);
-      return { uid: 'offline-demo', role };
+      return { success: true, profile };
+    } catch (err) {
+      console.error("Firebase Sign Up error:", err);
+      return { success: false, error: err.message };
     }
   },
 
-  // 2. Seed initial alerts & routes to Firestore if collection is fresh
+  // 2. Sign In existing user with Email & Password
+  async signInUser(email, password) {
+    if (!auth) {
+      const role = email.includes('manager') ? 'manager' : 'shipper';
+      this.userProfile = { name: 'Demo Operator', email, role };
+      return { success: true, profile: this.userProfile };
+    }
+
+    try {
+      const cred = await auth.signInWithEmailAndPassword(email, password);
+      this.currentUser = cred.user;
+      this.isLive = true;
+
+      let profile = {
+        uid: cred.user.uid,
+        email: cred.user.email,
+        name: cred.user.displayName || 'Operator',
+        role: 'shipper'
+      };
+
+      if (db) {
+        const userDoc = await db.collection('users').doc(cred.user.uid).get();
+        if (userDoc.exists) {
+          profile = { ...profile, ...userDoc.data() };
+        } else {
+          // If first time signing in without doc, determine role by email hint or default
+          const defaultRole = email.toLowerCase().includes('manager') ? 'manager' : 'shipper';
+          profile.role = defaultRole;
+          await db.collection('users').doc(cred.user.uid).set(profile, { merge: true });
+        }
+      }
+
+      this.userProfile = profile;
+      this.updateStatusBadge(true);
+      return { success: true, profile };
+    } catch (err) {
+      console.error("Firebase Sign In error:", err);
+      return { success: false, error: err.message };
+    }
+  },
+
+  // 3. Quick Demo Login for instant testing
+  async quickDemoAuth(role = 'shipper') {
+    const isShipper = role === 'shipper';
+    const profile = {
+      name: isShipper ? 'James Dao' : 'Sarah Chen',
+      org: isShipper ? 'Ocean Cargo Exporters' : 'Pacific Route Command',
+      email: isShipper ? 'shipper@waypoint-demo.com' : 'manager@waypoint-demo.com',
+      role: role
+    };
+
+    if (!auth) {
+      this.userProfile = profile;
+      return { success: true, profile };
+    }
+
+    try {
+      let cred;
+      if (auth.currentUser) {
+        cred = { user: auth.currentUser };
+      } else {
+        cred = await auth.signInAnonymously();
+      }
+
+      this.currentUser = cred.user;
+      this.isLive = true;
+      profile.uid = cred.user.uid;
+
+      if (db) {
+        await db.collection('users').doc(cred.user.uid).set({
+          ...profile,
+          lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        this.seedFirestoreIfEmpty();
+      }
+
+      this.userProfile = profile;
+      this.updateStatusBadge(true);
+      return { success: true, profile };
+    } catch (err) {
+      console.warn("Demo auth fallback:", err.message);
+      this.userProfile = profile;
+      return { success: true, profile };
+    }
+  },
+
+  // 4. Sign Out
+  async signOutUser() {
+    if (auth) {
+      try {
+        await auth.signOut();
+      } catch (e) {
+        console.warn("Sign out notice:", e);
+      }
+    }
+    this.currentUser = null;
+    this.userProfile = null;
+    this.isLive = false;
+    this.updateStatusBadge(false);
+  },
+
+  // 5. Seed initial alerts & routes to Firestore if collection is empty
   async seedFirestoreIfEmpty() {
     if (!db) return;
     try {
       const alertSnap = await db.collection('alerts').limit(1).get();
       if (alertSnap.empty && window.WAYPOINT_DATA?.alerts) {
-        console.log("Seeding initial maritime alerts to Firestore...");
         const batch = db.batch();
         window.WAYPOINT_DATA.alerts.forEach(alert => {
           const ref = db.collection('alerts').doc(alert.id);
@@ -89,7 +186,6 @@ window.fb = {
 
       const routeSnap = await db.collection('saved_routes').limit(1).get();
       if (routeSnap.empty && window.WAYPOINT_DATA?.savedRoutes) {
-        console.log("Seeding initial saved routes to Firestore...");
         const batch = db.batch();
         window.WAYPOINT_DATA.savedRoutes.forEach(route => {
           const ref = db.collection('saved_routes').doc(route.id);
@@ -106,7 +202,7 @@ window.fb = {
     }
   },
 
-  // 3. Real-time Alerts Listener
+  // 6. Real-time Alerts Listener
   subscribeAlerts(onUpdate) {
     if (!db) {
       onUpdate(window.WAYPOINT_DATA?.alerts || []);
@@ -135,7 +231,7 @@ window.fb = {
     }
   },
 
-  // 4. Save a Route to Cloud Firestore
+  // 7. Save Route to Firestore
   async saveRoute(routeData) {
     if (!db) {
       window.WAYPOINT_DATA.savedRoutes.unshift(routeData);
@@ -157,7 +253,7 @@ window.fb = {
     }
   },
 
-  // 5. Fetch Saved Routes from Cloud Firestore
+  // 8. Fetch Saved Routes from Firestore
   async fetchSavedRoutes() {
     if (!db) return window.WAYPOINT_DATA.savedRoutes;
 
@@ -175,7 +271,7 @@ window.fb = {
     }
   },
 
-  // 6. Delete a Saved Route
+  // 9. Delete a Saved Route
   async deleteRoute(routeId) {
     if (db) {
       try {
@@ -188,7 +284,7 @@ window.fb = {
     if (idx !== -1) window.WAYPOINT_DATA.savedRoutes.splice(idx, 1);
   },
 
-  // 7. Log Rerouting Decisions to Cloud
+  // 10. Log Rerouting Decisions
   async logRerouteDecision(decision) {
     if (!db) return;
     try {
@@ -202,7 +298,7 @@ window.fb = {
     }
   },
 
-  // UI Helper: Update Topbar Badge
+  // UI Status Indicator
   updateStatusBadge(isOnline) {
     const pill = document.getElementById('data-status-pill');
     if (pill) {

@@ -14,37 +14,116 @@
 </head>
 <body>
   <div id="app">
-    <!-- Login screen shown first -->
+    <!-- Login / Sign Up screen -->
     <div id="login-screen" class="login-screen">
       <div class="login-card">
         <div class="login-logo">
           <div class="logo-icon">⚓</div>
           <span class="logo-text">WAYPOINT</span>
         </div>
-        <h1 class="login-title">Navigate Smarter.<br/>Ship Safer.</h1>
-        <p class="login-sub">Maritime route intelligence platform</p>
-        <div class="login-demo-note">
-          <span class="tag tag-demo">DEMO MODE</span>
-          All data is simulated for demonstration.
+
+        <!-- Auth Tabs: Sign In vs Sign Up -->
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab active" id="tab-login-btn" onclick="switchAuthTab('login')">Sign In</button>
+          <button type="button" class="auth-tab" id="tab-signup-btn" onclick="switchAuthTab('signup')">Create Account</button>
         </div>
-        <div class="field-group">
-          <label class="field-label">Select your role</label>
-          <div class="role-cards">
-            <div class="role-card active" id="role-shipper" onclick="selectRole('shipper')">
-              <div class="role-card-icon">📦</div>
-              <div class="role-card-title">Shipper / Exporter</div>
-              <div class="role-card-desc">Plan shipments, compare routes, export reports</div>
+
+        <!-- Error/Success Banner -->
+        <div id="auth-banner" class="auth-banner hidden"></div>
+
+        <!-- 1. SIGN IN TAB -->
+        <div id="auth-form-login">
+          <h2 class="auth-heading">Sign In to Fleet Console</h2>
+          <p class="auth-sub">Enter your credentials or choose quick demo access.</p>
+
+          <div class="field-group">
+            <label class="field-label" for="login-email">Work Email</label>
+            <input type="email" id="login-email" class="text-input" placeholder="e.g. j.dao@oceancargo.com" autocomplete="email"/>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="login-password">Password</label>
+            <input type="password" id="login-password" class="text-input" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') handleSignIn()"/>
+          </div>
+
+          <button class="btn btn-primary btn-full" id="login-btn" style="padding:11px; margin-top:4px;" onclick="handleSignIn()">
+            Sign In to WAYPOINT →
+          </button>
+
+          <!-- Quick Demo Access (Divided by Role) -->
+          <div class="auth-divider">
+            <span>OR INSTANT DEMO LOGIN</span>
+          </div>
+
+          <div class="demo-access-grid">
+            <div class="demo-btn" onclick="quickDemoLogin('shipper')">
+              <span class="demo-icon">📦</span>
+              <div class="demo-info">
+                <span class="demo-role">Shipper / Exporter</span>
+                <span class="demo-desc">Plan, Compare & Book</span>
+              </div>
             </div>
-            <div class="role-card" id="role-manager" onclick="selectRole('manager')">
-              <div class="role-card-icon">🎯</div>
-              <div class="role-card-title">Logistics Manager</div>
-              <div class="role-card-desc">Monitor fleet, manage alerts, reroute</div>
+            <div class="demo-btn" onclick="quickDemoLogin('manager')">
+              <span class="demo-icon">🎯</span>
+              <div class="demo-info">
+                <span class="demo-role">Logistics Manager</span>
+                <span class="demo-desc">Fleet, Reroute & Alerts</span>
+              </div>
             </div>
           </div>
         </div>
-        <button class="btn btn-primary btn-full" id="login-btn" onclick="doLogin()">
-          Enter WAYPOINT →
-        </button>
+
+        <!-- 2. SIGN UP TAB -->
+        <div id="auth-form-signup" class="hidden">
+          <h2 class="auth-heading">Create New Account</h2>
+          <p class="auth-sub">Select your operating role. Your workspace is configured to this role.</p>
+
+          <!-- Role Selection for Signup -->
+          <div class="field-group">
+            <label class="field-label">Select Your Operating Role *</label>
+            <div class="role-cards">
+              <div class="role-card active" id="signup-role-shipper" onclick="selectSignupRole('shipper')">
+                <div class="role-card-icon">📦</div>
+                <div class="role-card-title">Shipper / Exporter</div>
+                <div class="role-card-desc">Shipment planning, multi-objective route comparisons, bookings & reports</div>
+              </div>
+              <div class="role-card" id="signup-role-manager" onclick="selectSignupRole('manager')">
+                <div class="role-card-icon">🎯</div>
+                <div class="role-card-title">Logistics Manager</div>
+                <div class="role-card-desc">Live fleet radar, emergency rerouting, active weather alerts & risk analytics</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+            <div>
+              <label class="field-label" for="signup-name">Full Name *</label>
+              <input type="text" id="signup-name" class="text-input" placeholder="e.g. Captain James Dao"/>
+            </div>
+            <div>
+              <label class="field-label" for="signup-org">Organization *</label>
+              <input type="text" id="signup-org" class="text-input" placeholder="e.g. Ocean Cargo Ltd."/>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="signup-email">Work Email *</label>
+            <input type="email" id="signup-email" class="text-input" placeholder="name@company.com" autocomplete="email"/>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="signup-password">Create Password *</label>
+            <input type="password" id="signup-password" class="text-input" placeholder="At least 6 characters" autocomplete="new-password"/>
+          </div>
+
+          <button class="btn btn-safe btn-full" id="signup-btn" style="padding:11px;" onclick="handleSignUp()">
+            Create Account & Launch Portal →
+          </button>
+        </div>
+
+        <div class="login-footer-security">
+          <span>🔒 Secured with Firebase Authentication & Cloud Firestore</span>
+        </div>
       </div>
       <div class="login-bg-map" aria-hidden="true"></div>
     </div>
@@ -59,21 +138,28 @@
             <span class="logo-text">WAYPOINT</span>
           </div>
         </div>
-        <div class="role-selector" id="role-selector-pill">
-          <span class="role-label" id="active-role-label">Shipper</span>
-          <button class="role-switch-btn" onclick="showRoleModal()">Switch</button>
+
+        <!-- Locked Role Badge (NO account switch option) -->
+        <div class="role-badge-locked" id="role-badge-locked">
+          <span class="role-badge-icon" id="role-badge-icon">📦</span>
+          <span class="role-badge-text" id="role-badge-text">Shipper Portal</span>
         </div>
+
         <nav class="sidebar-nav" id="sidebar-nav">
-          <!-- injected by JS -->
+          <!-- injected by JS based on authenticated role -->
         </nav>
         <div class="sidebar-footer">
           <div class="sidebar-user" onclick="navigate('settings')">
-            <div class="user-avatar">JD</div>
+            <div class="user-avatar" id="sidebar-user-avatar">JD</div>
             <div class="user-info">
-              <div class="user-name">James Dao</div>
-              <div class="user-email">j.dao@oceancargo.com</div>
+              <div class="user-name" id="sidebar-user-name">James Dao</div>
+              <div class="user-email" id="sidebar-user-email">j.dao@oceancargo.com</div>
             </div>
           </div>
+          <!-- Log Out Button -->
+          <button class="logout-btn" onclick="handleSignOut()" title="Log out of WAYPOINT">
+            <span>🚪</span> <span>Sign Out</span>
+          </button>
         </div>
       </aside>
 

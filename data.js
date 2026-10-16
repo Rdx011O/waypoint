@@ -2,25 +2,24 @@
 // All data points are based on the WAYPOINT ASD-STE100 Operator Manual (Demo Data)
 
 window.WAYPOINT_DATA = {
-  // Navigation links based on Table 1 & user roles
+  // Navigation links distinctly divided by role (Table 1 of Operator Manual)
   navItems: {
-    shared: [
-      { id: 'dashboard', label: 'Dashboard', icon: '📊', sub: 'Maritime Overview' },
-      { id: 'riskmap', label: 'Live Risk Map', icon: '🗺️', sub: 'Hazard & Route Monitor' },
-      { id: 'alerts', label: 'Alerts Center', icon: '🚨', sub: 'Active Sea Warnings' },
-      { id: 'saved', label: 'Saved Routes', icon: '📑', sub: 'Saved Lanes & Library' },
-      { id: 'analytics', label: 'Analytics', icon: '📈', sub: 'Cost & Risk Metrics' },
-      { id: 'assistant', label: 'Route Assistant', icon: '🤖', sub: 'AI Maritime Copilot' },
-      { id: 'settings', label: 'Settings', icon: '⚙️', sub: 'Config & Data Sources' }
-    ],
     shipper: [
+      { id: 'dashboard', label: 'Overview & Shipments', icon: '📊', sub: 'Active Bookings' },
       { id: 'plan', label: 'Plan a Shipment', icon: '📦', sub: 'Cargo & Lane Input' },
-      { id: 'compare', label: 'Compare Routes', icon: '⚖️', sub: 'Cost & Risk Intelligence' }
+      { id: 'compare', label: 'Compare Routes', icon: '⚖️', sub: 'Cost & Risk Intelligence' },
+      { id: 'saved', label: 'Saved Routes', icon: '📑', sub: 'Bookings & Portfolio' },
+      { id: 'assistant', label: 'Route Assistant', icon: '🤖', sub: 'AI Maritime Copilot' },
+      { id: 'settings', label: 'Account & Preferences', icon: '⚙️', sub: 'Shipper Config' }
     ],
     manager: [
+      { id: 'dashboard', label: 'Operations Command', icon: '📊', sub: 'Fleet Status' },
+      { id: 'riskmap', label: 'Live Risk Map', icon: '🗺️', sub: 'Hazard & Route Monitor' },
       { id: 'rerouting', label: 'Rerouting Center', icon: '🔄', sub: 'Disruption & Alternate' },
-      { id: 'plan', label: 'Plan a Shipment', icon: '📦', sub: 'Cargo & Lane Input' },
-      { id: 'compare', label: 'Compare Routes', icon: '⚖️', sub: 'Cost & Risk Intelligence' }
+      { id: 'alerts', label: 'Alerts Center', icon: '🚨', sub: 'Active Sea Warnings' },
+      { id: 'analytics', label: 'Maritime Analytics', icon: '📈', sub: 'Fleet & Risk Metrics' },
+      { id: 'assistant', label: 'Route Assistant', icon: '🤖', sub: 'AI Maritime Copilot' },
+      { id: 'settings', label: 'Fleet Configuration', icon: '⚙️', sub: 'Telemetry Sources' }
     ]
   },
 

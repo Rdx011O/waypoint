@@ -7,18 +7,24 @@ window.PAGES = {
   // 1. DASHBOARD (SECTION 4)
   // =========================================================================
   renderDashboard() {
+    const isShipper = appState.currentRole === 'shipper';
     const kpis = window.WAYPOINT_DATA.dashboardKpis;
     const alerts = window.WAYPOINT_DATA.alerts.slice(0, 4);
 
     return `
       <div class="page-header">
         <div>
-          <h1 class="page-title">Maritime Overview</h1>
-          <p class="page-desc">Global fleet operations, active shipping corridors, and real-time hazard intelligence.</p>
+          <h1 class="page-title">${isShipper ? 'Shipment & Cargo Overview' : 'Maritime Operations Command'}</h1>
+          <p class="page-desc">${isShipper ? 'Monitor active cargo bookings, synthesized route portfolios, and transit schedules.' : 'Global fleet operations, active shipping corridors, and real-time hazard intelligence.'}</p>
         </div>
         <div class="page-actions">
-          <button class="btn btn-primary" onclick="navigate('plan')">📦 Plan New Shipment</button>
-          <button class="btn btn-outline" onclick="navigate('riskmap')">🗺️ Full Risk Map</button>
+          ${isShipper ? `
+            <button class="btn btn-primary" onclick="navigate('plan')">📦 Plan New Shipment</button>
+            <button class="btn btn-outline" onclick="navigate('saved')">📑 Saved Bookings</button>
+          ` : `
+            <button class="btn btn-primary" onclick="navigate('riskmap')">🗺️ Full Risk Map</button>
+            <button class="btn btn-outline" onclick="navigate('rerouting')">🔄 Rerouting Center</button>
+          `}
         </div>
       </div>
 
@@ -69,7 +75,7 @@ window.PAGES = {
               <span>⚠️ Active Risk Alerts</span>
               <span class="tag tag-crit">05 Total</span>
             </div>
-            <button class="btn btn-outline btn-sm" onclick="navigate('alerts')">View All</button>
+            ${!isShipper ? `<button class="btn btn-outline btn-sm" onclick="navigate('alerts')">View All</button>` : ''}
           </div>
           <div class="alert-items">
             ${alerts.map(a => `
@@ -84,9 +90,15 @@ window.PAGES = {
             `).join('')}
           </div>
           <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
-            <button class="btn btn-outline btn-full btn-sm" onclick="navigate('rerouting')">
-              🔄 Open Rerouting Center
-            </button>
+            ${isShipper ? `
+              <button class="btn btn-outline btn-full btn-sm" onclick="navigate('plan')">
+                📦 Plan Safe Avoidance Route
+              </button>
+            ` : `
+              <button class="btn btn-outline btn-full btn-sm" onclick="navigate('rerouting')">
+                🔄 Open Rerouting Center
+              </button>
+            `}
           </div>
         </div>
       </div>
