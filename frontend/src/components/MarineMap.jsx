@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { WAYPOINT_DATA } from '../data/maritimeData';
+import { CSV_INDIAN_PORTS, CSV_FOREIGN_PORTS } from '../data/maritimeCsvData';
 
 export default function MarineMap({
   center = [15, 82],
@@ -65,22 +66,51 @@ export default function MarineMap({
       });
     }
 
-    // 2. Ports Layer
+    // 2. Ports Layer (18 Indian East Coast Ports & Global Partner Ports from CSV)
     if (activeLayers.ports) {
-      WAYPOINT_DATA.ports.forEach(p => {
+      // 18 Indian East Coast Ports
+      CSV_INDIAN_PORTS.forEach(p => {
+        const isDeepDraft = p.maxDraftM >= 16;
         const marker = L.circleMarker([p.lat, p.lng], {
-          radius: 5.5,
-          fillColor: '#38BDF8',
+          radius: isDeepDraft ? 6 : 4.5,
+          fillColor: isDeepDraft ? '#2DD4BF' : '#38BDF8',
           color: '#ffffff',
+          weight: 1.5,
+          fillOpacity: 0.95
+        }).addTo(overlayGroup);
+
+        marker.bindPopup(`
+          <div style="font-family:Inter,sans-serif; font-size:12px; min-width:180px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <strong style="color:#fff; font-size:13px;">${p.name}</strong>
+              <span style="font-family:'JetBrains Mono',monospace; color:#38BDF8; font-weight:700; font-size:11px;">${p.unlocode}</span>
+            </div>
+            <div style="color:#94A3B8; font-size:11px;">State: <span style="color:#F8FAFC;">${p.state} (${p.type})</span></div>
+            <div style="color:#94A3B8; font-size:11px;">Max Draft: <strong style="color:${isDeepDraft ? '#2DD4BF' : '#FBBF24'};">${p.maxDraftM}m</strong></div>
+            <div style="color:#94A3B8; font-size:11px;">Throughput FY24: <span style="color:#F8FAFC;">${p.trafficFY24MT} MT</span></div>
+            ${p.containerCapacityTEU > 0 ? `<div style="color:#94A3B8; font-size:11px;">Containers: <span style="color:#F8FAFC;">${(p.containerCapacityTEU/1000).toFixed(0)}k TEU</span></div>` : ''}
+            <div style="margin-top:4px; font-size:10.5px; color:#cbd5e1; border-top:1px solid #334155; padding-top:4px;">
+              ${p.mainCargo.slice(0, 75)}...
+            </div>
+          </div>
+        `);
+      });
+
+      // Key Foreign Partner Hubs
+      CSV_FOREIGN_PORTS.slice(0, 15).forEach(fp => {
+        const marker = L.circleMarker([fp.lat, fp.lng], {
+          radius: 5,
+          fillColor: '#FBBF24',
+          color: '#080E1A',
           weight: 1.5,
           fillOpacity: 0.9
         }).addTo(overlayGroup);
 
         marker.bindPopup(`
           <div style="font-family:Inter,sans-serif; font-size:12px;">
-            <strong style="color:#fff;">${p.name}</strong><br/>
-            <span style="color:#94A3B8;">Country:</span> ${p.country}<br/>
-            <span style="color:#94A3B8;">Berth Queue:</span> ${p.waitHours} hrs (${p.congestion} Congestion)
+            <strong style="color:#fff;">${fp.name}</strong><br/>
+            <span style="color:#94A3B8;">Country:</span> ${fp.country}<br/>
+            <span style="font-family:'JetBrains Mono',monospace; color:#FBBF24; font-weight:700;">${fp.unlocode}</span>
           </div>
         `);
       });

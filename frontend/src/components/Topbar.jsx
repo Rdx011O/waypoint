@@ -13,6 +13,7 @@ export default function Topbar({ currentPage, onNavigate, onToggleMobile, alertC
     alerts: 'Alerts Center',
     analytics: 'Maritime Analytics',
     assistant: 'Route Assistant Copilot',
+    catalog: 'Ports & Trade Network Directory',
     settings: 'Configuration & Settings'
   };
 

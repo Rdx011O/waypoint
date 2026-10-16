@@ -47,14 +47,20 @@ export default function RouteAssistant({ onNavigate }) {
       if (matched) {
         replyText = matched.a;
         action = matched.suggestedAction;
+      } else if (query.toLowerCase().includes('draft') || query.toLowerCase().includes('kolkata') || query.toLowerCase().includes('paradip') || query.toLowerCase().includes('chennai') || query.toLowerCase().includes('gangavaram')) {
+        replyText = '**Port Draft & Bathymetric Limits (CSV Dataset):**\n\n• **Gangavaram (INGGV):** 21.0m (Deepest draft, Capesize/VLCC compliant)\n• **Dhamra (INDHA) & Kamarajar (INENR):** 18.0m - 18.5m draft\n• **Chennai (INMAA) & Paradip (INPBD):** 14.5m - 16.5m draft\n• **Kolkata (INCCU):** 8.5m riverine draft (Handysize & Feeder restricted)\n\n*Guidance: Vessels exceeding 14.5m draft must berth at Gangavaram, Dhamra, or Krishnapatnam.*';
+        action = 'catalog';
+      } else if (query.toLowerCase().includes('carrier') || query.toLowerCase().includes('line') || query.toLowerCase().includes('maersk') || query.toLowerCase().includes('msc')) {
+        replyText = '**Active Shipping Lines (shipping_lines_by_port.csv):**\n\n• **Global Container Lines:** Maersk, MSC, CMA CGM, Hapag-Lloyd, ONE, Evergreen, COSCO/OOCL\n• **Regional Feeders:** X-Press Feeders, Sea Consortium, RCL, Samudera, Unifeeder, Bengal Tiger Line\n• **Dry Bulk Operators:** Oldendorff Carriers, Star Bulk, Berge Bulk, Ultrabulk\n\nAll 385 port-carrier pairings are cataloged in the Ports & Trade Directory.';
+        action = 'catalog';
       } else if (query.toLowerCase().includes('weather') || query.toLowerCase().includes('storm') || query.toLowerCase().includes('cyclone')) {
         replyText = '**Severe Weather Advisory in Effect:**\n\n• **System:** Tropical Storm ASANI located at 9.5°N, 88.5°E.\n• **Wave Heights:** 4.8m – 5.5m in central quadrant.\n• **Recommended Action:** Vessels bound for Singapore should divert via the equatorial southern bypass (4°N), avoiding northern Bay of Bengal.';
         action = 'rerouting';
       } else if (query.toLowerCase().includes('port') || query.toLowerCase().includes('singapore') || query.toLowerCase().includes('wait')) {
-        replyText = '**Port Telemetry Advisory:**\n\n• **Singapore (Jurong / Pasir Panjang):** Elevated queue time of 42 hours.\n• **Nhava Sheva (Mumbai):** Normal operations, ~14 hours average wait.\n• **Recommendation:** Request virtual arrival slotting to adjust transit speed and conserve bunker fuel.';
+        replyText = '**Port Telemetry Advisory:**\n\n• **Singapore (Jurong / Pasir Panjang):** Elevated queue time of 42 hours.\n• **Chennai / Nhava Sheva:** Normal operations, ~14-18 hours average wait.\n• **Recommendation:** Request virtual arrival slotting to adjust transit speed and conserve bunker fuel.';
         action = 'plan';
       } else {
-        replyText = `Understood. Analyzing telemetry for: "${query}".\n\n• **Route Calculation:** Optimal great-circle corridor synthesized.\n• **Risk Assessment:** No critical piracy or navigational blockage detected on standard track.\n• **Recommendation:** Check our route comparison engine to review cost and emission breakdowns.`;
+        replyText = `Understood. Analyzing telemetry for: "${query}".\n\n• **Route Calculation:** Optimal great-circle corridor synthesized from trade_links_east_coast.csv.\n• **Risk Assessment:** No critical piracy or navigational blockage detected on standard track.\n• **Recommendation:** Check our route comparison engine to review cost, draft compatibility, and carrier options.`;
         action = 'compare';
       }
 

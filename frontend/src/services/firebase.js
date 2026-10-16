@@ -182,3 +182,81 @@ export async function deleteRouteFromCloud(routeId) {
     return { success: false };
   }
 }
+
+// ==========================================
+// CSV Maritime Data Fetchers from Firestore
+// ==========================================
+import { 
+  CSV_INDIAN_PORTS, 
+  CSV_FOREIGN_PORTS, 
+  CSV_TRADE_LINKS, 
+  CSV_VESSEL_TYPES,
+  CSV_SHIPPING_LINES,
+  SHIPPING_LINES_BY_PORT 
+} from "../data/maritimeCsvData";
+
+// Fetch Indian East Coast Ports from Firestore
+export async function fetchIndianPorts() {
+  try {
+    const snap = await getDocs(collection(db, "ports_india"));
+    if (!snap.empty) {
+      const ports = [];
+      snap.forEach(d => ports.push({ id: d.id, ...d.data() }));
+      return ports;
+    }
+  } catch (e) {
+    console.warn("Firestore ports_india fetch fallback to CSV data:", e.message);
+  }
+  return CSV_INDIAN_PORTS;
+}
+
+// Fetch Foreign Partner Ports from Firestore
+export async function fetchForeignPorts() {
+  try {
+    const snap = await getDocs(collection(db, "ports_foreign"));
+    if (!snap.empty) {
+      const ports = [];
+      snap.forEach(d => ports.push({ id: d.id, ...d.data() }));
+      return ports;
+    }
+  } catch (e) {
+    console.warn("Firestore ports_foreign fetch fallback to CSV data:", e.message);
+  }
+  return CSV_FOREIGN_PORTS;
+}
+
+// Fetch Trade Links from Firestore
+export async function fetchTradeLinks() {
+  try {
+    const snap = await getDocs(collection(db, "trade_links"));
+    if (!snap.empty) {
+      const links = [];
+      snap.forEach(d => links.push({ id: d.id, ...d.data() }));
+      return links;
+    }
+  } catch (e) {
+    console.warn("Firestore trade_links fetch fallback to CSV data:", e.message);
+  }
+  return CSV_TRADE_LINKS;
+}
+
+// Fetch Vessel Types from Firestore
+export async function fetchVesselTypes() {
+  try {
+    const snap = await getDocs(collection(db, "vessel_types"));
+    if (!snap.empty) {
+      const types = [];
+      snap.forEach(d => types.push({ id: d.id, ...d.data() }));
+      return types;
+    }
+  } catch (e) {
+    console.warn("Firestore vessel_types fetch fallback to CSV data:", e.message);
+  }
+  return CSV_VESSEL_TYPES;
+}
+
+// Get Shipping Lines by Port
+export function getShippingLinesForPort(portId) {
+  if (!portId) return [];
+  return SHIPPING_LINES_BY_PORT[portId] || [];
+}

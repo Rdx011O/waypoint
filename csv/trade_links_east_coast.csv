@@ -1,0 +1,117 @@
+indian_port,indian_port_id,indian_lat,indian_lon,foreign_port,foreign_unlocode,country,foreign_lat,foreign_lon,great_circle_nm,great_circle_km,trade_direction,commodities
+Chennai,EC14,13.09,80.29,Colombo,LKCMB,Sri Lanka,6.95,79.85,370,684,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Singapore,SGSIN,Singapore,1.264,103.84,1570,2907,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Port Klang,MYPKG,Malaysia,3.0,101.4,1392,2578,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Jebel Ali,AEJEA,UAE,25.01,55.06,1596,2957,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Shanghai,CNSHA,China,31.23,121.48,2516,4660,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Ningbo,CNNGB,China,29.94,121.85,2514,4656,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Busan,KRPUS,South Korea,35.1,129.04,2944,5452,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Hong Kong,HKHKG,Hong Kong,22.3,114.15,2009,3721,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Rotterdam,NLRTM,Netherlands,51.95,4.14,4276,7918,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Hamburg,DEHAM,Germany,53.54,9.97,4074,7544,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,New York / Newark,USNYC,USA,40.67,-74.15,7280,13483,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Savannah,USSAV,USA,32.08,-81.09,7892,14615,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Los Angeles,USLAX,USA,33.73,-118.26,7803,14451,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Jeddah,SAJED,Saudi Arabia,21.48,39.17,2403,4451,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Laem Chabang,THLCH,Thailand,13.08,100.88,1204,2229,Import & Export,"Containers: electronics, machinery, auto parts, textiles, leather, granite"
+Chennai,EC14,13.09,80.29,Durban,ZADUR,South Africa,-29.87,31.02,3843,7117,Export,"Cars (Ro-Ro), auto parts"
+Chennai,EC14,13.09,80.29,Lagos,NGLOS,Nigeria,6.44,3.39,4553,8432,Export,"Cars (Ro-Ro), auto parts"
+Chennai,EC14,13.09,80.29,Port Said,EGPSD,Egypt,31.26,32.3,2856,5289,Export,"Cars (Ro-Ro), auto parts"
+Chennai,EC14,13.09,80.29,Mombasa,KEMBA,Kenya,-4.06,39.67,2631,4873,Export,"Cars (Ro-Ro), auto parts"
+Chennai,EC14,13.09,80.29,Genoa,ITGOA,Italy,44.4,8.92,4060,7519,Export,"Cars (Ro-Ro), auto parts"
+Chennai,EC14,13.09,80.29,Felixstowe,GBFXT,UK,51.95,1.35,4379,8110,Export,"Cars (Ro-Ro), auto parts"
+Kamarajar (Ennore),EC13,13.25,80.33,Balikpapan,IDBPN,Indonesia,-1.27,116.8,2340,4333,Import,Thermal coal
+Kamarajar (Ennore),EC13,13.25,80.33,Richards Bay,ZARCB,South Africa,-28.8,32.08,3769,6980,Import,Thermal coal
+Kamarajar (Ennore),EC13,13.25,80.33,Gladstone / Hay Point,AUGLT,Australia,-23.84,151.26,4717,8736,Import,Thermal coal
+Kamarajar (Ennore),EC13,13.25,80.33,Ras Laffan,QARLF,Qatar,25.92,51.55,1791,3317,Import,LNG
+Kamarajar (Ennore),EC13,13.25,80.33,Durban,ZADUR,South Africa,-29.87,31.02,3851,7132,Export,Cars (Ro-Ro)
+Kamarajar (Ennore),EC13,13.25,80.33,Port Said,EGPSD,Egypt,31.26,32.3,2853,5284,Export,Cars (Ro-Ro)
+Kamarajar (Ennore),EC13,13.25,80.33,Rotterdam,NLRTM,Netherlands,51.95,4.14,4270,7907,Export,Cars (Ro-Ro)
+Kamarajar (Ennore),EC13,13.25,80.33,Jeddah,SAJED,Saudi Arabia,21.48,39.17,2403,4450,Export,Cars (Ro-Ro)
+Kamarajar (Ennore),EC13,13.25,80.33,Colombo,LKCMB,Sri Lanka,6.95,79.85,379,702,Import & Export,Containers
+Kamarajar (Ennore),EC13,13.25,80.33,Singapore,SGSIN,Singapore,1.264,103.84,1572,2911,Import & Export,Containers
+Kamarajar (Ennore),EC13,13.25,80.33,Port Klang,MYPKG,Malaysia,3.0,101.4,1394,2581,Import & Export,Containers
+Kattupalli,EC12,13.3,80.35,Colombo,LKCMB,Sri Lanka,6.95,79.85,382,708,Import & Export,Containers (transshipment via Colombo/Singapore)
+Kattupalli,EC12,13.3,80.35,Singapore,SGSIN,Singapore,1.264,103.84,1572,2911,Import & Export,Containers (transshipment via Colombo/Singapore)
+Kattupalli,EC12,13.3,80.35,Port Klang,MYPKG,Malaysia,3.0,101.4,1394,2581,Import & Export,Containers (transshipment via Colombo/Singapore)
+Kattupalli,EC12,13.3,80.35,Salalah,OMSLL,Oman,16.94,54.01,1541,2854,Import & Export,Containers (transshipment via Colombo/Singapore)
+Kattupalli,EC12,13.3,80.35,Jebel Ali,AEJEA,UAE,25.01,55.06,1593,2951,Import & Export,Containers (transshipment via Colombo/Singapore)
+Krishnapatnam,EC11,14.25,80.117,Balikpapan,IDBPN,Indonesia,-1.27,116.8,2372,4392,Import,Coal
+Krishnapatnam,EC11,14.25,80.117,Richards Bay,ZARCB,South Africa,-28.8,32.08,3801,7039,Import,Coal
+Krishnapatnam,EC11,14.25,80.117,Gladstone / Hay Point,AUGLT,Australia,-23.84,151.26,4756,8809,Import,Coal
+Krishnapatnam,EC11,14.25,80.117,Lagos,NGLOS,Nigeria,6.44,3.39,4539,8406,Export,"Rice, sugar, granite, iron ore, steel"
+Krishnapatnam,EC11,14.25,80.117,Cotonou,BJCOO,Benin,6.35,2.44,4595,8511,Export,"Rice, sugar, granite, iron ore, steel"
+Krishnapatnam,EC11,14.25,80.117,Jebel Ali,AEJEA,UAE,25.01,55.06,1554,2877,Export,"Rice, sugar, granite, iron ore, steel"
+Krishnapatnam,EC11,14.25,80.117,Shanghai,CNSHA,China,31.23,121.48,2488,4608,Export,"Rice, sugar, granite, iron ore, steel"
+Krishnapatnam,EC11,14.25,80.117,Colombo,LKCMB,Sri Lanka,6.95,79.85,439,812,Import & Export,Containers
+Krishnapatnam,EC11,14.25,80.117,Singapore,SGSIN,Singapore,1.264,103.84,1609,2981,Import & Export,Containers
+Visakhapatnam,EC06,17.69,83.3,Gladstone / Hay Point,AUGLT,Australia,-23.84,151.26,4696,8697,Import,Coking & thermal coal
+Visakhapatnam,EC06,17.69,83.3,Newcastle (NSW),AUNTL,Australia,-32.92,151.79,4962,9189,Import,Coking & thermal coal
+Visakhapatnam,EC06,17.69,83.3,Balikpapan,IDBPN,Indonesia,-1.27,116.8,2284,4230,Import,Coking & thermal coal
+Visakhapatnam,EC06,17.69,83.3,Umm Qasr / Basra,IQUQR,Iraq,30.03,47.95,2067,3828,Import,"Crude oil, LPG"
+Visakhapatnam,EC06,17.69,83.3,Dammam / Ras Tanura,SADMM,Saudi Arabia,26.43,50.11,1914,3544,Import,"Crude oil, LPG"
+Visakhapatnam,EC06,17.69,83.3,Fujairah,AEFJR,UAE,25.17,56.36,1568,2904,Import,"Crude oil, LPG"
+Visakhapatnam,EC06,17.69,83.3,Qingdao,CNTAO,China,36.07,120.32,2249,4166,Export,"Iron ore pellets, steel"
+Visakhapatnam,EC06,17.69,83.3,Shanghai,CNSHA,China,31.23,121.48,2226,4122,Export,"Iron ore pellets, steel"
+Visakhapatnam,EC06,17.69,83.3,Ningbo,CNNGB,China,29.94,121.85,2229,4128,Export,"Iron ore pellets, steel"
+Visakhapatnam,EC06,17.69,83.3,Colombo,LKCMB,Sri Lanka,6.95,79.85,676,1251,Import & Export,Containers
+Visakhapatnam,EC06,17.69,83.3,Singapore,SGSIN,Singapore,1.264,103.84,1562,2893,Import & Export,Containers
+Gangavaram,EC07,17.6,83.233,Gladstone / Hay Point,AUGLT,Australia,-23.84,151.26,4697,8699,Import,Coking & steam coal
+Gangavaram,EC07,17.6,83.233,Richards Bay,ZARCB,South Africa,-28.8,32.08,4069,7536,Import,Coking & steam coal
+Gangavaram,EC07,17.6,83.233,Balikpapan,IDBPN,Indonesia,-1.27,116.8,2285,4232,Import,Coking & steam coal
+Gangavaram,EC07,17.6,83.233,Qingdao,CNTAO,China,36.07,120.32,2256,4177,Export,"Iron ore, alumina, steel"
+Gangavaram,EC07,17.6,83.233,Busan,KRPUS,South Korea,35.1,129.04,2651,4910,Export,"Iron ore, alumina, steel"
+Kakinada Deep Water,EC08,16.93,82.28,Cotonou,BJCOO,Benin,6.35,2.44,4711,8725,Export,"Rice, sugar, agri"
+Kakinada Deep Water,EC08,16.93,82.28,Lagos,NGLOS,Nigeria,6.44,3.39,4655,8622,Export,"Rice, sugar, agri"
+Kakinada Deep Water,EC08,16.93,82.28,Jeddah,SAJED,Saudi Arabia,21.48,39.17,2452,4541,Export,"Rice, sugar, agri"
+Kakinada Deep Water,EC08,16.93,82.28,Port Said,EGPSD,Egypt,31.26,32.3,2845,5270,Export,"Rice, sugar, agri"
+Kakinada Deep Water,EC08,16.93,82.28,Belawan,IDBLW,Indonesia,3.78,98.7,1249,2312,Import,"Edible oil, fertilizer"
+Kakinada Deep Water,EC08,16.93,82.28,Jakarta (Tanjung Priok),IDJKT,Indonesia,-6.1,106.88,2011,3724,Import,"Edible oil, fertilizer"
+Kakinada Deep Water,EC08,16.93,82.28,Jebel Ali,AEJEA,UAE,25.01,55.06,1598,2959,Import,"Edible oil, fertilizer"
+Paradip,EC03,20.267,86.683,Umm Qasr / Basra,IQUQR,Iraq,30.03,47.95,2174,4026,Import,"Crude oil, LPG"
+Paradip,EC03,20.267,86.683,Dammam / Ras Tanura,SADMM,Saudi Arabia,26.43,50.11,2043,3783,Import,"Crude oil, LPG"
+Paradip,EC03,20.267,86.683,Jebel Ali,AEJEA,UAE,25.01,55.06,1771,3280,Import,"Crude oil, LPG"
+Paradip,EC03,20.267,86.683,Fujairah,AEFJR,UAE,25.17,56.36,1701,3151,Import,"Crude oil, LPG"
+Paradip,EC03,20.267,86.683,Richards Bay,ZARCB,South Africa,-28.8,32.08,4322,8004,Import,Thermal & coking coal
+Paradip,EC03,20.267,86.683,Balikpapan,IDBPN,Indonesia,-1.27,116.8,2193,4062,Import,Thermal & coking coal
+Paradip,EC03,20.267,86.683,Gladstone / Hay Point,AUGLT,Australia,-23.84,151.26,4611,8540,Import,Thermal & coking coal
+Paradip,EC03,20.267,86.683,Newcastle (NSW),AUNTL,Australia,-32.92,151.79,4909,9092,Import,Thermal & coking coal
+Paradip,EC03,20.267,86.683,Qingdao,CNTAO,China,36.07,120.32,2003,3709,Export,"Iron ore, steel, alumina"
+Paradip,EC03,20.267,86.683,Shanghai,CNSHA,China,31.23,121.48,1984,3674,Export,"Iron ore, steel, alumina"
+Paradip,EC03,20.267,86.683,Busan,KRPUS,South Korea,35.1,129.04,2400,4445,Export,"Iron ore, steel, alumina"
+Paradip,EC03,20.267,86.683,Kaohsiung,TWKHH,Taiwan,22.61,120.27,1878,3479,Export,"Iron ore, steel, alumina"
+Dhamra,EC04,20.797,86.9,Balikpapan,IDBPN,Indonesia,-1.27,116.8,2200,4075,Import,Coal
+Dhamra,EC04,20.797,86.9,Richards Bay,ZARCB,South Africa,-28.8,32.08,4352,8060,Import,Coal
+Dhamra,EC04,20.797,86.9,Gladstone / Hay Point,AUGLT,Australia,-23.84,151.26,4618,8552,Import,Coal
+Dhamra,EC04,20.797,86.9,Qingdao,CNTAO,China,36.07,120.32,1975,3657,Export,"Iron ore, steel"
+Dhamra,EC04,20.797,86.9,Ningbo,CNNGB,China,29.94,121.85,1965,3640,Export,"Iron ore, steel"
+Gopalpur,EC05,19.26,84.9,Qingdao,CNTAO,China,36.07,120.32,2120,3926,Export,"Iron ore, ferro chrome"
+Gopalpur,EC05,19.26,84.9,Ningbo,CNNGB,China,29.94,121.85,2106,3900,Export,"Iron ore, ferro chrome"
+Gopalpur,EC05,19.26,84.9,Gladstone / Hay Point,AUGLT,Australia,-23.84,151.26,4666,8641,Import,Coal
+Gopalpur,EC05,19.26,84.9,Balikpapan,IDBPN,Indonesia,-1.27,116.8,2248,4164,Import,Coal
+Kolkata (Syama Prasad Mookerjee Port),EC01,22.54,88.32,Colombo,LKCMB,Sri Lanka,6.95,79.85,1056,1957,Import & Export,"Containers, tea, jute, engineering goods"
+Kolkata (Syama Prasad Mookerjee Port),EC01,22.54,88.32,Singapore,SGSIN,Singapore,1.264,103.84,1566,2900,Import & Export,"Containers, tea, jute, engineering goods"
+Kolkata (Syama Prasad Mookerjee Port),EC01,22.54,88.32,Port Klang,MYPKG,Malaysia,3.0,101.4,1399,2590,Import & Export,"Containers, tea, jute, engineering goods"
+Kolkata (Syama Prasad Mookerjee Port),EC01,22.54,88.32,Chittagong,BDCGP,Bangladesh,22.33,91.8,194,358,Import & Export,"Containers, tea, jute, engineering goods"
+Kolkata (Syama Prasad Mookerjee Port),EC01,22.54,88.32,Penang,MYPEN,Malaysia,5.42,100.35,1242,2301,Import & Export,"Containers, tea, jute, engineering goods"
+Haldia Dock Complex,EC02,22.033,88.067,Belawan,IDBLW,Indonesia,3.78,98.7,1259,2331,Import,Edible oil
+Haldia Dock Complex,EC02,22.033,88.067,Jakarta (Tanjung Priok),IDJKT,Indonesia,-6.1,106.88,2019,3740,Import,Edible oil
+Haldia Dock Complex,EC02,22.033,88.067,Port Klang,MYPKG,Malaysia,3.0,101.4,1382,2560,Import,Edible oil
+Haldia Dock Complex,EC02,22.033,88.067,Richards Bay,ZARCB,South Africa,-28.8,32.08,4450,8241,Import,Coal
+Haldia Dock Complex,EC02,22.033,88.067,Balikpapan,IDBPN,Indonesia,-1.27,116.8,2189,4054,Import,Coal
+Haldia Dock Complex,EC02,22.033,88.067,Gladstone / Hay Point,AUGLT,Australia,-23.84,151.26,4603,8524,Import,Coal
+Haldia Dock Complex,EC02,22.033,88.067,Chittagong,BDCGP,Bangladesh,22.33,91.8,208,386,Export,"Rice, steel, general cargo"
+Haldia Dock Complex,EC02,22.033,88.067,Mongla,BDMGL,Bangladesh,22.47,89.6,89,165,Export,"Rice, steel, general cargo"
+Haldia Dock Complex,EC02,22.033,88.067,Yangon,MMRGN,Myanmar,16.77,96.16,556,1031,Export,"Rice, steel, general cargo"
+Karaikal,EC16,10.93,79.85,Richards Bay,ZARCB,South Africa,-28.8,32.08,3654,6767,Import,Thermal coal
+Karaikal,EC16,10.93,79.85,Balikpapan,IDBPN,Indonesia,-1.27,116.8,2324,4305,Import,Thermal coal
+V.O. Chidambaranar (Tuticorin),EC18,8.78,78.15,Colombo,LKCMB,Sri Lanka,6.95,79.85,149,277,Import & Export,Containers
+V.O. Chidambaranar (Tuticorin),EC18,8.78,78.15,Singapore,SGSIN,Singapore,1.264,103.84,1600,2964,Import & Export,Containers
+V.O. Chidambaranar (Tuticorin),EC18,8.78,78.15,Port Klang,MYPKG,Malaysia,3.0,101.4,1431,2649,Import & Export,Containers
+V.O. Chidambaranar (Tuticorin),EC18,8.78,78.15,Jebel Ali,AEJEA,UAE,25.01,55.06,1641,3039,Import & Export,Containers
+V.O. Chidambaranar (Tuticorin),EC18,8.78,78.15,Salalah,OMSLL,Oman,16.94,54.01,1494,2766,Import & Export,Containers
+V.O. Chidambaranar (Tuticorin),EC18,8.78,78.15,Shanghai,CNSHA,China,31.23,121.48,2766,5122,Import & Export,Containers
+V.O. Chidambaranar (Tuticorin),EC18,8.78,78.15,Rotterdam,NLRTM,Netherlands,51.95,4.14,4399,8146,Import & Export,Containers
+V.O. Chidambaranar (Tuticorin),EC18,8.78,78.15,Richards Bay,ZARCB,South Africa,-28.8,32.08,3493,6469,Import,Coal
+V.O. Chidambaranar (Tuticorin),EC18,8.78,78.15,Balikpapan,IDBPN,Indonesia,-1.27,116.8,2390,4426,Import,Coal
+V.O. Chidambaranar (Tuticorin),EC18,8.78,78.15,Qingdao,CNTAO,China,36.07,120.32,2822,5227,Import,"Wind turbine parts, machinery"

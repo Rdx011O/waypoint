@@ -1,251 +1,365 @@
 // WAYPOINT — Plan a Shipment (Shipper Core Tool)
-import React, { useState } from 'react';
-import { WAYPOINT_DATA } from '../data/maritimeData';
+// Powered by Indian East Coast Ports, Foreign Partner Ports, Vessel Types, and Routing Algorithm from CSV/Firestore
+import React, { useState, useEffect } from 'react';
+import { 
+  CSV_INDIAN_PORTS, 
+  CSV_FOREIGN_PORTS, 
+  CSV_VESSEL_TYPES 
+} from '../data/maritimeCsvData';
+import { fetchIndianPorts, fetchForeignPorts } from '../services/firebase';
+import { synthesizeMaritimeRoutes } from '../services/routingAlgorithm';
 import MarineMap from '../components/MarineMap';
 import Icon from '../components/Icon';
 
-export default function PlanShipment({ onFindRoutes }) {
-  const ports = WAYPOINT_DATA.ports;
-  const [origin, setOrigin] = useState('INNSA');
-  const [dest, setDest] = useState('SGSIN');
-  const [cargoType, setCargoType] = useState('General Cargo');
-  const [weight, setWeight] = useState(1200);
-  const [budget, setBudget] = useState(20000);
+export default function PlanShipment({ onNavigate }) {
+  const [indianPorts, setIndianPorts] = useState(CSV_INDIAN_PORTS);
+  const [foreignPorts, setForeignPorts] = useState(CSV_FOREIGN_PORTS);
+  const [loadingPorts, setLoadingPorts] = useState(false);
+
+  // Form states
+  const [originId, setOriginId] = useState('EC14'); // Default: Chennai
+  const [destId, setDestId] = useState('FP02');     // Default: Singapore
+  const [cargoType, setCargoType] = useState('Containers');
+  const [vesselType, setVesselType] = useState('Panamax / Post-Panamax');
+  const [weight, setWeight] = useState(25000);
+  const [budget, setBudget] = useState(35000);
   const [priority, setPriority] = useState('Balanced');
 
-  const handleSwap = () => {
-    const temp = origin;
-    setOrigin(dest);
-    setDest(temp);
+  // Load latest ports from Firestore or fallback
+  useEffect(() => {
+    async function loadData() {
+      setLoadingPorts(true);
+      const ind = await fetchIndianPorts();
+      const forg = await fetchForeignPorts();
+      if (ind && ind.length) setIndianPorts(ind);
+      if (forg && forg.length) setForeignPorts(forg);
+      setLoadingPorts(false);
+    }
+    loadData();
+  }, []);
+
+  const selectedOrigin = indianPorts.find(p => p.portId === originId) || indianPorts[0];
+  const selectedDest = foreignPorts.find(p => p.portId === destId) || foreignPorts[0];
+
+  // Draft Feasibility Check
+  const draftMap = {
+    'Feeder': 8.0,
+    'Panamax / Post-Panamax': 12.5,
+    'Neo-Panamax / ULCV': 15.5,
+    'Handysize / Supramax': 10.0,
+    'Panamax / Kamsarmax': 13.5,
+    'Capesize': 18.0,
+    'Aframax / Suezmax': 15.0,
+    'VLCC': 20.5,
+    'LPG carrier (VLGC)': 11.5,
+    'LNG carrier': 12.0,
+    'PCTC': 9.5,
+    'Multipurpose / Break-bulk': 9.0
   };
+  const reqDraft = draftMap[vesselType] || 10.0;
+  const isDraftFeasible = (selectedOrigin?.maxDraftM || 12.0) >= reqDraft;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!weight || !budget) {
-      alert('Please enter valid cargo weight and budget limits.');
-      return;
+    const scenario = synthesizeMaritimeRoutes({
+      originPort: selectedOrigin,
+      destPort: selectedDest,
+      cargoType,
+      vesselType,
+      benchmarkBudget: budget
+    });
+
+    sessionStorage.setItem('waypoint_current_scenario', JSON.stringify(scenario));
+    if (onNavigate) {
+      onNavigate('compare');
     }
-    onFindRoutes({ origin, dest, cargoType, weight, budget, priority });
   };
 
   const cargoOptions = [
-    { id: 'General Cargo', label: 'General Cargo', iconName: 'Package' },
-    { id: 'Containers', label: 'Containers', iconName: 'Ship' },
-    { id: 'Bulk', label: 'Bulk Freight', iconName: 'Layers' },
-    { id: 'Liquid', label: 'Liquid / Tanker', iconName: 'Radio' },
-    { id: 'Refrigerated', label: 'Reefer / Perishable', iconName: 'Wind' }
-  ];
-
-  const priorityOptions = [
-    { id: 'Lowest Cost', label: 'Lowest Cost', iconName: 'DollarSign' },
-    { id: 'Fastest Delivery', label: 'Fastest Transit', iconName: 'Clock' },
-    { id: 'Lowest Risk', label: 'Lowest Risk', iconName: 'ShieldAlert' },
-    { id: 'Balanced', label: 'Optimal Balanced', iconName: 'Scale' }
+    { id: 'Containers', label: 'Containers (TEU)', iconName: 'Package' },
+    { id: 'Thermal Coal', label: 'Thermal Coal', iconName: 'Layers' },
+    { id: 'Coking Coal', label: 'Coking Coal', iconName: 'Layers' },
+    { id: 'Iron Ore', label: 'Iron Ore Pellets', iconName: 'Layers' },
+    { id: 'Cars (Ro-Ro)', label: 'Automobiles (Ro-Ro)', iconName: 'Truck' },
+    { id: 'Crude Oil & POL', label: 'Crude Oil / POL', iconName: 'Radio' },
+    { id: 'LNG / LPG', label: 'Liquefied Gas (LNG/LPG)', iconName: 'Flame' },
+    { id: 'Steel & Project Cargo', label: 'Steel & Heavy Lift', iconName: 'Anchor' }
   ];
 
   return (
-    <div>
-      <div style={{ marginBottom: '18px' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', letterSpacing: '-0.01em', marginBottom: '4px' }}>
-          Plan a Shipment
-        </h1>
-        <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)' }}>
-          Configure departure, destination, cargo classification, and priority parameters for optimal dispatch synthesis.
-        </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      {/* Title */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+        <div>
+          <div style={{
+            fontSize: '11px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: 'var(--accent-cyan)',
+            fontWeight: 700,
+            marginBottom: '4px'
+          }}>
+            Cargo & Voyage Planning
+          </div>
+          <h1 style={{
+            fontSize: '22px',
+            fontWeight: 700,
+            color: 'var(--text-primary)',
+            letterSpacing: '-0.02em',
+            margin: 0
+          }}>
+            Plan a Shipment — Multi-Criteria Route Solver
+          </h1>
+          <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
+            Calculates nautical corridors, draft limitations, and carrier matching across 18 Indian East Coast ports & 47 international trade partners.
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="badge badge-teal">
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--safe-teal)' }} />
+            18 Ports • 47 Foreign Links Live
+          </span>
+        </div>
       </div>
 
-      <div className="box box-note">
-        <strong>OPERATOR GUIDANCE (ASD-STE100)</strong>
-        Use the swap control to exchange origin and destination ports. The route solver factors in live bathymetric lanes and weather risk envelopes.
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '460px 1fr', gap: '20px' }} className="plan-grid">
-        {/* Parameters Form */}
+      {/* Draft Constraint Warning Banner */}
+      {!isDraftFeasible && (
         <div style={{
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-md)',
-          padding: '22px'
+          padding: '12px 16px',
+          background: 'rgba(248, 113, 113, 0.12)',
+          border: '1px solid var(--hazard-red)',
+          borderRadius: 'var(--radius-sm)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          color: '#FECACA',
+          fontSize: '12.5px'
         }}>
-          <form onSubmit={handleSubmit}>
-            {/* Origin & Destination with Swap */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ flex: 1 }}>
-                <label className="input-label">Origin Port *</label>
-                <select className="select-input" value={origin} onChange={(e) => setOrigin(e.target.value)}>
-                  {ports.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name} ({p.country})</option>
+          <Icon name="AlertTriangle" size={18} color="var(--hazard-red)" />
+          <div>
+            <strong>DRAFT RESTRICTION WARNING: </strong>
+            {selectedOrigin?.name} maximum permissible draft is <strong>{selectedOrigin?.maxDraftM}m</strong>, but selected vessel class (<strong>{vesselType}</strong>) requires <strong>{reqDraft}m</strong> draft. Consider deepwater ports like Gangavaram (21m) or Dhamra (18m).
+          </div>
+        </div>
+      )}
+
+      {/* Main Grid: Parameters Form & Marine Map Preview */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(340px, 460px) 1fr', gap: '20px' }} className="plan-grid">
+        {/* Parameters Form */}
+        <div className="card" style={{ padding: '22px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Origin & Destination Select */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Origin Port (East Coast India) *</span>
+                  <span style={{ color: 'var(--accent-cyan)' }}>Max Draft: {selectedOrigin?.maxDraftM}m</span>
+                </label>
+                <select 
+                  className="form-control" 
+                  value={originId} 
+                  onChange={(e) => setOriginId(e.target.value)}
+                >
+                  {indianPorts.map((p) => (
+                    <option key={p.portId} value={p.portId}>
+                      {p.name} ({p.state} • {p.type} • {p.maxDraftM}m draft)
+                    </option>
                   ))}
                 </select>
               </div>
 
-              <button
-                type="button"
-                onClick={handleSwap}
-                title="Swap Origin and Destination"
-                style={{
-                  width: '34px',
-                  height: '34px',
-                  borderRadius: '50%',
-                  background: 'var(--bg-surface-alt)',
-                  border: '1px solid var(--border-strong)',
-                  color: 'var(--accent-cyan)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  marginTop: '18px',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <Icon name="ArrowLeftRight" size={14} />
-              </button>
-
-              <div style={{ flex: 1 }}>
-                <label className="input-label">Destination Port *</label>
-                <select className="select-input" value={dest} onChange={(e) => setDest(e.target.value)}>
-                  {ports.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name} ({p.country})</option>
+              <div>
+                <label className="form-label">Destination Port (International Trade Partner) *</label>
+                <select 
+                  className="form-control" 
+                  value={destId} 
+                  onChange={(e) => setDestId(e.target.value)}
+                >
+                  {foreignPorts.map((p) => (
+                    <option key={p.portId} value={p.portId}>
+                      {p.name} ({p.country} • {p.unlocode})
+                    </option>
                   ))}
                 </select>
               </div>
             </div>
 
-            {/* Cargo Type Selection */}
-            <div style={{ marginBottom: '16px' }}>
-              <label className="input-label">Cargo Profile *</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
-                {cargoOptions.map((c) => {
-                  const isActive = cargoType === c.id;
+            {/* Vessel Class Selector */}
+            <div>
+              <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span>Vessel Category & Class *</span>
+                <span style={{ color: isDraftFeasible ? 'var(--safe-teal)' : 'var(--hazard-red)' }}>
+                  Req: {reqDraft}m ({isDraftFeasible ? 'Feasible' : 'Exceeds Draft'})
+                </span>
+              </label>
+              <select 
+                className="form-control" 
+                value={vesselType} 
+                onChange={(e) => setVesselType(e.target.value)}
+              >
+                {CSV_VESSEL_TYPES.map((v) => (
+                  <option key={v.id} value={v.type}>
+                    {v.category}: {v.type} ({v.capacityRange})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Cargo Type */}
+            <div>
+              <label className="form-label">Cargo Classification *</label>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '8px'
+              }}>
+                {cargoOptions.slice(0, 4).map((c) => {
+                  const isSel = cargoType === c.id;
                   return (
                     <button
-                      key={c.id}
                       type="button"
+                      key={c.id}
                       onClick={() => setCargoType(c.id)}
                       style={{
                         padding: '8px 10px',
-                        background: isActive ? 'rgba(56, 189, 248, 0.12)' : 'var(--bg-surface-alt)',
-                        border: `1px solid ${isActive ? 'var(--accent-cyan)' : 'var(--border-subtle)'}`,
                         borderRadius: 'var(--radius-sm)',
-                        color: isActive ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-                        fontFamily: 'var(--font-sans)',
+                        background: isSel ? 'rgba(56, 189, 248, 0.14)' : 'var(--bg-surface-alt)',
+                        border: `1px solid ${isSel ? 'var(--accent-cyan)' : 'var(--border-subtle)'}`,
+                        color: isSel ? 'var(--accent-cyan)' : 'var(--text-secondary)',
                         fontSize: '11.5px',
                         fontWeight: 600,
                         cursor: 'pointer',
+                        textAlign: 'left',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '7px',
-                        textAlign: 'left',
-                        transition: 'all 0.15s ease'
+                        gap: '6px'
                       }}
                     >
                       <Icon name={c.iconName} size={14} />
-                      <span>{c.label}</span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.label}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Cargo Weight & Maximum Budget */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+            {/* Metrics: Weight & Budget */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div>
-                <label className="input-label">Cargo Weight (Metric Tonnes) *</label>
+                <label className="form-label">Cargo Weight (Metric Tonnes)</label>
                 <input
                   type="number"
-                  className="text-input"
+                  className="form-control mono"
                   value={weight}
                   onChange={(e) => setWeight(Number(e.target.value))}
-                  placeholder="e.g. 1200"
+                  min={1}
                 />
               </div>
+
               <div>
-                <label className="input-label">Maximum Budget (USD) *</label>
+                <label className="form-label">Benchmark Budget (USD)</label>
                 <input
                   type="number"
-                  className="text-input"
+                  className="form-control mono"
                   value={budget}
                   onChange={(e) => setBudget(Number(e.target.value))}
-                  placeholder="e.g. 20000"
+                  min={1000}
+                  step={500}
                 />
               </div>
             </div>
 
-            {/* Dispatch Priority */}
-            <div style={{ marginBottom: '22px' }}>
-              <label className="input-label">Optimization Priority *</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                {priorityOptions.map((pr) => {
-                  const isActive = priority === pr.id;
-                  return (
-                    <button
-                      key={pr.id}
-                      type="button"
-                      onClick={() => setPriority(pr.id)}
-                      style={{
-                        padding: '9px 10px',
-                        background: isActive ? 'rgba(45, 212, 191, 0.12)' : 'var(--bg-surface-alt)',
-                        border: `1px solid ${isActive ? 'var(--safe-teal)' : 'var(--border-subtle)'}`,
-                        borderRadius: 'var(--radius-sm)',
-                        color: isActive ? 'var(--safe-teal)' : 'var(--text-secondary)',
-                        fontFamily: 'var(--font-sans)',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '7px',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
-                      <Icon name={pr.iconName} size={14} />
-                      <span>{pr.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <button type="submit" className="btn btn-primary btn-full" style={{ padding: '11px' }}>
+            {/* Submit Action */}
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '13px',
+                marginTop: '6px'
+              }}
+            >
               <Icon name="Compass" size={16} />
-              <span>Find Optimal Corridors</span>
-              <Icon name="ChevronRight" size={15} />
+              <span>Calculate Multi-Criteria Route Options</span>
             </button>
           </form>
         </div>
 
-        {/* Live Route Corridor Preview */}
-        <div style={{
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-md)',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          <div style={{
-            padding: '10px 14px',
-            background: 'var(--bg-surface-alt)',
-            borderBottom: '1px solid var(--border-subtle)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-              <Icon name="Map" size={15} color="var(--accent-cyan)" />
-              <span style={{ fontSize: '12.5px', fontWeight: 700, color: '#fff' }}>Geodesic Preview</span>
+        {/* Marine Map & Route Corridor Preview */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="card" style={{ padding: '16px', flex: 1, minHeight: '380px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div>
+                <h3 style={{ fontSize: '13.5px', fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>
+                  Corridor Preview: {selectedOrigin?.name} → {selectedDest?.name}
+                </h3>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                  Live geodetic distance & bathymetric channel visualization
+                </p>
+              </div>
+              <span className="badge badge-cyan">
+                {selectedDest?.country}
+              </span>
             </div>
-            <div className="mono" style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-              Distance: ~3,250 nm
+
+            <div style={{ height: '380px', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
+              <MarineMap
+                routes={[
+                  {
+                    id: 'preview',
+                    coords: [
+                      [selectedOrigin?.lat || 13.09, selectedOrigin?.lng || 80.29],
+                      [5.9, 80.5], // South of Sri Lanka
+                      [selectedDest?.lat || 1.26, selectedDest?.lng || 103.84]
+                    ],
+                    color: '#38BDF8',
+                    label: `${selectedOrigin?.name} to ${selectedDest?.name}`
+                  }
+                ]}
+                showHazards={true}
+                showVessels={false}
+              />
             </div>
           </div>
 
-          <MarineMap
-            height="460px"
-            center={[12, 85]}
-            zoom={4}
-            activeLayers={{ routes: true, vessels: false, hazards: true, ports: true, risks: false }}
-          />
+          {/* Quick Port Telemetry Strip */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '10px'
+          }}>
+            <div className="card" style={{ padding: '12px' }}>
+              <div style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>Origin UN/LOCODE</div>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                {selectedOrigin?.unlocode}
+              </div>
+              <div style={{ fontSize: '10.5px', color: 'var(--accent-cyan)', marginTop: '2px' }}>
+                {selectedOrigin?.coastRegion || selectedOrigin?.state}
+              </div>
+            </div>
+
+            <div className="card" style={{ padding: '12px' }}>
+              <div style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>Port Throughput FY24</div>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                {selectedOrigin?.trafficFY24MT} MT
+              </div>
+              <div style={{ fontSize: '10.5px', color: 'var(--safe-teal)', marginTop: '2px' }}>
+                Capacity: {selectedOrigin?.cargoCapacityMTPA} MTPA
+              </div>
+            </div>
+
+            <div className="card" style={{ padding: '12px' }}>
+              <div style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>Container Capacity</div>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                {selectedOrigin?.containerCapacityTEU ? `${(selectedOrigin?.containerCapacityTEU / 1000).toFixed(0)}k TEU` : 'Bulk / General'}
+              </div>
+              <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                Draft: {selectedOrigin?.maxDraftM}m
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

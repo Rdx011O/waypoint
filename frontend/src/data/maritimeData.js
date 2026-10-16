@@ -8,6 +8,7 @@ export const WAYPOINT_DATA = {
       { id: 'dashboard', label: 'Overview & Shipments', iconName: 'LayoutDashboard', sub: 'Active Bookings' },
       { id: 'plan', label: 'Plan a Shipment', iconName: 'Package', sub: 'Cargo & Lane Input' },
       { id: 'compare', label: 'Compare Routes', iconName: 'Scale', sub: 'Cost & Risk Intelligence' },
+      { id: 'catalog', label: 'Ports & Trade Network', iconName: 'Anchor', sub: 'CSV Maritime Database' },
       { id: 'saved', label: 'Saved Routes', iconName: 'Bookmark', sub: 'Bookings & Portfolio' },
       { id: 'assistant', label: 'Route Assistant', iconName: 'Sparkles', sub: 'AI Maritime Copilot' },
       { id: 'settings', label: 'Account & Preferences', iconName: 'Settings', sub: 'Shipper Config' }
@@ -15,6 +16,7 @@ export const WAYPOINT_DATA = {
     manager: [
       { id: 'dashboard', label: 'Operations Command', iconName: 'LayoutDashboard', sub: 'Fleet Status' },
       { id: 'riskmap', label: 'Live Risk Map', iconName: 'Map', sub: 'Hazard & Route Monitor' },
+      { id: 'catalog', label: 'Ports & Trade Network', iconName: 'Anchor', sub: 'CSV Maritime Database' },
       { id: 'rerouting', label: 'Rerouting Center', iconName: 'RefreshCw', sub: 'Disruption & Alternate' },
       { id: 'alerts', label: 'Alerts Center', iconName: 'ShieldAlert', sub: 'Active Sea Warnings' },
       { id: 'analytics', label: 'Maritime Analytics', iconName: 'BarChart3', sub: 'Fleet & Risk Metrics' },

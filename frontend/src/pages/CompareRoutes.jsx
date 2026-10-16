@@ -1,17 +1,77 @@
-// WAYPOINT — Route Comparison & Intelligence (Table 4 & Figure 2)
-import React, { useState } from 'react';
-import { WAYPOINT_DATA } from '../data/maritimeData';
+// WAYPOINT — Route Comparison & Intelligence (Powered by CSV Dataset & Routing Algorithm)
+import React, { useState, useEffect } from 'react';
+import { synthesizeMaritimeRoutes } from '../services/routingAlgorithm';
+import { CSV_INDIAN_PORTS, CSV_FOREIGN_PORTS } from '../data/maritimeCsvData';
+import { saveRouteToCloud } from '../services/firebase';
+import { useAuth } from '../context/AuthContext';
 import Icon from '../components/Icon';
 
-export default function CompareRoutes({ onConfirmRoute, onBackToPlan }) {
-  const routes = WAYPOINT_DATA.routeOptions;
+export default function CompareRoutes({ onNavigate }) {
+  const { userProfile } = useAuth();
+  const [scenario, setScenario] = useState(null);
   const [selectedBreakdown, setSelectedBreakdown] = useState(null);
   const [confirmModalRoute, setConfirmModalRoute] = useState(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  useEffect(() => {
+    // Read from session storage or synthesize default corridor
+    const stored = sessionStorage.getItem('waypoint_current_scenario');
+    if (stored) {
+      try {
+        setScenario(JSON.parse(stored));
+        return;
+      } catch (e) {
+        console.warn("Stored scenario parse error:", e);
+      }
+    }
+
+    // Default synthesis: Chennai -> Singapore
+    const defaultOrigin = CSV_INDIAN_PORTS.find(p => p.portId === 'EC14') || CSV_INDIAN_PORTS[0];
+    const defaultDest = CSV_FOREIGN_PORTS.find(p => p.portId === 'FP02') || CSV_FOREIGN_PORTS[0];
+    const synth = synthesizeMaritimeRoutes({
+      originPort: defaultOrigin,
+      destPort: defaultDest,
+      cargoType: 'Containers',
+      vesselType: 'Panamax / Post-Panamax',
+      benchmarkBudget: 25000
+    });
+    setScenario(synth);
+  }, []);
+
+  if (!scenario) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+        Synthesizing multi-criteria maritime route corridors...
+      </div>
+    );
+  }
+
+  const { origin, destination, cargoType, vesselType, routes, matchedCarriers, draftWarning, draftFeasible } = scenario;
+
+  const handleBookRoute = async (route) => {
+    const routeRecord = {
+      name: `${origin.name} → ${destination.name} (${route.name})`,
+      origin: origin.name,
+      dest: destination.name,
+      cargo: cargoType,
+      cost: `$${route.cost.toLocaleString()}`,
+      transit: `${route.transitDays} d`,
+      risk: route.riskScore,
+      distanceNm: route.distanceNm,
+      lastSaved: new Date().toISOString().split('T')[0],
+      badge: 'Active'
+    };
+
+    const res = await saveRouteToCloud(routeRecord, userProfile?.uid);
+    setConfirmModalRoute(null);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 4000);
+  };
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Header */}
       <div style={{
-        marginBottom: '18px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -19,121 +79,204 @@ export default function CompareRoutes({ onConfirmRoute, onBackToPlan }) {
         gap: '12px'
       }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', letterSpacing: '-0.01em', marginBottom: '4px' }}>
-            Route Intelligence & Comparison
+          <div style={{
+            fontSize: '11px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: 'var(--accent-cyan)',
+            fontWeight: 700,
+            marginBottom: '4px'
+          }}>
+            Multi-Criteria Route Evaluation
+          </div>
+          <h1 style={{
+            fontSize: '22px',
+            fontWeight: 700,
+            color: 'var(--text-primary)',
+            letterSpacing: '-0.02em',
+            margin: 0
+          }}>
+            {origin.name} → {destination.name}
           </h1>
-          <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)' }}>
-            Synthesized options for Mumbai (Nhava Sheva) → Singapore (Jurong) under active weather constraints.
+          <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '4px 0 0' }}>
+            Cargo: <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{cargoType}</span> • 
+            Vessel: <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{vesselType}</span> • 
+            Great-Circle Distance: <span className="mono" style={{ color: 'var(--accent-cyan)' }}>{scenario.realSeaDistanceNm} nm</span>
           </p>
         </div>
 
-        <button className="btn btn-outline" onClick={onBackToPlan}>
+        <button 
+          className="btn btn-outline" 
+          onClick={() => onNavigate && onNavigate('plan')}
+        >
           <Icon name="ArrowLeftRight" size={14} />
           <span>Adjust Shipment Parameters</span>
         </button>
       </div>
 
-      <div className="box box-note">
-        <strong>OPERATOR GUIDANCE (ASD-STE100)</strong>
-        Route A carries the Recommended status due to its optimal balance between bunker fuel burn, schedule predictability, and hazard avoidance. All alternatives remain active.
-      </div>
+      {/* Save Success Alert */}
+      {saveSuccess && (
+        <div style={{
+          padding: '12px 16px',
+          background: 'rgba(45, 212, 191, 0.12)',
+          border: '1px solid var(--safe-teal)',
+          borderRadius: 'var(--radius-sm)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          color: 'var(--safe-teal)',
+          fontSize: '13px'
+        }}>
+          <Icon name="CheckCircle2" size={18} />
+          <span>Route successfully booked and committed to Cloud Portfolio (Firestore).</span>
+        </div>
+      )}
 
-      {/* 4 Route Option Cards */}
+      {/* Draft feasibility banner */}
+      {draftWarning ? (
+        <div style={{
+          padding: '12px 16px',
+          background: 'rgba(248, 113, 113, 0.12)',
+          border: '1px solid var(--hazard-red)',
+          borderRadius: 'var(--radius-sm)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          color: '#FECACA',
+          fontSize: '12.5px'
+        }}>
+          <Icon name="AlertTriangle" size={18} color="var(--hazard-red)" />
+          <div>{draftWarning}</div>
+        </div>
+      ) : (
+        <div style={{
+          padding: '10px 14px',
+          background: 'rgba(45, 212, 191, 0.08)',
+          border: '1px solid rgba(45, 212, 191, 0.25)',
+          borderRadius: 'var(--radius-sm)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          color: 'var(--safe-teal)',
+          fontSize: '12px'
+        }}>
+          <Icon name="CheckCircle2" size={15} />
+          <span>Draft Feasibility Verified: {origin.name} maximum draft ({origin.maxDraftM}m) accommodates {vesselType} permissible draft.</span>
+        </div>
+      )}
+
+      {/* 4 Route Cards Grid */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-        gap: '14px',
-        marginBottom: '22px'
+        gap: '14px'
       }}>
         {routes.map((r) => {
           const isRec = r.isRecommended;
           return (
             <div
               key={r.id}
+              className="card"
               style={{
-                background: 'var(--bg-surface)',
                 border: `1.5px solid ${isRec ? 'var(--safe-teal)' : 'var(--border-subtle)'}`,
-                borderRadius: 'var(--radius-md)',
-                padding: '16px',
+                padding: '18px',
                 display: 'flex',
                 flexDirection: 'column',
                 position: 'relative',
-                boxShadow: isRec ? '0 0 20px rgba(45, 212, 191, 0.12)' : 'none',
-                transition: 'all 0.15s ease'
+                background: isRec ? 'rgba(16, 28, 51, 0.95)' : 'var(--bg-surface)'
               }}
             >
               {isRec && (
-                <div style={{ position: 'absolute', top: '12px', right: '12px' }}>
-                  <span className="tag tag-live">★ Recommended</span>
+                <div style={{
+                  position: 'absolute',
+                  top: '-10px',
+                  right: '14px',
+                  background: 'var(--safe-teal)',
+                  color: '#070D18',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase'
+                }}>
+                  Recommended
                 </div>
               )}
 
-              <div style={{ fontSize: '14.5px', fontWeight: 700, color: '#fff', marginBottom: '12px', paddingRight: isRec ? '80px' : '0' }}>
-                {r.name}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>
+                  {r.name}
+                </span>
+                <span className={`badge ${r.badgeColor === 'teal' ? 'badge-teal' : 'badge-amber'}`}>
+                  Risk {r.riskScore}/100
+                </span>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
-                <div style={{ background: 'var(--bg-surface-alt)', padding: '8px 10px', borderRadius: 'var(--radius-sm)' }}>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>EST. COST</div>
-                  <div className="mono" style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>
-                    ${r.cost.toLocaleString()}
-                  </div>
-                  <div style={{ fontSize: '10px', color: r.budgetStatus === 'Within' ? 'var(--safe-teal)' : 'var(--hazard-red)' }}>
-                    {r.budgetStatus} Budget
-                  </div>
+              {/* Cost & Transit Figures */}
+              <div style={{ margin: '12px 0 16px' }}>
+                <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                  ${r.cost.toLocaleString()}
                 </div>
-
-                <div style={{ background: 'var(--bg-surface-alt)', padding: '8px 10px', borderRadius: 'var(--radius-sm)' }}>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>TRANSIT TIME</div>
-                  <div className="mono" style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>
-                    {r.transitDays} d
-                  </div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                    {r.distanceNm} nm
-                  </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Estimated total voyage spend ({r.budgetStatus} budget)
                 </div>
               </div>
 
-              {/* Risk Score Index Bar */}
-              <div style={{ marginBottom: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Risk Score Index</span>
-                  <span className="mono" style={{
-                    fontWeight: 700,
-                    color: r.riskScore < 25 ? 'var(--safe-teal)' : r.riskScore < 35 ? 'var(--caution-amber)' : 'var(--hazard-red)'
-                  }}>
-                    {r.riskScore}/100
+              {/* Specs */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '8px',
+                padding: '10px 0',
+                borderTop: '1px solid var(--border-subtle)',
+                borderBottom: '1px solid var(--border-subtle)',
+                fontSize: '11.5px'
+              }}>
+                <div>
+                  <span style={{ color: 'var(--text-muted)' }}>Transit: </span>
+                  <span className="mono" style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{r.transitDays} days</span>
+                </div>
+                <div>
+                  <span style={{ color: 'var(--text-muted)' }}>Distance: </span>
+                  <span className="mono" style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{r.distanceNm} nm</span>
+                </div>
+                <div>
+                  <span style={{ color: 'var(--text-muted)' }}>Hazards: </span>
+                  <span style={{ fontWeight: 600, color: r.hazards > 0 ? 'var(--caution-amber)' : 'var(--safe-teal)' }}>
+                    {r.hazards} detected
                   </span>
                 </div>
-                <div style={{ height: '6px', background: 'var(--bg-surface-alt)', borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{
-                    height: '100%',
-                    width: `${r.riskScore}%`,
-                    background: r.riskScore < 25 ? 'var(--safe-teal)' : r.riskScore < 35 ? 'var(--caution-amber)' : 'var(--hazard-red)',
-                    borderRadius: '3px'
-                  }} />
+                <div>
+                  <span style={{ color: 'var(--text-muted)' }}>Fuel Burn: </span>
+                  <span className="mono" style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{r.breakdown.co2Emissions}</span>
                 </div>
               </div>
 
-              <div style={{ fontSize: '11.5px', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-                En Route Hazards: <strong style={{ color: r.hazards === 0 ? 'var(--safe-teal)' : 'var(--caution-amber)' }}>{r.hazards} Active</strong>
+              {/* Waypoint snippet */}
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '12px 0' }}>
+                <div style={{ fontWeight: 600, color: 'var(--text-muted)', marginBottom: '4px' }}>Routing Track:</div>
+                <div style={{ lineHeight: '1.4' }}>
+                  {r.waypoints.slice(0, 3).join(' → ')}
+                </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+              {/* Buttons */}
+              <div style={{ marginTop: 'auto', display: 'flex', gap: '8px' }}>
                 <button
-                  type="button"
-                  className="btn btn-outline btn-sm btn-full"
+                  className="btn btn-outline btn-sm"
+                  style={{ flex: 1 }}
                   onClick={() => setSelectedBreakdown(r)}
                 >
-                  <Icon name="Eye" size={13} />
+                  <Icon name="Info" size={13} />
                   <span>Breakdown</span>
                 </button>
                 <button
-                  type="button"
-                  className="btn btn-primary btn-sm btn-full"
+                  className={`btn ${isRec ? 'btn-primary' : 'btn-safe'} btn-sm`}
+                  style={{ flex: 1 }}
                   onClick={() => setConfirmModalRoute(r)}
                 >
-                  <Icon name="CheckCircle2" size={13} />
+                  <Icon name="Check" size={13} />
                   <span>Select Route</span>
                 </button>
               </div>
@@ -142,47 +285,136 @@ export default function CompareRoutes({ onConfirmRoute, onBackToPlan }) {
         })}
       </div>
 
-      {/* Figure 2: Risk score by route SVG visualization */}
-      <div style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: 'var(--radius-md)',
-        padding: '18px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#fff' }}>
-            Figure 2. Comparative Risk Score by Route (Lower is Safer)
+      {/* Figure 2: Visual Cost & Transit Trade-off Chart */}
+      <div className="card" style={{ padding: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <div>
+            <h3 style={{ fontSize: '14px', fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>
+              Figure 2: Route Cost & Transit Trade-off Comparison
+            </h3>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+              Normalized against benchmark budget and safe voyage thresholds
+            </p>
           </div>
-          <span className="tag tag-demo">Scale: 6px / Risk Point</span>
+          <span className="badge badge-teal">ASD-STE100 Spec</span>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <svg viewBox="0 0 640 250" role="img" style={{ maxWidth: '100%', height: 'auto', background: '#080E1A', borderRadius: '6px' }}>
-            <rect width="640" height="250" fill="#080E1A" />
-            <g fontFamily="Inter, sans-serif" fontSize="12" fill="#F8FAFC">
-              <text x="16" y="34" fontWeight="700">Risk score comparison (ASD-STE100 standard)</text>
-              
-              <text x="16" y="76">Route A</text>
-              <rect x="90" y="62" width="144" height="18" rx="4" fill="#2DD4BF" />
-              <text x="242" y="76" fontFamily="JetBrains Mono" fontWeight="600">24 (Optimal)</text>
+        {/* SVG Bar Chart */}
+        <div style={{ width: '100%', height: '160px', position: 'relative' }}>
+          <svg width="100%" height="160" viewBox="0 0 700 160" preserveAspectRatio="none">
+            {/* Grid lines */}
+            <line x1="60" y1="20" x2="680" y2="20" stroke="rgba(255,255,255,0.05)" strokeDasharray="4" />
+            <line x1="60" y1="70" x2="680" y2="70" stroke="rgba(255,255,255,0.05)" strokeDasharray="4" />
+            <line x1="60" y1="120" x2="680" y2="120" stroke="rgba(255,255,255,0.08)" />
 
-              <text x="16" y="116">Route B</text>
-              <rect x="90" y="102" width="228" height="18" rx="4" fill="#FBBF24" />
-              <text x="326" y="116" fontFamily="JetBrains Mono" fontWeight="600">38</text>
+            {/* Benchmark Budget Line */}
+            <line x1="60" y1="50" x2="680" y2="50" stroke="#F59E0B" strokeWidth="1.5" strokeDasharray="5" />
+            <text x="682" y="53" fill="#F59E0B" fontSize="9.5" fontFamily="Inter" textAnchor="end">Benchmark Cap</text>
 
-              <text x="16" y="156">Route C</text>
-              <rect x="90" y="142" width="186" height="18" rx="4" fill="#FBBF24" />
-              <text x="284" y="156" fontFamily="JetBrains Mono" fontWeight="600">31</text>
+            {/* Bars for 4 routes */}
+            {routes.map((r, idx) => {
+              const xPos = 100 + idx * 145;
+              const maxCost = Math.max(...routes.map(rt => rt.cost));
+              const barHeight = (r.cost / (maxCost * 1.15)) * 100;
+              const yPos = 120 - barHeight;
+              const isRec = r.isRecommended;
 
-              <text x="16" y="196">Route D</text>
-              <rect x="90" y="182" width="72" height="18" rx="4" fill="#2DD4BF" />
-              <text x="170" y="196" fontFamily="JetBrains Mono" fontWeight="600">12 (Safest)</text>
-            </g>
-            <line x1="90" y1="50" x2="90" y2="214" stroke="#1E293B" strokeWidth="1.5" />
-            <text x="16" y="236" fill="#94A3B8" fontSize="11" fontFamily="Inter, sans-serif">
-              Bar length is 6 px per risk point. Route D delivers lowest oceanic swell exposure.
-            </text>
+              return (
+                <g key={r.id}>
+                  {/* Cost Bar */}
+                  <rect
+                    x={xPos}
+                    y={yPos}
+                    width="44"
+                    height={barHeight}
+                    rx="4"
+                    fill={isRec ? '#2DD4BF' : '#38BDF8'}
+                    opacity={isRec ? 0.95 : 0.75}
+                  />
+                  <text
+                    x={xPos + 22}
+                    y={yPos - 6}
+                    fill="#F8FAFC"
+                    fontSize="10"
+                    fontWeight="600"
+                    fontFamily="JetBrains Mono"
+                    textAnchor="middle"
+                  >
+                    ${(r.cost / 1000).toFixed(1)}k
+                  </text>
+                  <text
+                    x={xPos + 22}
+                    y="138"
+                    fill="#94A3B8"
+                    fontSize="11"
+                    fontWeight="500"
+                    fontFamily="Inter"
+                    textAnchor="middle"
+                  >
+                    Route {r.id}
+                  </text>
+                  <text
+                    x={xPos + 22}
+                    y="152"
+                    fill="#64748B"
+                    fontSize="9.5"
+                    fontFamily="JetBrains Mono"
+                    textAnchor="middle"
+                  >
+                    {r.transitDays}d
+                  </text>
+                </g>
+              );
+            })}
           </svg>
+        </div>
+      </div>
+
+      {/* Matched Carriers Section from shipping_lines_by_port.csv */}
+      <div className="card" style={{ padding: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+          <div>
+            <h3 style={{ fontSize: '14px', fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>
+              Verified Carrier Services at {origin.name}
+            </h3>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+              Extracted from <code>shipping_lines_by_port.csv</code> for cargo category "{cargoType}"
+            </p>
+          </div>
+          <span className="badge badge-teal">
+            {matchedCarriers.length} Carriers Available
+          </span>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gap: '10px'
+        }}>
+          {matchedCarriers.map((c, i) => (
+            <div
+              key={i}
+              style={{
+                padding: '10px 12px',
+                background: 'var(--bg-surface-elevated)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-sm)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px'
+              }}
+            >
+              <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                {c.company}
+              </div>
+              <div style={{ fontSize: '10px', color: 'var(--accent-cyan)', textTransform: 'capitalize' }}>
+                {c.category.replace('_', ' ')}
+              </div>
+              <div style={{ fontSize: '9.5px', color: 'var(--text-muted)' }}>
+                Calls: {c.callType}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -191,46 +423,77 @@ export default function CompareRoutes({ onConfirmRoute, onBackToPlan }) {
         <div className="modal-overlay" onClick={() => setSelectedBreakdown(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <div className="modal-title">{selectedBreakdown.name} — Cost & Risk Breakdown</div>
+              <div>
+                <h3 className="modal-title">{selectedBreakdown.name}</h3>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                  Detailed Cost & Environmental Dissection
+                </p>
+              </div>
               <button className="modal-close" onClick={() => setSelectedBreakdown(null)}>
                 <Icon name="X" size={18} />
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ background: 'var(--bg-surface-alt)', padding: '10px', borderRadius: 'var(--radius-sm)' }}>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>TOTAL CONTRACTED COST</div>
-                <div className="mono" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--accent-cyan)' }}>
-                  ${selectedBreakdown.cost.toLocaleString()}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '12px',
+                padding: '12px',
+                background: 'var(--bg-surface-elevated)',
+                borderRadius: 'var(--radius-sm)'
+              }}>
+                <div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Bunker Fuel Cost</div>
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                    {selectedBreakdown.breakdown.bunkerCost}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Canal & Port Surcharges</div>
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                    {selectedBreakdown.breakdown.canalAndPortFees}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Maritime Security & Insurance</div>
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                    {selectedBreakdown.breakdown.securityAndInsurance}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>CO2 GHG Footprint</div>
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--safe-teal)', fontFamily: 'var(--font-mono)' }}>
+                    {selectedBreakdown.breakdown.co2Emissions}
+                  </div>
                 </div>
               </div>
-              <div style={{ background: 'var(--bg-surface-alt)', padding: '10px', borderRadius: 'var(--radius-sm)' }}>
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>ESTIMATED TRANSIT TIME</div>
-                <div className="mono" style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>
-                  {selectedBreakdown.transitDays} Days
+
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  Hydrographic & Weather Window
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  {selectedBreakdown.breakdown.weatherWindow}
                 </div>
               </div>
-            </div>
 
-            <div className="table-wrap" style={{ marginBottom: '14px' }}>
-              <table className="data-table">
-                <tbody>
-                  <tr><td>Bunker Fuel Expense</td><td className="mono" style={{ textAlign: 'right' }}>{selectedBreakdown.breakdown.bunkerCost}</td></tr>
-                  <tr><td>Canal & Port Tariffs</td><td className="mono" style={{ textAlign: 'right' }}>{selectedBreakdown.breakdown.canalAndPortFees}</td></tr>
-                  <tr><td>Maritime Security & War Risk</td><td className="mono" style={{ textAlign: 'right' }}>{selectedBreakdown.breakdown.securityAndInsurance}</td></tr>
-                  <tr><td>Cargo Stevedoring</td><td className="mono" style={{ textAlign: 'right' }}>{selectedBreakdown.breakdown.handling}</td></tr>
-                  <tr><td>Estimated Carbon Emissions</td><td className="mono" style={{ textAlign: 'right' }}>{selectedBreakdown.breakdown.co2Emissions}</td></tr>
-                </tbody>
-              </table>
-            </div>
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '6px' }}>
+                  Planned Waypoint Sequence
+                </div>
+                <ol style={{ paddingLeft: '18px', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                  {selectedBreakdown.waypoints.map((wp, idx) => (
+                    <li key={idx}>{wp}</li>
+                  ))}
+                </ol>
+              </div>
 
-            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '14px' }}>
-              <strong>Waypoints:</strong> {selectedBreakdown.waypoints.join(' → ')}
-            </div>
-
-            <div className="box box-note" style={{ marginBottom: 0 }}>
-              <strong>METEOROLOGICAL WINDOW</strong>
-              {selectedBreakdown.breakdown.weatherWindow}
+              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button className="btn btn-outline" onClick={() => setSelectedBreakdown(null)}>
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -241,37 +504,42 @@ export default function CompareRoutes({ onConfirmRoute, onBackToPlan }) {
         <div className="modal-overlay" onClick={() => setConfirmModalRoute(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <div className="modal-title">Confirm Dispatch Booking</div>
+              <h3 className="modal-title">Confirm Route Selection</h3>
               <button className="modal-close" onClick={() => setConfirmModalRoute(null)}>
                 <Icon name="X" size={18} />
               </button>
             </div>
 
-            <p style={{ fontSize: '12.5px', color: 'var(--text-primary)', marginBottom: '14px' }}>
-              You are dispatching cargo via <strong>{confirmModalRoute.name}</strong>. This record will synchronize directly to your Cloud Firestore portfolio.
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 16px' }}>
+              You are locking in <strong>{confirmModalRoute.name}</strong> for the voyage from <strong>{origin.name}</strong> to <strong>{destination.name}</strong>.
             </p>
 
-            <div className="table-wrap" style={{ marginBottom: '16px' }}>
-              <table className="data-table">
-                <tbody>
-                  <tr><td>Contracted Rate</td><td className="mono" style={{ textAlign: 'right' }}>${confirmModalRoute.cost.toLocaleString()}</td></tr>
-                  <tr><td>Estimated Transit</td><td className="mono" style={{ textAlign: 'right' }}>{confirmModalRoute.transitDays} Days</td></tr>
-                  <tr><td>Risk Score</td><td className="mono" style={{ textAlign: 'right' }}>{confirmModalRoute.riskScore}/100</td></tr>
-                  <tr><td>Active Sea Hazards</td><td className="mono" style={{ textAlign: 'right' }}>{confirmModalRoute.hazards}</td></tr>
-                </tbody>
-              </table>
+            <div style={{
+              padding: '12px 14px',
+              background: 'var(--bg-surface-elevated)',
+              borderRadius: 'var(--radius-sm)',
+              marginBottom: '20px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: '12px'
+            }}>
+              <div>
+                <span style={{ color: 'var(--text-muted)' }}>Estimated Cost: </span>
+                <span className="mono" style={{ fontWeight: 700, color: 'var(--text-primary)' }}>${confirmModalRoute.cost.toLocaleString()}</span>
+              </div>
+              <div>
+                <span style={{ color: 'var(--text-muted)' }}>Transit ETA: </span>
+                <span className="mono" style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{confirmModalRoute.transitDays} days</span>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button className="btn btn-outline" onClick={() => setConfirmModalRoute(null)}>
                 Cancel
               </button>
-              <button className="btn btn-safe" onClick={() => {
-                onConfirmRoute(confirmModalRoute);
-                setConfirmModalRoute(null);
-              }}>
-                <Icon name="CheckCircle2" size={14} />
-                <span>Confirm & Dispatch</span>
+              <button className="btn btn-primary" onClick={() => handleBookRoute(confirmModalRoute)}>
+                <Icon name="Check" size={14} />
+                <span>Save to Cloud Portfolio</span>
               </button>
             </div>
           </div>
