@@ -12,7 +12,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { WAYPOINT_DATA } from '../data/maritimeData';
 import { CSV_INDIAN_PORTS, CSV_FOREIGN_PORTS } from '../data/maritimeCsvData';
-import { fetchMarineWeather, fetchGdacsAlerts, connectAisStream } from '../services/telemetryService';
+import { 
+  fetchMarineWeather, 
+  fetchGdacsAlerts, 
+  connectAisStream, 
+  fetchNdbcObservations 
+} from '../services/telemetryService';
 import Icon from './Icon';
 
 export default function MarineMap({
@@ -44,6 +49,7 @@ export default function MarineMap({
 
   // Telemetry data states
   const [waveStations, setWaveStations] = useState([]);
+  const [observedBuoys, setObservedBuoys] = useState([]);
   const [gdacsAlerts, setGdacsAlerts] = useState([]);
   const [liveVessels, setLiveVessels] = useState(WAYPOINT_DATA.vessels || []);
   const [selectedStation, setSelectedStation] = useState(null);
@@ -57,21 +63,24 @@ export default function MarineMap({
 
   // Load Open-Meteo & GDACS on mount
   useEffect(() => {
-    // 1. Fetch Open-Meteo Marine Data for 4 primary ocean corridors
+    // 1. Fetch Open-Meteo Marine Data for 2 primary ocean corridor waypoints (kept clean and uncluttered)
     const oceanPoints = [
-      { id: 'AS', name: 'Arabian Sea Corridor', lat: 15.0, lng: 68.0 },
-      { id: 'BOB', name: 'Central Bay of Bengal', lat: 12.0, lng: 86.5 },
-      { id: 'EQ', name: 'Equatorial Ocean Track', lat: 3.5, lng: 82.0 },
+      { id: 'BOB', name: 'Bay of Bengal Track', lat: 12.0, lng: 86.5 },
       { id: 'MAL', name: 'Malacca Strait Approach', lat: 5.5, lng: 97.0 }
     ];
 
     async function loadTelemetry() {
+      // Forecast points from Open-Meteo
       const stationResults = [];
       for (const pt of oceanPoints) {
         const weather = await fetchMarineWeather(pt.lat, pt.lng);
         stationResults.push({ ...pt, ...weather });
       }
       setWaveStations(stationResults);
+
+      // Real measured buoy observations from NOAA NDBC / RAMA
+      const buoys = await fetchNdbcObservations();
+      setObservedBuoys(buoys);
 
       // 2. Fetch GDACS Tropical Cyclone alerts
       const alerts = await fetchGdacsAlerts();
@@ -228,47 +237,101 @@ export default function MarineMap({
       });
     }
 
-    // --- C. Open-Meteo Marine Waves Layer ---
-    if (layers.waves && waveStations.length > 0) {
-      waveStations.forEach(st => {
-        const isSwellHigh = st.waveHeight >= 2.5;
+    // --- C. Weather Telemetry: Open-Meteo (Forecast) & NOAA NDBC (Observed) ---
+    if (layers.waves) {
+      // 1. Open-Meteo Model Forecast Points (Clean & Uncluttered: 2 key ocean corridor points)
+      (waveStations || []).slice(0, 2).forEach(st => {
         const waveIcon = L.divIcon({
-          className: 'marine-wave-pin',
+          className: 'marine-forecast-pin',
           html: `
             <div style="
-              background: ${isSwellHigh ? 'rgba(239, 68, 68, 0.85)' : 'rgba(56, 189, 248, 0.85)'};
+              background: rgba(14, 165, 233, 0.9);
               color: #070D18;
               font-family: 'JetBrains Mono', monospace;
               font-weight: 800;
               font-size: 10px;
-              padding: 2px 6px;
-              border-radius: 10px;
+              padding: 2px 7px;
+              border-radius: 12px;
               border: 1px solid #ffffff;
               display: flex;
               align-items: center;
-              gap: 3px;
-              box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+              gap: 4px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.6);
               white-space: nowrap;
             ">
-              <span>🌊</span>
+              <span style="font-size:9px; background:#070D18; color:#38BDF8; padding:0 3px; border-radius:3px;">FCST</span>
               <span>${st.waveHeight}m</span>
             </div>
           `,
-          iconSize: [50, 20],
-          iconAnchor: [25, 10]
+          iconSize: [85, 22],
+          iconAnchor: [42, 11]
         });
 
         const marker = L.marker([st.lat, st.lng], { icon: waveIcon }).addTo(overlayGroup);
-
         marker.bindPopup(`
-          <div style="font-family:Inter,sans-serif; font-size:12px; min-width:180px;">
+          <div style="font-family:Inter,sans-serif; font-size:12px; min-width:190px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span style="background:rgba(56,189,248,0.2); color:#38BDF8; font-weight:700; padding:2px 6px; border-radius:4px; font-size:10px;">FORECAST</span>
+              <span style="color:#94A3B8; font-size:10px;">Open-Meteo</span>
+            </div>
             <strong style="color:#fff; font-size:13px;">${st.name}</strong><br/>
-            <span style="color:#94A3B8;">Source:</span> <span style="color:#38BDF8;">Open-Meteo Marine (CC BY 4.0)</span><br/>
-            <div style="margin-top:6px; display:grid; grid-template-columns:1fr 1fr; gap:6px; font-family:'JetBrains Mono',monospace;">
-              <div>Wave Height: <strong>${st.waveHeight}m</strong></div>
-              <div>Swell Height: <strong>${st.swellHeight}m</strong></div>
+            <div style="margin-top:6px; display:grid; grid-template-columns:1fr 1fr; gap:6px; font-family:'JetBrains Mono',monospace; font-size:11px;">
+              <div>Wave: <strong>${st.waveHeight}m</strong></div>
+              <div>Swell: <strong>${st.swellHeight}m</strong></div>
               <div>Period: <strong>${st.wavePeriod}s</strong></div>
-              <div>Direction: <strong>${st.waveDirection}°</strong></div>
+              <div>Dir: <strong>${st.waveDirection}°</strong></div>
+            </div>
+            <div style="margin-top:6px; font-size:10px; color:#94A3B8; border-top:1px solid #334155; padding-top:4px;">
+              Trajectory model forecast for rerouting simulation.
+            </div>
+          </div>
+        `);
+      });
+
+      // 2. NOAA NDBC Real Measured Buoy Readings (Observed Ground Truth: 2 key stations)
+      (observedBuoys || []).slice(0, 2).forEach(b => {
+        const buoyIcon = L.divIcon({
+          className: 'marine-observed-buoy-pin',
+          html: `
+            <div style="
+              background: rgba(45, 212, 191, 0.92);
+              color: #070D18;
+              font-family: 'JetBrains Mono', monospace;
+              font-weight: 800;
+              font-size: 10px;
+              padding: 2px 7px;
+              border-radius: 12px;
+              border: 1px solid #ffffff;
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+              white-space: nowrap;
+            ">
+              <span style="font-size:9px; background:#070D18; color:#2DD4BF; padding:0 3px; border-radius:3px;">OBS</span>
+              <span>${b.waveHeightM !== null ? `${b.waveHeightM}m` : 'Live'}</span>
+            </div>
+          `,
+          iconSize: [85, 22],
+          iconAnchor: [42, 11]
+        });
+
+        const marker = L.marker([b.lat, b.lon], { icon: buoyIcon }).addTo(overlayGroup);
+        marker.bindPopup(`
+          <div style="font-family:Inter,sans-serif; font-size:12px; min-width:190px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span style="background:rgba(45,212,191,0.2); color:#2DD4BF; font-weight:700; padding:2px 6px; border-radius:4px; font-size:10px;">OBSERVED</span>
+              <span style="color:#2DD4BF; font-size:10px; font-weight:600;">NOAA NDBC</span>
+            </div>
+            <strong style="color:#fff; font-size:13px;">${b.name || `Buoy Station ${b.stationId}`}</strong><br/>
+            <div style="margin-top:6px; display:grid; grid-template-columns:1fr 1fr; gap:6px; font-family:'JetBrains Mono',monospace; font-size:11px;">
+              <div>Measured Wave: <strong>${b.waveHeightM !== null ? `${b.waveHeightM}m` : 'N/A'}</strong></div>
+              <div>Wind Speed: <strong>${b.windSpeedKts ? `${b.windSpeedKts} kts` : 'N/A'}</strong></div>
+              <div>Pressure: <strong>${b.pressureHpa ? `${b.pressureHpa} hPa` : 'N/A'}</strong></div>
+              <div>Water Temp: <strong>${b.waterTempC ? `${b.waterTempC}°C` : 'N/A'}</strong></div>
+            </div>
+            <div style="margin-top:6px; font-size:10px; color:#94A3B8; border-top:1px solid #334155; padding-top:4px;">
+              Real ocean sensor ground truth for rerouting validation.
             </div>
           </div>
         `);
@@ -407,7 +470,7 @@ export default function MarineMap({
           <span>OpenSeaMap</span>
         </button>
 
-        {/* Open-Meteo Waves Toggle */}
+        {/* Weather Layer Toggle (Forecast & Observed) */}
         <button
           onClick={() => toggleLayer('waves')}
           style={{
@@ -423,10 +486,10 @@ export default function MarineMap({
             alignItems: 'center',
             gap: '4px'
           }}
-          title="Toggle Open-Meteo real-time wave heights & swell stations"
+          title="Toggle Forecast (Open-Meteo) & Observed (NOAA NDBC) marine weather"
         >
           <Icon name="Wind" size={12} />
-          <span>Open-Meteo Waves</span>
+          <span>Weather (FCST & OBS)</span>
         </button>
 
         {/* GDACS Storms Toggle */}
@@ -474,7 +537,7 @@ export default function MarineMap({
         </button>
       </div>
 
-      {/* Attribution Watermark (OpenStreetMap, OpenSeaMap, Open-Meteo CC BY 4.0, AISStream) */}
+      {/* Attribution Watermark (OpenStreetMap, OpenSeaMap, Open-Meteo, NOAA NDBC, AISStream) */}
       <div style={{
         position: 'absolute',
         bottom: '8px',
@@ -493,7 +556,9 @@ export default function MarineMap({
       }}>
         <span>© OpenStreetMap • OpenSeaMap</span>
         <span>•</span>
-        <span>Weather: Open-Meteo (CC BY 4.0)</span>
+        <span>Forecast: Open-Meteo</span>
+        <span>•</span>
+        <span>Observed: NOAA NDBC</span>
         <span>•</span>
         <span>Alerts: GDACS</span>
         <span>•</span>
