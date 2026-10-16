@@ -1,0 +1,138 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WAYPOINT — Maritime Route Intelligence</title>
+  <meta name="description" content="Navigate Smarter. Ship Safer. Maritime route intelligence platform for shippers and logistics managers."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div id="app">
+    <!-- Login screen shown first -->
+    <div id="login-screen" class="login-screen">
+      <div class="login-card">
+        <div class="login-logo">
+          <div class="logo-icon">⚓</div>
+          <span class="logo-text">WAYPOINT</span>
+        </div>
+        <h1 class="login-title">Navigate Smarter.<br/>Ship Safer.</h1>
+        <p class="login-sub">Maritime route intelligence platform</p>
+        <div class="login-demo-note">
+          <span class="tag tag-demo">DEMO MODE</span>
+          All data is simulated for demonstration.
+        </div>
+        <div class="field-group">
+          <label class="field-label">Select your role</label>
+          <div class="role-cards">
+            <div class="role-card active" id="role-shipper" onclick="selectRole('shipper')">
+              <div class="role-card-icon">📦</div>
+              <div class="role-card-title">Shipper / Exporter</div>
+              <div class="role-card-desc">Plan shipments, compare routes, export reports</div>
+            </div>
+            <div class="role-card" id="role-manager" onclick="selectRole('manager')">
+              <div class="role-card-icon">🎯</div>
+              <div class="role-card-title">Logistics Manager</div>
+              <div class="role-card-desc">Monitor fleet, manage alerts, reroute</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" id="login-btn" onclick="doLogin()">
+          Enter WAYPOINT →
+        </button>
+      </div>
+      <div class="login-bg-map" aria-hidden="true"></div>
+    </div>
+
+    <!-- Main app (hidden until login) -->
+    <div id="main-app" class="hidden">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <div class="logo-icon">⚓</div>
+            <span class="logo-text">WAYPOINT</span>
+          </div>
+        </div>
+        <div class="role-selector" id="role-selector-pill">
+          <span class="role-label" id="active-role-label">Shipper</span>
+          <button class="role-switch-btn" onclick="showRoleModal()">Switch</button>
+        </div>
+        <nav class="sidebar-nav" id="sidebar-nav">
+          <!-- injected by JS -->
+        </nav>
+        <div class="sidebar-footer">
+          <div class="sidebar-user" onclick="navigate('settings')">
+            <div class="user-avatar">JD</div>
+            <div class="user-info">
+              <div class="user-name">James Dao</div>
+              <div class="user-email">j.dao@oceancargo.com</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main area -->
+      <div class="main-area">
+        <!-- Top bar -->
+        <header class="topbar" id="topbar">
+          <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">☰</button>
+          <div class="breadcrumb" id="breadcrumb">Dashboard</div>
+          <div class="topbar-center">
+            <div class="search-bar" onclick="focusSearch()">
+              <span class="search-icon">🔍</span>
+              <span class="search-placeholder">Search routes, ports, alerts…</span>
+            </div>
+          </div>
+          <div class="topbar-right">
+            <div class="data-status" id="data-status-pill">
+              <span class="status-dot demo"></span>
+              <span>Demo Mode</span>
+            </div>
+            <button class="topbar-btn alert-btn" onclick="navigate('alerts')" id="alert-bell" aria-label="Alerts">
+              🔔 <span class="alert-count">5</span>
+            </button>
+            <button class="topbar-btn" onclick="navigate('settings')" aria-label="Settings">⚙️</button>
+          </div>
+        </header>
+
+        <!-- Page content -->
+        <main class="page-content" id="page-content">
+          <!-- injected by JS -->
+        </main>
+      </div>
+    </div>
+
+    <!-- Modals / overlays -->
+    <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal(event)">
+      <div class="modal" id="modal-box">
+        <div id="modal-content"></div>
+      </div>
+    </div>
+
+    <!-- Alert drawer -->
+    <div id="alert-drawer" class="alert-drawer hidden">
+      <div class="drawer-header">
+        <h3>Alert Details</h3>
+        <button onclick="closeDrawer()" class="drawer-close">✕</button>
+      </div>
+      <div id="drawer-content"></div>
+    </div>
+    <div id="drawer-backdrop" class="drawer-backdrop hidden" onclick="closeDrawer()"></div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <script src="data.js"></script>
+  <script src="pages.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
