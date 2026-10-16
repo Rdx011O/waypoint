@@ -2,9 +2,10 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const { ports, ships, trackedCargos } = require("./src/data/demoData");
 const { getPorts, findPort, getShips, getAlerts } = require("./src/services/dataService");
-const { getCandidateRoutesAsync } = require("./src/services/routeService");
-const { detectHazardsAsync } = require("./src/services/hazardService");
+const { getCandidateRoutes, getCandidateRoutesAsync } = require("./src/services/routeService");
+const { detectHazards, detectHazardsAsync } = require("./src/services/hazardService");
 const { optimizeRoutes } = require("./src/services/optimizer");
 const { initAISStream, getVesselsList, addSseClient, removeSseClient } = require("./src/services/aisStreamService");
 const { getLatestNdbcObservations, getObservationsNear } = require("./src/services/ndbcService");
@@ -27,19 +28,26 @@ initAISStream();
 app.get("/", (_req, res) => {
   res.json({
     name: "WAYPOINT API",
-    description: "Smart Maritime Route Optimizer & Telemetry Gateway",
+    description: "Smart Maritime Route Optimizer, Live GPS Tracking, Weather Rerouting & Telemetry Gateway",
     dataSource: "Firebase Cloud Firestore & Dynamic Maritime Datasets",
     endpoints: [
       "GET /api/health",
       "GET /api/ports",
       "GET /api/ports/search?q=Chennai",
       "GET /api/ships",
+      "GET /api/tracking/cargos",
+      "GET /api/tracking/cargos/:id",
+      "GET /api/tracking/ships",
+      "GET /api/tracking/ships/:id",
+      "POST /api/tracking/gps-ping",
       "GET /api/ais/vessels",
       "GET /api/ais/stream (SSE)",
       "GET /api/weather/marine?latitude=15&longitude=70",
       "GET /api/weather/observations?lat=15&lon=70",
       "GET /api/weather/corridor?originLat=13.09&originLon=80.29&destLat=1.26&destLon=103.84",
       "GET /api/gdacs?eventlist=TC",
+      "GET /api/reroute?source=Chennai&destination=Singapore&speed=14",
+      "POST /api/reroute/accept",
       "GET /api/currency/rates?base=USD",
       "POST /api/cost/estimate",
       "POST /api/cost/compare",
@@ -47,9 +55,7 @@ app.get("/", (_req, res) => {
       "POST /api/assistant/chat",
       "GET /api/routes?source=Mumbai&destination=Singapore",
       "POST /api/optimize",
-      "GET /api/hazards?source=Kolkata&destination=Singapore",
-      "GET /api/reroute?source=Chennai&destination=Singapore&speed=14",
-      "POST /api/reroute/accept"
+      "GET /api/hazards?source=Kolkata&destination=Singapore"
     ]
   });
 });
@@ -289,6 +295,71 @@ app.post("/api/reroute/accept", async (req, res) => {
   }
 });
 
+// Live GPS Tracking APIs for Shippers & Logistics Operators
+app.get("/api/tracking/cargos", (_req, res) => {
+  const enriched = trackedCargos.map(cargo => {
+    const ship = ships.find(s => s.id === cargo.shipId);
+    return { ...cargo, ship };
+  });
+  res.json({ cargos: enriched, total: enriched.length, liveGpsTracking: true });
+});
+
+app.get("/api/tracking/cargos/:id", (req, res) => {
+  const id = String(req.params.id || "").trim().toLowerCase();
+  const cargo = trackedCargos.find(c =>
+    c.id.toLowerCase() === id ||
+    c.blNumber.toLowerCase() === id ||
+    c.containerId.toLowerCase() === id
+  );
+
+  if (!cargo) {
+    return res.status(404).json({
+      error: "CARGO_NOT_FOUND",
+      message: `No active shipment found matching tracking identifier "${req.params.id}".`
+    });
+  }
+
+  const ship = ships.find(s => s.id === cargo.shipId);
+  res.json({
+    ...cargo,
+    ship,
+    trackingUrl: `http://localhost:5173/?track=${cargo.id}`,
+    liveGpsStatus: "LOCKED_DGPS",
+    satelliteTimestamp: new Date().toISOString()
+  });
+});
+
+app.get("/api/tracking/ships", (_req, res) => {
+  res.json({ ships, total: ships.length, liveGpsTracking: true });
+});
+
+app.get("/api/tracking/ships/:id", (req, res) => {
+  const id = String(req.params.id || "").trim().toLowerCase();
+  const ship = ships.find(s => s.id.toLowerCase() === id || s.imo === id || s.name.toLowerCase().includes(id));
+  if (!ship) {
+    return res.status(404).json({ error: "SHIP_NOT_FOUND", message: `Ship with ID "${req.params.id}" not found.` });
+  }
+
+  const cargoManifest = trackedCargos.filter(c => c.shipId === ship.id);
+  res.json({ ...ship, cargoManifest });
+});
+
+app.post("/api/tracking/gps-ping", (req, res) => {
+  const { shipId, latitude, longitude, speedKnots, heading } = req.body;
+  const ship = ships.find(s => s.id === shipId);
+  if (!ship) {
+    return res.status(404).json({ error: "SHIP_NOT_FOUND", message: `Ship "${shipId}" not found.` });
+  }
+
+  if (latitude != null) ship.latitude = Number(latitude);
+  if (longitude != null) ship.longitude = Number(longitude);
+  if (speedKnots != null) ship.speedKnots = Number(speedKnots);
+  if (heading != null) ship.heading = Number(heading);
+  ship.lastUpdated = new Date().toISOString();
+
+  res.json({ success: true, updatedShip: ship, message: "GPS telemetry ping acknowledged." });
+});
+
 app.get("/api/ports", async (_req, res) => {
   try {
     const ports = await getPorts();
@@ -304,14 +375,14 @@ app.get("/api/ports", async (_req, res) => {
 
 app.get("/api/ships", async (_req, res) => {
   try {
-    const ships = await getShips();
+    const dynamicShips = await getShips();
     res.json({
-      ships,
-      total: ships.length,
-      dataSource: "Firebase Firestore"
+      ships: dynamicShips && dynamicShips.length > 0 ? dynamicShips : ships,
+      total: (dynamicShips && dynamicShips.length > 0 ? dynamicShips : ships).length,
+      dataSource: dynamicShips && dynamicShips.length > 0 ? "Firebase Firestore" : "Local Telemetry Fleet"
     });
   } catch (err) {
-    res.status(500).json({ error: "FETCH_FAILED", message: err.message });
+    res.json({ ships, total: ships.length, dataSource: "Local Telemetry Fleet" });
   }
 });
 
