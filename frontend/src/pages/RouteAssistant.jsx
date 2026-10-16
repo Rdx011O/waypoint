@@ -11,7 +11,7 @@ export default function RouteAssistant({ onNavigate }) {
       id: 1,
       sender: 'assistant',
       time: '12:00',
-      text: 'Good day, Operator. I am the **WAYPOINT OpenRouter AI Maritime Copilot**.\n\nI monitor live hydrographic feeds, NOAA NDBC buoy sensors, vessel telemetry, cyclone advisories, and port bathymetric draft limits.\n\nAsk me about sea states, port draft restrictions, currency conversions, or optimal corridor routing.',
+      text: 'Hello! I am your **WAYPOINT Maritime Copilot**.\n\nI can help you check port water depth limits, live sea weather and buoy readings, storm warnings, and shipping route options in simple, clear language.\n\nWhat would you like to know today?',
       source: 'WAYPOINT AI Copilot'
     }
   ]);
