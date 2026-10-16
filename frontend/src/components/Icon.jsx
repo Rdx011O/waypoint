@@ -35,7 +35,15 @@ import {
   Send,
   User,
   Building,
-  Menu
+  Menu,
+  Anchor,
+  Battery,
+  Thermometer,
+  Droplets,
+  ShieldCheck,
+  Navigation,
+  Cpu,
+  Check
 } from 'lucide-react';
 
 const iconMap = {
@@ -73,7 +81,15 @@ const iconMap = {
   Send,
   User,
   Building,
-  Menu
+  Menu,
+  Anchor,
+  Battery,
+  Thermometer,
+  Droplets,
+  ShieldCheck,
+  Navigation,
+  Cpu,
+  Check
 };
 
 export default function Icon({ name, size = 16, className = '', color }) {

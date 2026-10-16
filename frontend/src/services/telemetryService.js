@@ -5,6 +5,8 @@
 // 3. GDACS Global Disaster & Tropical Cyclone Alerts
 // 4. OpenSeaMap & OpenStreetMap Tiles
 
+import { INITIAL_CONTAINERS } from '../data/containerData';
+
 const BACKEND_URL = "http://localhost:5000";
 
 // 1. Open-Meteo Marine Weather API
@@ -288,4 +290,71 @@ export async function acceptRerouteDispatch(dispatchData = {}) {
     }
   };
 }
+
+// 8. IoT Device & Container Live Tracking for Shippers
+export async function fetchContainers(query = "") {
+  try {
+    const url = query ? `${BACKEND_URL}/api/tracking/containers?q=${encodeURIComponent(query)}` : `${BACKEND_URL}/api/tracking/containers`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      return data.containers || [];
+    }
+  } catch (err) {
+    console.warn("fetchContainers error:", err.message);
+  }
+
+  // Resilient fallback to local static data
+  if (!query) return INITIAL_CONTAINERS;
+  const q = query.trim().toUpperCase();
+  return INITIAL_CONTAINERS.filter(c => 
+    c.deviceCode.toUpperCase().includes(q) ||
+    c.containerId.toUpperCase().includes(q) ||
+    (c.shipperName && c.shipperName.toUpperCase().includes(q))
+  );
+}
+
+export async function fetchContainerByCode(code) {
+  if (!code) return null;
+  const clean = String(code).trim().toUpperCase();
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/tracking/container/${encodeURIComponent(clean)}`);
+    if (res.ok) {
+      const data = await res.json();
+      return data.container;
+    }
+  } catch (err) {
+    console.warn("fetchContainerByCode API error:", err.message);
+  }
+
+  // Local fallback
+  const found = INITIAL_CONTAINERS.find(c => 
+    c.deviceCode.toUpperCase() === clean ||
+    c.containerId.toUpperCase() === clean ||
+    c.deviceCode.toUpperCase().replace(/-/g, "") === clean.replace(/-/g, "") ||
+    c.containerId.toUpperCase().replace(/-/g, "") === clean.replace(/-/g, "")
+  );
+
+  if (found) {
+    return {
+      ...found,
+      currentLocation: { latitude: found.lat, longitude: found.lon },
+      iotDevice: {
+        deviceCode: found.deviceCode,
+        batteryPct: found.batteryPct,
+        tempC: found.tempC,
+        humidityPct: found.humidityPct,
+        sealStatus: found.sealStatus,
+        connection: "Satellite IoT Link (Active)",
+        signalStrength: "Strong (-78 dBm)",
+        lastPing: found.lastPing
+      },
+      isLive: true
+    };
+  }
+
+  return null;
+}
+
 

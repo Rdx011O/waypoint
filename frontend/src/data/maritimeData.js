@@ -6,6 +6,7 @@ export const WAYPOINT_DATA = {
   navItems: {
     shipper: [
       { id: 'dashboard', label: 'Overview & Shipments', iconName: 'LayoutDashboard', sub: 'Active Bookings' },
+      { id: 'tracking', label: 'Cargo Tracking', iconName: 'Radio', sub: 'IoT Container GPS' },
       { id: 'plan', label: 'Plan a Shipment', iconName: 'Package', sub: 'Cargo & Lane Input' },
       { id: 'compare', label: 'Compare Routes', iconName: 'Scale', sub: 'Cost & Risk Intelligence' },
       { id: 'catalog', label: 'Ports & Trade Network', iconName: 'Anchor', sub: 'CSV Maritime Database' },
@@ -15,6 +16,7 @@ export const WAYPOINT_DATA = {
     ],
     manager: [
       { id: 'dashboard', label: 'Operations Command', iconName: 'LayoutDashboard', sub: 'Fleet Status' },
+      { id: 'tracking', label: 'Cargo Tracking', iconName: 'Radio', sub: 'IoT Container Telemetry' },
       { id: 'riskmap', label: 'Live Risk Map', iconName: 'Map', sub: 'Hazard & Route Monitor' },
       { id: 'catalog', label: 'Ports & Trade Network', iconName: 'Anchor', sub: 'CSV Maritime Database' },
       { id: 'rerouting', label: 'Rerouting Center', iconName: 'RefreshCw', sub: 'Disruption & Alternate' },
