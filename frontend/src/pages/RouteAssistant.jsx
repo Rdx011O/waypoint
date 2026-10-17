@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Icon from '../components/Icon';
 import { WAYPOINT_DATA } from '../data/maritimeData';
+import MarineMap from '../components/MarineMap';
 
 const BACKEND_URL = "http://localhost:5000";
 
@@ -11,7 +12,7 @@ export default function RouteAssistant({ onNavigate }) {
       id: 1,
       sender: 'assistant',
       time: '12:00',
-      text: 'Hello! I am your **WAYPOINT Maritime Copilot**.\n\nI can help you check port water depth limits, live sea weather and buoy readings, storm warnings, and shipping route options in simple, clear language.\n\nWhat would you like to know today?',
+      text: 'Hello! I am your **WAYPOINT Maritime Copilot**.\n\nI can help you check live cargo tracking, ship locations on the map, port draft limits, buoy readings, and safe rerouting in simple, clear language.\n\nWhat would you like to know today?',
       source: 'WAYPOINT AI Copilot'
     }
   ]);
@@ -29,6 +30,9 @@ export default function RouteAssistant({ onNavigate }) {
   ]);
   const [selectedModel, setSelectedModel] = useState("meta-llama/llama-3.3-70b-instruct:free");
   const [hasServerKey, setHasServerKey] = useState(false);
+  const [showMap, setShowMap] = useState(true);
+  const [mapCenter, setMapCenter] = useState([12.0, 80.0]);
+  const [mapZoom, setMapZoom] = useState(4);
   const chatBottomRef = useRef(null);
 
   const presets = WAYPOINT_DATA.assistantPresets || [];
@@ -101,6 +105,11 @@ export default function RouteAssistant({ onNavigate }) {
 
       const data = await res.json();
 
+      if (data.mapTarget && data.mapTarget.lat && data.mapTarget.lon) {
+        setMapCenter([data.mapTarget.lat, data.mapTarget.lon]);
+        if (data.mapTarget.zoom) setMapZoom(data.mapTarget.zoom);
+      }
+
       setMessages(prev => [
         ...prev,
         {
@@ -109,6 +118,7 @@ export default function RouteAssistant({ onNavigate }) {
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           text: data.replyText,
           action: data.action,
+          mapTarget: data.mapTarget,
           source: data.source,
           model: data.model
         }
@@ -195,6 +205,28 @@ export default function RouteAssistant({ onNavigate }) {
             ))}
           </select>
 
+          {/* Live Map Preview Toggle */}
+          <button
+            onClick={() => setShowMap(!showMap)}
+            style={{
+              background: showMap ? 'rgba(56, 189, 248, 0.16)' : 'var(--bg-surface-elevated)',
+              color: showMap ? 'var(--accent-cyan)' : 'var(--text-secondary)',
+              border: `1px solid ${showMap ? 'var(--accent-cyan)' : 'var(--border-subtle)'}`,
+              borderRadius: 'var(--radius-sm)',
+              padding: '5px 12px',
+              fontSize: '11.5px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+            title="Toggle interactive live telemetry map alongside AI copilot"
+          >
+            <Icon name="Map" size={13} />
+            <span>{showMap ? 'Live Map (Active)' : 'Show Live Map'}</span>
+          </button>
+
           {/* Key Configuration Button */}
           <button
             onClick={() => {
@@ -263,176 +295,260 @@ export default function RouteAssistant({ onNavigate }) {
         ))}
       </div>
 
-      {/* Chat Messages Log */}
-      <div className="card" style={{
+      {/* Main Copilot Area: Responsive Split with Live Maritime Map */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: showMap ? '1.1fr 0.9fr' : '1fr',
+        gap: '16px',
         flex: 1,
-        overflowY: 'auto',
-        padding: '20px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px'
-      }}>
-        {messages.map((m) => {
-          const isUser = m.sender === 'user';
-          return (
-            <div
-              key={m.id}
-              style={{
-                display: 'flex',
-                gap: '12px',
-                alignSelf: isUser ? 'flex-end' : 'flex-start',
-                maxWidth: '85%'
-              }}
-            >
-              {!isUser && (
+        minHeight: 0
+      }} className="assistant-split-grid">
+        {/* Left Column: Chat Log & Input */}
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0, gap: '10px' }}>
+          {/* Chat Messages Log */}
+          <div className="card" style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            {messages.map((m) => {
+              const isUser = m.sender === 'user';
+              return (
+                <div
+                  key={m.id}
+                  style={{
+                    display: 'flex',
+                    gap: '12px',
+                    alignSelf: isUser ? 'flex-end' : 'flex-start',
+                    maxWidth: '85%'
+                  }}
+                >
+                  {!isUser && (
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '6px',
+                      background: 'rgba(56, 189, 248, 0.12)',
+                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      color: 'var(--accent-cyan)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <Icon name="Compass" size={16} />
+                    </div>
+                  )}
+
+                  <div>
+                    <div style={{
+                      padding: '12px 16px',
+                      borderRadius: isUser ? '10px 10px 2px 10px' : '2px 10px 10px 10px',
+                      background: isUser ? 'var(--accent-cyan)' : 'var(--bg-surface-elevated)',
+                      color: isUser ? '#070D18' : 'var(--text-primary)',
+                      border: isUser ? 'none' : '1px solid var(--border-subtle)',
+                      fontSize: '13px',
+                      lineHeight: '1.55',
+                      fontWeight: isUser ? 500 : 400,
+                      whiteSpace: 'pre-wrap'
+                    }}>
+                      {m.text}
+
+                      {(m.action || m.mapTarget) && (
+                        <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          {m.action && onNavigate && (
+                            <button
+                              onClick={() => onNavigate(m.action)}
+                              className="btn btn-primary"
+                              style={{ padding: '6px 12px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}
+                            >
+                              <Icon name={m.action === 'tracking' ? 'Radio' : 'ExternalLink'} size={13} />
+                              <span>
+                                {m.action === 'tracking' && 'Open Live Cargo GPS Tracking'}
+                                {m.action === 'riskmap' && 'View Live Maritime Risk Map'}
+                                {m.action === 'compare' && 'Open Route Comparison Engine'}
+                                {m.action === 'rerouting' && 'Go to Rerouting Center'}
+                                {m.action === 'catalog' && 'Explore Port & Trade Network'}
+                                {m.action === 'plan' && 'Create New Shipment Plan'}
+                              </span>
+                            </button>
+                          )}
+
+                          {m.mapTarget && (
+                            <button
+                              onClick={() => {
+                                setShowMap(true);
+                                setMapCenter([m.mapTarget.lat, m.mapTarget.lon]);
+                                setMapZoom(m.mapTarget.zoom || 6);
+                              }}
+                              className="btn btn-outline"
+                              style={{ padding: '6px 12px', fontSize: '11px', borderColor: 'var(--accent-cyan)', color: 'var(--accent-cyan)', display: 'flex', alignItems: 'center', gap: '5px' }}
+                            >
+                              <Icon name="Compass" size={13} />
+                              <span>Show on Copilot Map</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{
+                      fontSize: '10px',
+                      color: 'var(--text-muted)',
+                      marginTop: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      justifyContent: isUser ? 'flex-end' : 'flex-start'
+                    }}>
+                      <span>{m.time}</span>
+                      {!isUser && m.source && (
+                        <>
+                          <span>•</span>
+                          <span style={{ color: 'var(--accent-cyan)' }}>{m.source}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {isUser && (
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '6px',
+                      background: 'var(--bg-surface-elevated)',
+                      border: '1px solid var(--border-subtle)',
+                      color: 'var(--text-secondary)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <Icon name="User" size={16} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {isTyping && (
+              <div style={{ display: 'flex', gap: '12px', alignSelf: 'flex-start' }}>
                 <div style={{
                   width: '32px',
                   height: '32px',
                   borderRadius: '6px',
                   background: 'rgba(56, 189, 248, 0.12)',
-                  border: '1px solid rgba(56, 189, 248, 0.3)',
                   color: 'var(--accent-cyan)',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
+                  justifyContent: 'center'
                 }}>
                   <Icon name="Compass" size={16} />
                 </div>
-              )}
-
-              <div>
                 <div style={{
-                  padding: '12px 16px',
-                  borderRadius: isUser ? '10px 10px 2px 10px' : '2px 10px 10px 10px',
-                  background: isUser ? 'var(--accent-cyan)' : 'var(--bg-surface-elevated)',
-                  color: isUser ? '#070D18' : 'var(--text-primary)',
-                  border: isUser ? 'none' : '1px solid var(--border-subtle)',
-                  fontSize: '13px',
-                  lineHeight: '1.55',
-                  fontWeight: isUser ? 500 : 400,
-                  whiteSpace: 'pre-wrap'
-                }}>
-                  {m.text}
-
-                  {m.action && onNavigate && (
-                    <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--border-subtle)' }}>
-                      <button
-                        onClick={() => onNavigate(m.action)}
-                        className="btn btn-primary"
-                        style={{ padding: '6px 12px', fontSize: '11px' }}
-                      >
-                        <Icon name="ExternalLink" size={13} />
-                        <span>
-                          {m.action === 'compare' && 'Open Route Comparison Engine'}
-                          {m.action === 'rerouting' && 'Go to Rerouting Center'}
-                          {m.action === 'riskmap' && 'View Live Risk Cockpit'}
-                          {m.action === 'catalog' && 'Explore Port & Trade Network'}
-                          {m.action === 'plan' && 'Create New Shipment Plan'}
-                        </span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <div style={{
-                  fontSize: '10px',
+                  padding: '10px 14px',
+                  background: 'var(--bg-surface-elevated)',
+                  borderRadius: '2px 10px 10px 10px',
+                  border: '1px solid var(--border-subtle)',
                   color: 'var(--text-muted)',
-                  marginTop: '4px',
+                  fontSize: '12px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  justifyContent: isUser ? 'flex-end' : 'flex-start'
+                  gap: '6px'
                 }}>
-                  <span>{m.time}</span>
-                  {!isUser && m.source && (
-                    <>
-                      <span>•</span>
-                      <span style={{ color: 'var(--accent-cyan)' }}>{m.source}</span>
-                    </>
-                  )}
+                  <span style={{ fontStyle: 'italic' }}>OpenRouter AI consulting live hydrographic telemetry...</span>
                 </div>
               </div>
+            )}
+            <div ref={chatBottomRef} />
+          </div>
 
-              {isUser && (
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '6px',
-                  background: 'var(--bg-surface-elevated)',
-                  border: '1px solid var(--border-subtle)',
-                  color: 'var(--text-secondary)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}>
-                  <Icon name="User" size={16} />
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {isTyping && (
-          <div style={{ display: 'flex', gap: '12px', alignSelf: 'flex-start' }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '6px',
-              background: 'rgba(56, 189, 248, 0.12)',
-              color: 'var(--accent-cyan)',
+          {/* Input Field */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSend();
+            }}
+            style={{
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Icon name="Compass" size={16} />
-            </div>
+              gap: '10px'
+            }}
+          >
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Ask anything about voyage corridors, weather risks, port delays..."
+              value={inputVal}
+              onChange={(e) => setInputVal(e.target.value)}
+              style={{ flex: 1, padding: '12px 14px', fontSize: '13px' }}
+            />
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ padding: '0 20px', flexShrink: 0 }}
+            >
+              <Icon name="Send" size={15} />
+              <span>Send</span>
+            </button>
+          </form>
+        </div>
+
+        {/* Right Column: Embedded Live Maritime Telemetry Map */}
+        {showMap && (
+          <div style={{
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-md)',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
+            minHeight: '400px'
+          }}>
             <div style={{
               padding: '10px 14px',
-              background: 'var(--bg-surface-elevated)',
-              borderRadius: '2px 10px 10px 10px',
-              border: '1px solid var(--border-subtle)',
-              color: 'var(--text-muted)',
-              fontSize: '12px',
+              borderBottom: '1px solid var(--border-subtle)',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px'
+              justifyContent: 'space-between',
+              background: 'rgba(7, 13, 24, 0.7)'
             }}>
-              <span style={{ fontStyle: 'italic' }}>OpenRouter AI consulting live hydrographic telemetry...</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Icon name="Compass" size={14} color="var(--accent-cyan)" />
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>Copilot Live Map (Telemetry API)</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <button
+                  onClick={() => onNavigate && onNavigate('tracking')}
+                  className="btn btn-outline btn-xs"
+                  style={{ fontSize: '10px', padding: '3px 8px' }}
+                >
+                  <Icon name="Radio" size={11} />
+                  <span>Cargo GPS</span>
+                </button>
+                <button
+                  onClick={() => setShowMap(false)}
+                  style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px' }}
+                  title="Hide map preview"
+                >
+                  <Icon name="X" size={14} />
+                </button>
+              </div>
+            </div>
+            <div style={{ flex: 1, position: 'relative', minHeight: '350px' }}>
+              <MarineMap
+                center={mapCenter}
+                zoom={mapZoom}
+                height="100%"
+                showVessels={true}
+                showHazards={true}
+              />
             </div>
           </div>
         )}
-        <div ref={chatBottomRef} />
       </div>
-
-      {/* Input Field */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSend();
-        }}
-        style={{
-          display: 'flex',
-          gap: '10px'
-        }}
-      >
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Ask anything about voyage corridors, weather risks, port delays..."
-          value={inputVal}
-          onChange={(e) => setInputVal(e.target.value)}
-          style={{ flex: 1, padding: '12px 14px', fontSize: '13px' }}
-        />
-        <button
-          type="submit"
-          className="btn btn-primary"
-          style={{ padding: '0 20px', flexShrink: 0 }}
-        >
-          <Icon name="Send" size={15} />
-          <span>Send</span>
-        </button>
-      </form>
 
       {/* OpenRouter API Key Modal */}
       {showKeyModal && (
@@ -486,6 +602,14 @@ export default function RouteAssistant({ onNavigate }) {
           </div>
         </div>
       )}
+
+      <style>{`
+        @media (max-width: 960px) {
+          .assistant-split-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

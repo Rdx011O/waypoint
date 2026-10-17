@@ -458,3 +458,53 @@ select.form-control {
   }
 }
 
+/* =========================================================================
+   Leaflet Maritime Dark Theme Popups & Map Canvas
+   ========================================================================= */
+.leaflet-container {
+  background: #080E18 !important;
+  font-family: var(--font-sans, system-ui, sans-serif) !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #0B132B !important;
+  color: #E2E8F0 !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.75) !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  margin: 10px 14px !important;
+  line-height: 1.4 !important;
+}
+
+.leaflet-popup-tip {
+  background: #0B132B !important;
+}
+
+.leaflet-popup-close-button {
+  color: #94A3B8 !important;
+  padding: 6px 8px !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #F8FAFC !important;
+}
+
+/* Radar Pulse Animation for IoT Cargo Beacon */
+@keyframes radarPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0.25;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3.2);
+    opacity: 0;
+  }
+}

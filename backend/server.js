@@ -15,6 +15,12 @@ const { getRates, DEFAULT_SUPPORTED_CURRENCIES } = require("./src/services/curre
 const { calculateShipperCost, compareCostsAcrossRoutes } = require("./src/services/shipperCostService");
 const { getMaritimeAssistantReply, FREE_MODELS } = require("./src/services/aiAssistantService");
 const { calculateWeatherReroute } = require("./hazards/rerouteEngine");
+const {
+  getAllContainers,
+  findContainerByCode,
+  getContainersByShip,
+  getContainersByShipper
+} = require("./src/services/containerTrackingService");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
@@ -443,6 +449,65 @@ app.get("/api/tracking/cargos/:id", (req, res) => {
     trackingUrl: `http://localhost:5173/?track=${cargo.id}`,
     liveGpsStatus: "LOCKED_DGPS",
     satelliteTimestamp: new Date().toISOString()
+  });
+});
+
+// ─── IoT Device & Container Tracking Endpoints for Shippers ────────────────
+// GET /api/tracking/containers - List all 50 containers with live ship coordinates & IoT sensors
+app.get("/api/tracking/containers", (req, res) => {
+  const { shipId, shipper, q } = req.query;
+  let results = getAllContainers();
+
+  if (shipId) {
+    results = getContainersByShip(shipId);
+  }
+  if (shipper) {
+    results = getContainersByShipper(shipper);
+  }
+  if (q) {
+    const query = String(q).trim().toUpperCase();
+    results = results.filter(c =>
+      c.deviceCode.toUpperCase().includes(query) ||
+      c.containerId.toUpperCase().includes(query) ||
+      (c.shipperName && c.shipperName.toUpperCase().includes(query)) ||
+      (c.shipName && c.shipName.toUpperCase().includes(query)) ||
+      (c.cargoType && c.cargoType.toUpperCase().includes(query))
+    );
+  }
+
+  res.json({
+    success: true,
+    total: results.length,
+    containers: results,
+    dataSource: "containers.csv (50 IoT Devices Active)",
+    lastSync: new Date().toISOString()
+  });
+});
+
+// GET /api/tracking/container/:code - Lookup by IoT Device Code (e.g. TRK-PAC-101) or Container ID (e.g. MSKU-729101-1)
+app.get(["/api/tracking/container/:code", "/api/tracking/device/:code"], (req, res) => {
+  const code = req.params.code;
+  const container = findContainerByCode(code);
+
+  if (!container) {
+    const sampleContainers = getAllContainers().slice(0, 5).map(c => ({
+      deviceCode: c.deviceCode,
+      containerId: c.containerId,
+      shipName: c.shipName
+    }));
+    return res.status(404).json({
+      error: "CONTAINER_NOT_FOUND",
+      message: `No active container found with device code or container ID "${code}".`,
+      sampleValidCodes: sampleContainers
+    });
+  }
+
+  res.json({
+    success: true,
+    container,
+    liveMapUrl: `http://localhost:5173/?trackingCode=${encodeURIComponent(container.deviceCode)}`,
+    satelliteTelemetryStatus: "ONLINE_CONTINUOUS",
+    timestamp: new Date().toISOString()
   });
 });
 

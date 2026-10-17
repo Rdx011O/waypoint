@@ -48,7 +48,11 @@ export default function Dashboard({ onNavigate, onOpenAlert }) {
         <div style={{ display: 'flex', gap: '8px' }}>
           {isShipper ? (
             <>
-              <button className="btn btn-primary" onClick={() => onNavigate('plan')}>
+              <button className="btn btn-primary" onClick={() => onNavigate('tracking')} style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)' }}>
+                <Icon name="Radio" size={15} />
+                <span>Live Cargo GPS</span>
+              </button>
+              <button className="btn btn-outline" onClick={() => onNavigate('plan')}>
                 <Icon name="Package" size={15} />
                 <span>Plan New Shipment</span>
               </button>
