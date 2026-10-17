@@ -1,9 +1,9 @@
-// WAYPOINT — Dashboard Page
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { WAYPOINT_DATA } from '../data/maritimeData';
 import MarineMap from '../components/MarineMap';
 import Icon from '../components/Icon';
+import BookedSlotsQueue from './BookedSlotsQueue';
 
 export default function Dashboard({ onNavigate, onOpenAlert }) {
   const { currentRole } = useAuth();
@@ -11,6 +11,7 @@ export default function Dashboard({ onNavigate, onOpenAlert }) {
   const kpis = WAYPOINT_DATA.dashboardKpis;
   const alerts = WAYPOINT_DATA.alerts.slice(0, 4);
 
+  const [opsTab, setOpsTab] = useState('overview'); // 'overview' | 'queue'
   const [activeLayers, setActiveLayers] = useState({
     routes: true,
     vessels: true,
@@ -45,9 +46,17 @@ export default function Dashboard({ onNavigate, onOpenAlert }) {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {isShipper ? (
             <>
+              <button
+                className="btn btn-primary"
+                onClick={() => onNavigate('mybookings')}
+                style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)' }}
+              >
+                <Icon name="Bookmark" size={15} />
+                <span>My Bookings</span>
+              </button>
               <button className="btn btn-primary" onClick={() => onNavigate('tracking')} style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)' }}>
                 <Icon name="Radio" size={15} />
                 <span>Live Cargo GPS</span>
@@ -63,6 +72,16 @@ export default function Dashboard({ onNavigate, onOpenAlert }) {
             </>
           ) : (
             <>
+              <button
+                className={`btn ${opsTab === 'queue' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setOpsTab(opsTab === 'queue' ? 'overview' : 'queue')}
+                style={{
+                  background: opsTab === 'queue' ? 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)' : undefined
+                }}
+              >
+                <Icon name="Layers" size={15} />
+                <span>{opsTab === 'queue' ? 'Return to Fleet Map' : 'Booked Slots Queue'}</span>
+              </button>
               <button className="btn btn-primary" onClick={() => onNavigate('riskmap')}>
                 <Icon name="Map" size={15} />
                 <span>Full Risk Map</span>
@@ -76,11 +95,72 @@ export default function Dashboard({ onNavigate, onOpenAlert }) {
         </div>
       </div>
 
-      {/* Caution Callout */}
-      <div className="box box-caution">
-        <strong>OPERATIONAL DEMONSTRATION NOTICE</strong>
-        All figures and route coordinates are demonstration values based on ASD-STE100 specifications. Do not execute as physical ship navigation instructions.
-      </div>
+      {/* Manager Operations Command Tab Switcher */}
+      {!isShipper && (
+        <div style={{
+          display: 'flex',
+          gap: '6px',
+          marginBottom: '16px',
+          background: 'rgba(255, 255, 255, 0.05)',
+          padding: '4px',
+          borderRadius: '8px',
+          width: 'fit-content',
+          border: '1px solid var(--border-subtle)'
+        }}>
+          <button
+            onClick={() => setOpsTab('overview')}
+            style={{
+              padding: '6px 14px',
+              fontSize: '12px',
+              fontWeight: 700,
+              borderRadius: '6px',
+              border: 'none',
+              cursor: 'pointer',
+              background: opsTab === 'overview' ? 'var(--accent-cyan)' : 'transparent',
+              color: opsTab === 'overview' ? '#070D18' : 'var(--text-secondary)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Icon name="Compass" size={13} />
+            <span>Fleet Overview & Hazards</span>
+          </button>
+
+          <button
+            onClick={() => setOpsTab('queue')}
+            style={{
+              padding: '6px 14px',
+              fontSize: '12px',
+              fontWeight: 700,
+              borderRadius: '6px',
+              border: 'none',
+              cursor: 'pointer',
+              background: opsTab === 'queue' ? 'var(--accent-cyan)' : 'transparent',
+              color: opsTab === 'queue' ? '#070D18' : 'var(--text-secondary)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Icon name="Layers" size={13} />
+            <span>Booked Slots Queue (Dispatch Command)</span>
+          </button>
+        </div>
+      )}
+
+      {/* If Manager selected Queue tab, display BookedSlotsQueue */}
+      {!isShipper && opsTab === 'queue' ? (
+        <BookedSlotsQueue onNavigate={onNavigate} />
+      ) : (
+        <>
+          {/* Caution Callout */}
+          <div className="box box-caution">
+            <strong>OPERATIONAL DEMONSTRATION NOTICE</strong>
+            All figures and route coordinates are demonstration values based on ASD-STE100 specifications. Do not execute as physical ship navigation instructions.
+          </div>
 
       {/* 6 Key Figures (Table 3) */}
       <div style={{
@@ -240,6 +320,8 @@ export default function Dashboard({ onNavigate, onOpenAlert }) {
           </div>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }
