@@ -43,10 +43,13 @@ import {
   ShieldCheck,
   Navigation,
   Cpu,
+  Calendar,
   Check
 } from 'lucide-react';
 
 const iconMap = {
+  Calendar,
+  Check,
   LayoutDashboard,
   Package,
   Scale,

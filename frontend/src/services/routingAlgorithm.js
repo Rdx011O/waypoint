@@ -44,7 +44,9 @@ export function synthesizeMaritimeRoutes({
   destPort,         // Object from CSV_FOREIGN_PORTS
   cargoType = 'Containers',
   vesselType = 'Feeder',
-  benchmarkBudget = 25000
+  benchmarkBudget = 25000,
+  departureDate = null,
+  selectedVessel = null
 }) {
   if (!originPort || !destPort) return null;
 
@@ -247,6 +249,8 @@ export function synthesizeMaritimeRoutes({
     destination: destPort,
     cargoType,
     vesselType,
+    departureDate: departureDate || null,
+    selectedVessel: selectedVessel || null,
     requiredDraft,
     portDraft,
     draftFeasible,
