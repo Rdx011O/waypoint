@@ -62,15 +62,29 @@ export default function CargoTracking({ onNavigate }) {
   const markersLayerRef = useRef(null);
   const routeLineRef = useRef(null);
 
-  // Port coordinates lookup for route visualization
+  // Port coordinates lookup for route visualization across East Coast of India & Bay of Bengal
   const PORT_COORDS = {
-    'Mumbai': [18.9499, 72.9515],
+    'Chennai': [13.0827, 80.2928],
+    'Visakhapatnam': [17.6868, 83.2185],
+    'Vizag': [17.6868, 83.2185],
+    'Kolkata': [22.5400, 88.3200],
+    'Haldia': [22.0330, 88.0670],
+    'Paradip': [20.2670, 86.6830],
+    'Tuticorin': [8.7642, 78.1348],
+    'V.O. Chidambaranar': [8.7642, 78.1348],
+    'Krishnapatnam': [14.2500, 80.1167],
+    'Dhamra': [20.7970, 86.9000],
+    'Ennore': [13.2600, 80.3300],
+    'Kamarajar': [13.2600, 80.3300],
+    'Kattupalli': [13.3088, 80.3456],
+    'Gopalpur': [19.2600, 84.9000],
+    'Gangavaram': [17.6200, 83.2400],
+    'Kakinada': [16.9800, 82.2800],
     'Singapore': [1.2902, 103.8519],
-    'Chennai': [13.0827, 80.2707],
     'Colombo': [6.9497, 79.8430],
-    'Shanghai': [31.2304, 121.4737],
-    'Rotterdam': [51.9244, 4.4777],
-    'Dubai': [25.0062, 55.0617]
+    'Port Klang': [3.0000, 101.4000],
+    'Chittagong': [22.2300, 91.8000],
+    'Mumbai': [18.9499, 72.9515]
   };
 
   // 1. Initial load of all 50 containers from API or fallback
@@ -125,10 +139,10 @@ export default function CargoTracking({ onNavigate }) {
     if (!mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
-      // Create map instance
+      // Create map instance centered on East Coast of India & Bay of Bengal
       const map = L.map(mapContainerRef.current, {
-        center: [12.0, 80.0],
-        zoom: 4,
+        center: [14.0, 84.0],
+        zoom: 5,
         zoomControl: true,
         attributionControl: false
       });
@@ -172,9 +186,9 @@ export default function CargoTracking({ onNavigate }) {
 
     if (!selectedContainer) return;
 
-    const lat = selectedContainer.lat || selectedContainer.currentLocation?.latitude || 14.542;
-    const lon = selectedContainer.lon || selectedContainer.currentLocation?.longitude || 74.265;
-    const originCoords = PORT_COORDS[selectedContainer.originPort] || [18.9499, 72.9515];
+    const lat = selectedContainer.lat || selectedContainer.currentLocation?.latitude || 12.650;
+    const lon = selectedContainer.lon || selectedContainer.currentLocation?.longitude || 83.250;
+    const originCoords = PORT_COORDS[selectedContainer.originPort] || [13.0827, 80.2928];
     const destCoords = PORT_COORDS[selectedContainer.destinationPort] || [1.2902, 103.8519];
 
     // Smoothly fly map to live container GPS position

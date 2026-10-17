@@ -1,4 +1,4 @@
-﻿// WAYPOINT — Rerouting Center (CSV-driven, no hardcoded data)
+// WAYPOINT — Rerouting Center (CSV-driven, no hardcoded data)
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { fetchRerouteScenario, acceptRerouteDispatch } from "../services/telemetryService";
 import MarineMap from "../components/MarineMap";
@@ -106,7 +106,7 @@ export default function ReroutingCenter({ onAcceptReroute, onNavigateToCompare, 
     { id:"ORIG", name:scenario.originalRoute?.name||"Original Track", coords:scenario.originalRoute?.coords||[], color:"#EF4444", isRecommended:false, cost:scenario.originalRoute?.cost, transitDays:scenario.originalRoute?.etaDays, distanceNm:scenario.originalRoute?.distanceNm, riskScore:scenario.originalRoute?.riskScore },
     { id:"ALT",  name:scenario.alternativeRoute?.name||"Alternative Bypass", coords:scenario.alternativeRoute?.coords||[], color:"#2DD4BF", isRecommended:true, cost:scenario.alternativeRoute?.cost, transitDays:scenario.alternativeRoute?.etaDays, distanceNm:scenario.alternativeRoute?.distanceNm, riskScore:scenario.alternativeRoute?.riskScore }
   ] : [];
-  const mapCenter = scenario ? [scenario.originalRoute?.coords?.[0]?.[0]??10, scenario.originalRoute?.coords?.[0]?.[1]??85] : [10,85];
+  const mapCenter = scenario ? [scenario.originalRoute?.coords?.[0]?.[0]??14.5, scenario.originalRoute?.coords?.[0]?.[1]??84.5] : [14.5, 84.5];
 
   const reset = () => { setSourcePort(null); setDestPort(null); setScenario(null); setError(null); setCalculated(false); setDecisionLogs([]); setStatusMessage(""); };
 

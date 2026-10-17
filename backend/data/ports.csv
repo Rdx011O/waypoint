@@ -1,7 +1,21 @@
-# ILLUSTRATIVE PLACEHOLDER DATA - OWNED BY MEMBER 2 (Real cleaned data will replace this)
+# WAYPOINT East Coast of India & Partner Ports
 port_id,name,country,unlocode,latitude,longitude
-BOM,Mumbai,India,INBOM,18.95,72.85
+MAA,Chennai,India,INMAA,13.08,80.29
+VTZ,Visakhapatnam,India,INVTZ,17.69,83.30
+CCU,Kolkata,India,INCCU,22.54,88.32
+HAL,Haldia,India,INHAL,22.03,88.07
+PRT,Paradip,India,INPRT,20.27,86.68
+TUT,Tuticorin,India,INTUT,8.76,78.13
+KRI,Krishnapatnam,India,INKRI,14.25,80.12
+KAT,Kattupalli,India,INKAT,13.31,80.35
+DHA,Dhamra,India,INDHA,20.80,86.90
+GOP,Gopalpur,India,INGOP,19.26,84.90
+GGV,Gangavaram,India,INGGV,17.62,83.24
 SIN,Singapore,Singapore,SGSIN,1.28,103.85
+CMB,Colombo,Sri Lanka,LKCMB,6.95,79.84
+PKG,Port Klang,Malaysia,MYPKG,3.00,101.40
+CGP,Chittagong,Bangladesh,BDCGP,22.23,91.80
+BOM,Mumbai,India,INBOM,18.95,72.85
 SHA,Shanghai,China,CNSHA,31.20,121.50
 RTM,Rotterdam,Netherlands,NLRTM,51.90,4.40
 DXB,Jebel Ali,UAE,AEJEA,25.01,55.06

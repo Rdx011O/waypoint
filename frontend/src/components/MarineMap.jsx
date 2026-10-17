@@ -22,8 +22,8 @@ import {
 import Icon from './Icon';
 
 export default function MarineMap({
-  center = [15, 82],
-  zoom = 4,
+  center = [14.5, 84.5],
+  zoom = 5,
   height = '480px',
   activeLayers: propActiveLayers = null,
   focusedRouteId = null,
