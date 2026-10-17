@@ -14,7 +14,10 @@ export default function Topbar({ currentPage, onNavigate, onToggleMobile, alertC
     analytics: 'Maritime Analytics',
     assistant: 'Route Assistant Copilot',
     catalog: 'Ports & Trade Network Directory',
-    settings: 'Configuration & Settings'
+    settings: 'Configuration & Settings',
+    mybookings: 'My Bookings',
+    queue: 'Booked Slots Dispatch Queue',
+    tracking: 'Live Cargo IoT Tracking'
   };
 
   return (
@@ -26,12 +29,12 @@ export default function Topbar({ currentPage, onNavigate, onToggleMobile, alertC
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '0 20px',
+      padding: '0 16px',
       position: 'sticky',
       top: 0,
       zIndex: 100
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
         {/* Mobile Hamburger */}
         <button
           onClick={onToggleMobile}
@@ -45,15 +48,23 @@ export default function Topbar({ currentPage, onNavigate, onToggleMobile, alertC
             padding: '4px'
           }}
           className="mobile-hamburger-btn"
+          aria-label="Open navigation menu"
         >
           <Icon name="Menu" size={19} />
         </button>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#fff' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+          <span style={{
+            fontSize: '13.5px',
+            fontWeight: 700,
+            color: '#fff',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}>
             {pageTitles[currentPage] || 'Overview'}
           </span>
-          <span className="tag tag-demo" style={{ fontSize: '9.5px', padding: '1px 5px' }}>
+          <span className="tag tag-demo topbar-tag-demo" style={{ fontSize: '9.5px', padding: '1px 5px' }}>
             DEMO DATA
           </span>
         </div>
@@ -78,7 +89,7 @@ export default function Topbar({ currentPage, onNavigate, onToggleMobile, alertC
       </div>
 
       {/* Right controls */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -90,15 +101,16 @@ export default function Topbar({ currentPage, onNavigate, onToggleMobile, alertC
           fontSize: '11px',
           fontWeight: 600,
           color: 'var(--text-secondary)'
-        }}>
+        }} title="System status: Connected to live maritime telemetry feed">
           <span style={{
             width: '6px',
             height: '6px',
             borderRadius: '50%',
             background: 'var(--safe-teal)',
-            boxShadow: '0 0 8px var(--safe-teal)'
+            boxShadow: '0 0 8px var(--safe-teal)',
+            flexShrink: 0
           }} />
-          <span className="mono">Firebase Live</span>
+          <span className="mono topbar-firebase-label">Firebase Live</span>
         </div>
 
         <button

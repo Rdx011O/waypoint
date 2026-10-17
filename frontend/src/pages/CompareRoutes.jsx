@@ -633,9 +633,9 @@ export default function CompareRoutes({ onNavigate }) {
           <span className="badge badge-teal">ASD-STE100 Spec</span>
         </div>
 
-        {/* SVG Bar Chart */}
-        <div style={{ width: '100%', height: '160px', position: 'relative' }}>
-          <svg width="100%" height="160" viewBox="0 0 700 160" preserveAspectRatio="none">
+        {/* SVG Bar Chart with Responsive Horizontal Scrolling for Small Frames */}
+        <div style={{ width: '100%', height: '160px', position: 'relative', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <svg width="100%" height="160" viewBox="0 0 700 160" preserveAspectRatio="none" style={{ minWidth: '540px' }}>
             {/* Grid lines */}
             <line x1="60" y1="20" x2="680" y2="20" stroke="rgba(255,255,255,0.05)" strokeDasharray="4" />
             <line x1="60" y1="70" x2="680" y2="70" stroke="rgba(255,255,255,0.05)" strokeDasharray="4" />

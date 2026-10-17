@@ -328,6 +328,20 @@ export default function CargoTracking({ onNavigate }) {
       dashArray: '6, 8'
     }).addTo(routeLayer);
 
+    // Invalidate map size on any container resize or viewport frame adjustment
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    });
+
+    if (mapContainerRef.current) {
+      resizeObserver.observe(mapContainerRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, [selectedContainer, mapTheme]);
 
   const handleSearchSubmit = (e) => {
@@ -460,8 +474,8 @@ export default function CargoTracking({ onNavigate }) {
         </div>
 
         {/* ─── Search Input Bar ─── */}
-        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '10px', maxWidth: '780px', marginBottom: '16px' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
+        <form onSubmit={handleSearchSubmit} className="cargo-search-form" style={{ display: 'flex', gap: '10px', maxWidth: '780px', marginBottom: '16px' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: '220px' }}>
             <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }}>
               <Icon name="Search" size={17} />
             </div>
@@ -1060,6 +1074,15 @@ export default function CargoTracking({ onNavigate }) {
         @media (max-width: 960px) {
           .cargo-tracking-main-grid {
             grid-template-columns: 1fr !important;
+          }
+        }
+        @media (max-width: 640px) {
+          .cargo-search-form {
+            flex-direction: column !important;
+          }
+          .cargo-search-form button {
+            height: 44px !important;
+            justify-content: center !important;
           }
         }
       `}</style>

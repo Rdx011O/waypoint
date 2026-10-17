@@ -422,39 +422,198 @@ select.form-control {
   border-radius: var(--radius-sm);
 }
 
-/* Responsive adjustments */
+/* =========================================================================
+   Responsive Design System — Engineered for Every Screen Frame & Orientation
+   (Mobile 320px-480px, Tablet 768px-1024px, Laptop 1280px-1440px, Desktop 1920px+)
+   ========================================================================= */
+
+/* Mobile Backdrop for Sidebar Drawer */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 9, 20, 0.76);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 180;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+/* Sidebar Desktop & Mobile Drawer */
+.sidebar-aside {
+  width: var(--sidebar-w);
+  background: #070D18;
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 200;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease;
+}
+
+/* Frame Breakpoint: Laptops & Small Desktops (<= 1200px) */
+@media (max-width: 1200px) {
+  :root {
+    --sidebar-w: 230px;
+  }
+  .live-risk-grid {
+    grid-template-columns: 240px 1fr 260px !important;
+  }
+}
+
+/* Frame Breakpoint: Tablets & Mobile (<= 1024px) */
 @media (max-width: 1024px) {
   :root {
-    --sidebar-w: 240px;
-  }
-}
-
-@media (max-width: 860px) {
-  .topbar-search-wrap {
-    display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  :root {
-    --sidebar-w: 260px;
+    --sidebar-w: min(290px, 85vw);
+    --topbar-h: 54px;
   }
   body {
     font-size: 13px;
   }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .live-risk-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .cargo-tracking-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .assistant-split-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Drawer Behavior on Mobile & Tablet */
+  .sidebar-backdrop {
+    z-index: 990;
+  }
+  .sidebar-backdrop.open {
+    display: block !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+  .sidebar-aside {
+    transform: translateX(-100%) !important;
+    box-shadow: none !important;
+    z-index: 1000 !important;
+    width: var(--sidebar-w) !important;
+  }
+  .sidebar-aside.mobile-open {
+    transform: translateX(0) !important;
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.9) !important;
+  }
+
   .mobile-hamburger-btn {
     display: flex !important;
   }
   .mobile-close-btn {
-    display: block !important;
+    display: flex !important;
+  }
+
+  .main-content-wrapper {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  main {
+    padding: 16px 14px !important;
+  }
+
+  /* Modals on Mobile & Tablet */
+  .modal-overlay {
+    padding: 12px !important;
+  }
+  .modal-card {
+    padding: 20px 18px !important;
+    max-height: calc(100vh - 24px) !important;
+    overflow-y: auto !important;
+    width: 100% !important;
+  }
+
+  /* Buttons & Touch Targets */
+  .btn {
+    padding: 8px 13px;
+    font-size: 12px;
   }
 }
-@media (min-width: 769px) {
+
+/* Frame Breakpoint: Medium Tablets & Small Laptops (<= 860px) */
+@media (max-width: 860px) {
+  .topbar-search-wrap {
+    display: none !important;
+  }
+}
+
+/* Frame Breakpoint: Desktop Mode (>= 1025px) */
+@media (min-width: 1025px) {
   .mobile-hamburger-btn {
     display: none !important;
   }
   .mobile-close-btn {
     display: none !important;
+  }
+  .sidebar-aside {
+    transform: translateX(0) !important;
+  }
+  .sidebar-backdrop {
+    display: none !important;
+  }
+}
+
+/* Frame Breakpoint: Compact Mobile (<= 576px) */
+@media (max-width: 576px) {
+  .topbar-tag-demo {
+    display: none !important;
+  }
+  .topbar-firebase-label {
+    display: none !important;
+  }
+
+  /* Typography scale */
+  h1 {
+    font-size: 19px !important;
+  }
+
+  /* Form & inputs */
+  .auth-card {
+    padding: 22px 18px !important;
+  }
+  .form-control, .text-input, .select-input {
+    font-size: 13px !important;
+    padding: 8px 10px !important;
+  }
+
+  /* Data Table Container */
+  .table-wrap {
+    border-radius: var(--radius-sm);
+    -webkit-overflow-scrolling: touch;
+  }
+  table.data-table th, table.data-table td {
+    padding: 8px 10px !important;
+    font-size: 11.5px !important;
+  }
+}
+
+/* Frame Breakpoint: Ultra-Compact Mobile (<= 400px - e.g. iPhone SE) */
+@media (max-width: 400px) {
+  :root {
+    --sidebar-w: 250px;
+  }
+  body {
+    font-size: 12.5px;
+  }
+  .waypoint-brand {
+    font-size: 17px !important;
+  }
+  main {
+    padding: 10px 8px !important;
   }
 }
 

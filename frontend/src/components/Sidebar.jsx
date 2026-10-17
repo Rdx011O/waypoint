@@ -19,33 +19,12 @@ export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMo
   return (
     <>
       {/* Mobile backdrop */}
-      {mobileOpen && (
-        <div
-          onClick={onCloseMobile}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 190
-          }}
-        />
-      )}
+      <div
+        className={`sidebar-backdrop ${mobileOpen ? 'open' : ''}`}
+        onClick={onCloseMobile}
+      />
 
-      <aside style={{
-        width: 'var(--sidebar-w)',
-        background: '#070D18',
-        borderRight: '1px solid var(--border-subtle)',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        zIndex: 200,
-        transform: mobileOpen ? 'translateX(0)' : undefined,
-        transition: 'transform 0.25s ease'
-      }}>
+      <aside className={`sidebar-aside ${mobileOpen ? 'mobile-open' : ''}`}>
         {/* Header with Pure Typographic Logo (NO icon) */}
         <div style={{
           padding: '18px 20px 14px',
@@ -61,15 +40,23 @@ export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMo
             <button
               onClick={onCloseMobile}
               style={{
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid var(--border-strong)',
+                borderRadius: '6px',
+                color: '#fff',
+                cursor: 'pointer',
+                padding: '5px 9px',
                 display: 'none',
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-secondary)',
-                cursor: 'pointer'
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '11px',
+                fontWeight: 700
               }}
               className="mobile-close-btn"
+              aria-label="Close navigation menu"
             >
-              <Icon name="X" size={18} />
+              <span>Close</span>
+              <Icon name="X" size={15} />
             </button>
           )}
         </div>
@@ -154,7 +141,10 @@ export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMo
           background: '#060B14'
         }}>
           <div
-            onClick={() => onNavigate('settings')}
+            onClick={() => {
+              onNavigate('settings');
+              if (onCloseMobile) onCloseMobile();
+            }}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -205,7 +195,10 @@ export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMo
           </div>
 
           <button
-            onClick={logout}
+            onClick={() => {
+              logout();
+              if (onCloseMobile) onCloseMobile();
+            }}
             style={{
               marginTop: '10px',
               width: '100%',
