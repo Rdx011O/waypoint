@@ -5,8 +5,8 @@ import { CSV_INDIAN_PORTS, CSV_FOREIGN_PORTS } from '../data/maritimeCsvData';
 
 export const BASE_CARRIER_FLEET = [
   { carrier: 'MSC (Mediterranean Shipping Co)', name: 'MSC Gulsun', imo: '9839438', type: 'Neo-Panamax / ULCV', totalCapacity: 23756, unit: 'TEU' },
-  { carrier: 'Maersk Line', name: 'Maersk Mc-Kinney Møller', imo: '9619907', type: 'Neo-Panamax / ULCV', totalCapacity: 18270, unit: 'TEU' },
-  { carrier: 'CMA CGM Group', name: 'CMA CGM Jacques Saadé', imo: '9839179', type: 'Neo-Panamax / ULCV', totalCapacity: 23000, unit: 'TEU' },
+  { carrier: 'Maersk Line', name: 'Maersk Mc-Kinney Moller', imo: '9619907', type: 'Neo-Panamax / ULCV', totalCapacity: 18270, unit: 'TEU' },
+  { carrier: 'CMA CGM Group', name: 'CMA CGM Jacques Saade', imo: '9839179', type: 'Neo-Panamax / ULCV', totalCapacity: 23000, unit: 'TEU' },
   { carrier: 'Evergreen Marine', name: 'Ever Given', imo: '9811000', type: 'Panamax / Post-Panamax', totalCapacity: 20124, unit: 'TEU' },
   { carrier: 'Ocean Network Express (ONE)', name: 'ONE Apus', imo: '9806079', type: 'Panamax / Post-Panamax', totalCapacity: 14052, unit: 'TEU' },
   { carrier: 'Hapag-Lloyd', name: 'Hapag-Lloyd Berlin Express', imo: '9540118', type: 'Panamax / Post-Panamax', totalCapacity: 13200, unit: 'TEU' },
