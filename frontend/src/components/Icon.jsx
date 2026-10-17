@@ -1,4 +1,3 @@
-```jsx
 // WAYPOINT — Icon Component powered by Lucide React (Replacing all emojis)
 import React from 'react';
 import {
@@ -36,6 +35,7 @@ import {
   Send,
   User,
   Building,
+  Menu,
   Anchor,
   Battery,
   Thermometer,
@@ -43,6 +43,7 @@ import {
   ShieldCheck,
   Navigation,
   Cpu,
+  Calendar,
   Check
 } from 'lucide-react';
 
@@ -90,19 +91,10 @@ const iconMap = {
   Droplets,
   ShieldCheck,
   Navigation,
-  Cpu,
+  Cpu
 };
 
 export default function Icon({ name, size = 16, className = '', color }) {
   const Component = iconMap[name] || Compass;
-
-  return (
-    <Component
-      size={size}
-      className={className}
-      color={color}
-      strokeWidth={2}
-    />
-  );
+  return <Component size={size} className={className} color={color} strokeWidth={2} />;
 }
-```
