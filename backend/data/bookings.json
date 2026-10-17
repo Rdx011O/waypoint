@@ -1,5 +1,43 @@
 [
   {
+    "id": "BK-2026-9407",
+    "shipperName": "sd",
+    "shipperId": "a5ymIYiEAoYYNkJn3co4Vb2mXtL2",
+    "vesselName": "SCI Chennai",
+    "imoNumber": "IMO 9445215",
+    "carrier": "Shipping Corporation of India (SCI)",
+    "serviceCode": "Falcon Express",
+    "vesselType": "Panamax / Post-Panamax",
+    "originPort": "Chennai",
+    "originPortId": "EC14",
+    "destinationPort": "Singapore",
+    "destinationPortId": "FP02",
+    "departureDate": "2026-10-17",
+    "departureTime": "06:30 UTC",
+    "etaDate": "2026-10-22",
+    "etaTime": "14:00 UTC",
+    "transitDays": 5.2,
+    "distanceNm": 1805,
+    "routeId": "A",
+    "routeName": "Route A — Best Balanced",
+    "routeCorridor": "Direct Corridor via Malacca Strait",
+    "routePassages": "Chennai -> Sri Lanka offshore bypass (6.0°N, 80.5°E) -> Direct Indian Ocean track -> Singapore",
+    "cargoType": "Containers",
+    "containerCount": 12,
+    "weightTeu": 24,
+    "costPerTeu": 1200,
+    "costUsd": 12247,
+    "status": "QUEUED",
+    "bookedAt": "2026-10-17T04:07:55.567Z",
+    "notes": "Space locked by shipper via WAYPOINT Route Optimizer. Chosen corridor: Route A — Best Balanced.",
+    "transmission": {
+      "status": "PENDING",
+      "sentAt": null,
+      "portEdi": null,
+      "carrierEdi": null
+    }
+  },
+  {
     "id": "BK-2026-2145",
     "shipperName": "Captain Sarah Chen",
     "shipperId": "demo-manager",
@@ -137,14 +175,31 @@
     "weightTeu": 24,
     "costPerTeu": 1200,
     "costUsd": 12247,
-    "status": "QUEUED",
+    "status": "TRANSMITTED",
     "bookedAt": "2026-10-17T01:09:23.283Z",
     "notes": "Space locked by shipper via WAYPOINT Route Optimizer. Chosen corridor: Route A — Best Balanced.",
     "transmission": {
-      "status": "PENDING",
-      "sentAt": null,
-      "portEdi": null,
-      "carrierEdi": null
+      "status": "SENT",
+      "sentAt": "2026-10-17T04:03:04.712Z",
+      "portEdi": {
+        "originPortAuthority": "Chennai Port Authority (PCS)",
+        "destinationPortAuthority": "Singapore Port Operations Command",
+        "ediTransmissionCode": "PORT-EDI-EC14-76736",
+        "berthClearanceStatus": "BERTH_CONFIRMED_DOCK_4",
+        "customsExportEntryNumber": "CUSTOMS-EXP-381365",
+        "portCommunityNetworkStatus": "ELECTRONIC_MANIFEST_ACCEPTED",
+        "transmittedAt": "2026-10-17T04:03:04.712Z",
+        "targetTerminalGate": "Terminal 3 Ingate Automated EDI Gate"
+      },
+      "carrierEdi": {
+        "shippingCompany": "MSC (Mediterranean Shipping Co)",
+        "carrierBookingConfirmationCode": "BKG-MSC-35399",
+        "vesselAssigned": "MSC Gulsun (IMO: 9839438)",
+        "stowagePosition": "BAY-21 / ROW-06 / TIER-84",
+        "slotReservationStatus": "SLOT_LOCKED_IN_LOAD_PLAN",
+        "carrierEDIFACTMessage": "IFTMBF_FIRM_BOOKING_ACCEPTED",
+        "confirmedAt": "2026-10-17T04:03:04.712Z"
+      }
     }
   },
   {
@@ -231,25 +286,25 @@
     "notes": "Express transit lane. Prioritize port berth offloading.",
     "transmission": {
       "status": "SENT",
-      "sentAt": "2026-10-17T01:10:18.173Z",
+      "sentAt": "2026-10-17T04:03:16.013Z",
       "portEdi": {
         "originPortAuthority": "Chennai (Madras Port) Port Authority (PCS)",
         "destinationPortAuthority": "Singapore Port Operations Command",
-        "ediTransmissionCode": "PORT-EDI-EC14-89687",
-        "berthClearanceStatus": "BERTH_CONFIRMED_DOCK_1",
-        "customsExportEntryNumber": "CUSTOMS-EXP-933600",
+        "ediTransmissionCode": "PORT-EDI-EC14-90757",
+        "berthClearanceStatus": "BERTH_CONFIRMED_DOCK_6",
+        "customsExportEntryNumber": "CUSTOMS-EXP-380495",
         "portCommunityNetworkStatus": "ELECTRONIC_MANIFEST_ACCEPTED",
-        "transmittedAt": "2026-10-17T01:10:18.173Z",
-        "targetTerminalGate": "Terminal 2 Ingate Automated EDI Gate"
+        "transmittedAt": "2026-10-17T04:03:16.013Z",
+        "targetTerminalGate": "Terminal 1 Ingate Automated EDI Gate"
       },
       "carrierEdi": {
         "shippingCompany": "Maersk Line",
-        "carrierBookingConfirmationCode": "BKG-MAE-73482",
+        "carrierBookingConfirmationCode": "BKG-MAE-21632",
         "vesselAssigned": "Maersk Mc-Kinney Moller (IMO: 9619907)",
-        "stowagePosition": "BAY-44 / ROW-05 / TIER-84",
+        "stowagePosition": "BAY-37 / ROW-07 / TIER-84",
         "slotReservationStatus": "SLOT_LOCKED_IN_LOAD_PLAN",
         "carrierEDIFACTMessage": "IFTMBF_FIRM_BOOKING_ACCEPTED",
-        "confirmedAt": "2026-10-17T01:10:18.173Z"
+        "confirmedAt": "2026-10-17T04:03:16.013Z"
       }
     }
   },
@@ -328,14 +383,31 @@
     "weightTeu": 30,
     "costPerTeu": 1100,
     "costUsd": 33000,
-    "status": "QUEUED",
+    "status": "TRANSMITTED",
     "bookedAt": "2026-10-17T03:40:00Z",
     "notes": "Hazard class 9 lithium battery safety declarations attached.",
     "transmission": {
-      "status": "PENDING",
-      "sentAt": null,
-      "portEdi": null,
-      "carrierEdi": null
+      "status": "SENT",
+      "sentAt": "2026-10-17T04:03:05.518Z",
+      "portEdi": {
+        "originPortAuthority": "Chennai (Madras Port) Port Authority (PCS)",
+        "destinationPortAuthority": "Port Klang Port Operations Command",
+        "ediTransmissionCode": "PORT-EDI-EC14-89985",
+        "berthClearanceStatus": "BERTH_CONFIRMED_DOCK_2",
+        "customsExportEntryNumber": "CUSTOMS-EXP-413527",
+        "portCommunityNetworkStatus": "ELECTRONIC_MANIFEST_ACCEPTED",
+        "transmittedAt": "2026-10-17T04:03:05.518Z",
+        "targetTerminalGate": "Terminal 1 Ingate Automated EDI Gate"
+      },
+      "carrierEdi": {
+        "shippingCompany": "Ocean Network Express (ONE)",
+        "carrierBookingConfirmationCode": "BKG-OCE-38067",
+        "vesselAssigned": "ONE Apus (IMO: 9806079)",
+        "stowagePosition": "BAY-35 / ROW-04 / TIER-84",
+        "slotReservationStatus": "SLOT_LOCKED_IN_LOAD_PLAN",
+        "carrierEDIFACTMessage": "IFTMBF_FIRM_BOOKING_ACCEPTED",
+        "confirmedAt": "2026-10-17T04:03:05.518Z"
+      }
     }
   },
   {
@@ -364,14 +436,31 @@
     "weightTeu": 36,
     "costPerTeu": 950,
     "costUsd": 34200,
-    "status": "QUEUED",
+    "status": "TRANSMITTED",
     "bookedAt": "2026-10-17T04:15:00Z",
     "notes": "Ventilated containers specified.",
     "transmission": {
-      "status": "PENDING",
-      "sentAt": null,
-      "portEdi": null,
-      "carrierEdi": null
+      "status": "SENT",
+      "sentAt": "2026-10-17T04:03:07.429Z",
+      "portEdi": {
+        "originPortAuthority": "Chennai (Madras Port) Port Authority (PCS)",
+        "destinationPortAuthority": "Colombo Port Operations Command",
+        "ediTransmissionCode": "PORT-EDI-EC14-67742",
+        "berthClearanceStatus": "BERTH_CONFIRMED_DOCK_1",
+        "customsExportEntryNumber": "CUSTOMS-EXP-391810",
+        "portCommunityNetworkStatus": "ELECTRONIC_MANIFEST_ACCEPTED",
+        "transmittedAt": "2026-10-17T04:03:07.429Z",
+        "targetTerminalGate": "Terminal 3 Ingate Automated EDI Gate"
+      },
+      "carrierEdi": {
+        "shippingCompany": "Hapag-Lloyd",
+        "carrierBookingConfirmationCode": "BKG-HAP-94597",
+        "vesselAssigned": "Hapag-Lloyd Berlin Express (IMO: 9540118)",
+        "stowagePosition": "BAY-20 / ROW-08 / TIER-84",
+        "slotReservationStatus": "SLOT_LOCKED_IN_LOAD_PLAN",
+        "carrierEDIFACTMessage": "IFTMBF_FIRM_BOOKING_ACCEPTED",
+        "confirmedAt": "2026-10-17T04:03:07.429Z"
+      }
     }
   },
   {

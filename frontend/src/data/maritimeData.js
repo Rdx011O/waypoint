@@ -7,20 +7,17 @@ export const WAYPOINT_DATA = {
     shipper: [
       { id: 'dashboard', label: 'Overview & Shipments', iconName: 'LayoutDashboard', sub: 'Active Bookings' },
       { id: 'mybookings', label: 'My Bookings', iconName: 'Bookmark', sub: 'Manifests & Receipts' },
-      { id: 'queue', label: 'Booked Slots Queue (Que)', iconName: 'Layers', sub: 'Logistics Dispatch' },
       { id: 'tracking', label: 'Cargo Tracking', iconName: 'Radio', sub: 'IoT Container GPS' },
       { id: 'plan', label: 'Plan a Shipment', iconName: 'Package', sub: 'Cargo & Lane Input' },
       { id: 'compare', label: 'Compare Routes', iconName: 'Scale', sub: 'Cost & Risk Intelligence' },
       { id: 'catalog', label: 'Ports & Trade Network', iconName: 'Anchor', sub: 'CSV Maritime Database' },
       { id: 'saved', label: 'Saved Routes', iconName: 'Bookmark', sub: 'Bookings & Portfolio' },
       { id: 'assistant', label: 'Route Assistant', iconName: 'Sparkles', sub: 'AI Maritime Copilot' },
-      { id: 'settings', label: 'Account & Preferences', iconName: 'Settings', sub: 'Shipper Config' },
-      { id: 'auth', label: 'Create Account / Sign In', iconName: 'UserPlus', sub: 'Register & Switch User' }
+      { id: 'settings', label: 'Account & Preferences', iconName: 'Settings', sub: 'Shipper Config' }
     ],
     manager: [
       { id: 'dashboard', label: 'Operations Command', iconName: 'LayoutDashboard', sub: 'Fleet Status' },
-      { id: 'queue', label: 'Booked Slots Queue (Que)', iconName: 'Layers', sub: 'Port & Carrier Dispatch' },
-      { id: 'mybookings', label: 'My Bookings & Manifests', iconName: 'Bookmark', sub: 'Shipper Manifests' },
+      { id: 'queue', label: 'Booked Slots Queue', iconName: 'Layers', sub: 'Port & Carrier Dispatch' },
       { id: 'tracking', label: 'Cargo Tracking', iconName: 'Radio', sub: 'IoT Container Telemetry' },
       { id: 'riskmap', label: 'Live Risk Map', iconName: 'Map', sub: 'Hazard & Route Monitor' },
       { id: 'catalog', label: 'Ports & Trade Network', iconName: 'Anchor', sub: 'CSV Maritime Database' },
@@ -28,8 +25,7 @@ export const WAYPOINT_DATA = {
       { id: 'alerts', label: 'Alerts Center', iconName: 'ShieldAlert', sub: 'Active Sea Warnings' },
       { id: 'analytics', label: 'Maritime Analytics', iconName: 'BarChart3', sub: 'Fleet & Risk Metrics' },
       { id: 'assistant', label: 'Route Assistant', iconName: 'Sparkles', sub: 'AI Maritime Copilot' },
-      { id: 'settings', label: 'Fleet Configuration', iconName: 'Settings', sub: 'Telemetry Sources' },
-      { id: 'auth', label: 'Create Account / Sign In', iconName: 'UserPlus', sub: 'Register & Switch User' }
+      { id: 'settings', label: 'Fleet Configuration', iconName: 'Settings', sub: 'Telemetry Sources' }
     ]
   },
 

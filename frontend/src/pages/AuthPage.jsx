@@ -111,66 +111,19 @@ export default function AuthPage({ onDone, initialTab = 'signup' }) {
               MARITIME ROUTE INTELLIGENCE & DISPATCH PLATFORM
             </div>
           </div>
-          {onDone && isLoggedIn && (
-            <button
-              onClick={onDone}
-              className="btn btn-outline btn-sm"
-              style={{ fontSize: '11px', padding: '4px 8px' }}
-            >
-              <Icon name="X" size={14} />
-              <span>Back to App</span>
-            </button>
-          )}
-        </div>
-
-        {/* Existing Session Alert */}
-        {isLoggedIn && userProfile && (
           <div style={{
+            fontSize: '11px',
+            color: 'var(--accent-cyan)',
+            padding: '3px 8px',
             background: 'rgba(56, 189, 248, 0.08)',
-            border: '1px solid var(--accent-cyan)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '12px 14px',
-            marginBottom: '18px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '10px',
-            flexWrap: 'wrap'
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '12px',
+            fontWeight: 600,
+            letterSpacing: '0.04em'
           }}>
-            <div>
-              <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
-                Active Authenticated Session
-              </div>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>
-                {userProfile.name} <span style={{ fontSize: '11.5px', color: 'var(--accent-cyan)' }}>({userProfile.email})</span>
-              </div>
-              <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                Role: <strong>{userProfile.role === 'manager' ? 'Logistics Operations Manager' : 'Shipper / Cargo Exporter'}</strong>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {onDone && (
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  onClick={onDone}
-                  style={{ fontSize: '11.5px' }}
-                >
-                  <span>Dashboard</span>
-                  <Icon name="ArrowRight" size={13} />
-                </button>
-              )}
-              <button
-                type="button"
-                className="btn btn-outline btn-sm"
-                onClick={logout}
-                style={{ fontSize: '11.5px' }}
-              >
-                <span>Sign Out</span>
-              </button>
-            </div>
+            SECURE ACCESS PORTAL
           </div>
-        )}
+        </div>
 
         {/* Auth Mode Tabs (Sign In vs Create Account) */}
         <div style={{

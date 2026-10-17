@@ -5,7 +5,7 @@ import { WAYPOINT_DATA } from '../data/maritimeData';
 import Icon from './Icon';
 
 export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMobile }) {
-  const { currentRole, userProfile, logout, switchRole } = useAuth();
+  const { currentRole, userProfile, logout } = useAuth();
   const isShipper = currentRole === 'shipper';
   const navItems = WAYPOINT_DATA.navItems[currentRole] || [];
 
@@ -61,7 +61,7 @@ export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMo
           )}
         </div>
 
-        {/* Role Badge with Instant 1-Click Role Switcher */}
+        {/* Role Badge */}
         <div style={{
           margin: '12px 14px 6px',
           padding: '8px 12px',
@@ -70,50 +70,20 @@ export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMo
           borderRadius: 'var(--radius-sm)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
           gap: '8px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ color: isShipper ? 'var(--safe-teal)' : 'var(--caution-amber)' }}>
-              <Icon name={isShipper ? 'Package' : 'Compass'} size={15} />
-            </div>
-            <div style={{
-              fontSize: '10.5px',
-              fontWeight: 700,
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              color: isShipper ? 'var(--safe-teal)' : 'var(--caution-amber)'
-            }}>
-              {isShipper ? 'Shipper Workspace' : 'Logistics Console'}
-            </div>
+          <div style={{ color: isShipper ? 'var(--safe-teal)' : 'var(--caution-amber)' }}>
+            <Icon name={isShipper ? 'Package' : 'Compass'} size={15} />
           </div>
-          {switchRole && (
-            <button
-              type="button"
-              onClick={() => {
-                const next = switchRole();
-                onNavigate(next === 'manager' ? 'dashboard' : 'dashboard');
-              }}
-              title={`Switch workspace to ${isShipper ? 'Logistics Console' : 'Shipper Workspace'}`}
-              style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.18)',
-                borderRadius: '4px',
-                color: '#fff',
-                fontSize: '9.5px',
-                fontWeight: 700,
-                padding: '3px 7px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <span>Switch</span>
-              <Icon name="RefreshCw" size={10} />
-            </button>
-          )}
+          <div style={{
+            fontSize: '10.5px',
+            fontWeight: 700,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: isShipper ? 'var(--safe-teal)' : 'var(--caution-amber)'
+          }}>
+            {isShipper ? 'Shipper Workspace' : 'Logistics Console'}
+          </div>
         </div>
 
         {/* Role-Specific Navigation Suite */}
@@ -224,68 +194,42 @@ export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMo
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '10px' }}>
-            <button
-              onClick={() => {
-                onNavigate('auth');
-                if (onCloseMobile) onCloseMobile();
-              }}
-              style={{
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--accent-cyan)',
-                padding: '6px 8px',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '11px',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '5px',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-              title="Create a new account or switch user credentials"
-            >
-              <Icon name="UserPlus" size={13} />
-              <span>Register</span>
-            </button>
-
-            <button
-              onClick={() => {
-                logout();
-                if (onCloseMobile) onCloseMobile();
-              }}
-              style={{
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--text-secondary)',
-                padding: '6px 8px',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '11px',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '5px',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--hazard-bg)';
-                e.currentTarget.style.borderColor = 'var(--hazard-red)';
-                e.currentTarget.style.color = 'var(--hazard-red)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--bg-surface)';
-                e.currentTarget.style.borderColor = 'var(--border-subtle)';
-                e.currentTarget.style.color = 'var(--text-secondary)';
-              }}
-            >
-              <Icon name="LogOut" size={13} />
-              <span>Sign Out</span>
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              logout();
+              if (onCloseMobile) onCloseMobile();
+            }}
+            style={{
+              marginTop: '10px',
+              width: '100%',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-secondary)',
+              padding: '7px 10px',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '11px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--hazard-bg)';
+              e.currentTarget.style.borderColor = 'var(--hazard-red)';
+              e.currentTarget.style.color = 'var(--hazard-red)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'var(--bg-surface)';
+              e.currentTarget.style.borderColor = 'var(--border-subtle)';
+              e.currentTarget.style.color = 'var(--text-secondary)';
+            }}
+          >
+            <Icon name="LogOut" size={13} />
+            <span>Sign Out</span>
+          </button>
         </div>
       </aside>
     </>

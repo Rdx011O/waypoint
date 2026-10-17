@@ -72,17 +72,6 @@ export function AuthProvider({ children }) {
     await updateUserProfile(userProfile.uid, data);
   };
 
-  const switchRole = (newRole) => {
-    const role = newRole || (userProfile?.role === 'manager' ? 'shipper' : 'manager');
-    const updated = {
-      ...(userProfile || { name: 'Captain Sarah Chen', email: 'sarah@waypoint-demo.com', uid: 'demo-user' }),
-      role
-    };
-    setUserProfile(updated);
-    localStorage.setItem("waypoint_profile", JSON.stringify(updated));
-    return role;
-  };
-
   const value = {
     userProfile,
     currentRole: userProfile?.role || 'shipper',
@@ -92,8 +81,7 @@ export function AuthProvider({ children }) {
     signup,
     demoLogin,
     logout,
-    updateProfileData,
-    switchRole
+    updateProfileData
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
