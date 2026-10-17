@@ -224,42 +224,68 @@ export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMo
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              logout();
-              if (onCloseMobile) onCloseMobile();
-            }}
-            style={{
-              marginTop: '10px',
-              width: '100%',
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              color: 'var(--text-secondary)',
-              padding: '6px 10px',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: '11px',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--hazard-bg)';
-              e.currentTarget.style.borderColor = 'var(--hazard-red)';
-              e.currentTarget.style.color = 'var(--hazard-red)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'var(--bg-surface)';
-              e.currentTarget.style.borderColor = 'var(--border-subtle)';
-              e.currentTarget.style.color = 'var(--text-secondary)';
-            }}
-          >
-            <Icon name="LogOut" size={13} />
-            <span>Sign Out</span>
-          </button>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginTop: '10px' }}>
+            <button
+              onClick={() => {
+                onNavigate('auth');
+                if (onCloseMobile) onCloseMobile();
+              }}
+              style={{
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                color: 'var(--accent-cyan)',
+                padding: '6px 8px',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '11px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '5px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              title="Create a new account or switch user credentials"
+            >
+              <Icon name="UserPlus" size={13} />
+              <span>Register</span>
+            </button>
+
+            <button
+              onClick={() => {
+                logout();
+                if (onCloseMobile) onCloseMobile();
+              }}
+              style={{
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
+                color: 'var(--text-secondary)',
+                padding: '6px 8px',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '11px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '5px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--hazard-bg)';
+                e.currentTarget.style.borderColor = 'var(--hazard-red)';
+                e.currentTarget.style.color = 'var(--hazard-red)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--bg-surface)';
+                e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+              }}
+            >
+              <Icon name="LogOut" size={13} />
+              <span>Sign Out</span>
+            </button>
+          </div>
         </div>
       </aside>
     </>

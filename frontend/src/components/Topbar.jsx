@@ -1,8 +1,11 @@
 // WAYPOINT — Topbar Component
 import React from 'react';
 import Icon from './Icon';
+import { useAuth } from '../context/AuthContext';
 
 export default function Topbar({ currentPage, onNavigate, onToggleMobile, alertCount = 5 }) {
+  const { userProfile, isLoggedIn, logout } = useAuth();
+
   const pageTitles = {
     dashboard: 'Dashboard',
     plan: 'Plan a Shipment',
@@ -17,7 +20,8 @@ export default function Topbar({ currentPage, onNavigate, onToggleMobile, alertC
     settings: 'Configuration & Settings',
     mybookings: 'My Bookings',
     queue: 'Booked Slots Dispatch Queue',
-    tracking: 'Live Cargo IoT Tracking'
+    tracking: 'Live Cargo IoT Tracking',
+    auth: 'Authentication & Account Creation'
   };
 
   return (
@@ -90,6 +94,29 @@ export default function Topbar({ currentPage, onNavigate, onToggleMobile, alertC
 
       {/* Right controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+        {/* Create Account / Sign In Entry Button */}
+        <button
+          onClick={() => onNavigate('auth')}
+          style={{
+            background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(3, 105, 161, 0.25) 100%)',
+            border: '1px solid var(--accent-cyan)',
+            color: '#fff',
+            padding: '5px 12px',
+            borderRadius: '6px',
+            fontSize: '11.5px',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease'
+          }}
+          title="Sign Up, Create New Account, or Sign In"
+        >
+          <Icon name="UserPlus" size={13} color="var(--accent-cyan)" />
+          <span>Create Account / Sign In</span>
+        </button>
+
         <div style={{
           display: 'flex',
           alignItems: 'center',

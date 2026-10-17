@@ -28,12 +28,12 @@ function AppContent() {
   // When role changes, ensure current page is valid for that role
   useEffect(() => {
     if (currentRole === 'shipper') {
-      const shipperPages = ['dashboard', 'mybookings', 'queue', 'tracking', 'plan', 'compare', 'catalog', 'saved', 'assistant', 'settings'];
+      const shipperPages = ['dashboard', 'mybookings', 'queue', 'tracking', 'plan', 'compare', 'catalog', 'saved', 'assistant', 'settings', 'auth'];
       if (!shipperPages.includes(currentPage)) {
         setCurrentPage('dashboard');
       }
     } else if (currentRole === 'manager') {
-      const managerPages = ['dashboard', 'queue', 'mybookings', 'tracking', 'riskmap', 'catalog', 'rerouting', 'alerts', 'analytics', 'assistant', 'settings'];
+      const managerPages = ['dashboard', 'queue', 'mybookings', 'tracking', 'riskmap', 'catalog', 'rerouting', 'alerts', 'analytics', 'assistant', 'settings', 'auth'];
       if (!managerPages.includes(currentPage)) {
         setCurrentPage('dashboard');
       }
@@ -138,6 +138,8 @@ function AppContent() {
         return <RouteAssistant onNavigate={navigateTo} />;
       case 'settings':
         return <Settings />;
+      case 'auth':
+        return <AuthPage onDone={() => navigateTo('dashboard')} />;
       default:
         return <Dashboard onNavigate={navigateTo} />;
     }
