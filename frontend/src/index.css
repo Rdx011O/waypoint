@@ -466,11 +466,16 @@ select.form-control {
   }
 }
 
-/* Frame Breakpoint: Large Tablets & Laptops (<= 1024px) */
+/* Frame Breakpoint: Tablets & Mobile (<= 1024px) */
 @media (max-width: 1024px) {
   :root {
-    --sidebar-w: 220px;
+    --sidebar-w: min(290px, 85vw);
+    --topbar-h: 54px;
   }
+  body {
+    font-size: 13px;
+  }
+
   .dashboard-grid {
     grid-template-columns: 1fr !important;
   }
@@ -483,26 +488,11 @@ select.form-control {
   .assistant-split-grid {
     grid-template-columns: 1fr !important;
   }
-}
 
-/* Frame Breakpoint: Medium Tablets & Small Laptops (<= 860px) */
-@media (max-width: 860px) {
-  .topbar-search-wrap {
-    display: none !important;
+  /* Drawer Behavior on Mobile & Tablet */
+  .sidebar-backdrop {
+    z-index: 990;
   }
-}
-
-/* Frame Breakpoint: Mobile & Tablet Portrait (<= 768px) */
-@media (max-width: 768px) {
-  :root {
-    --sidebar-w: 270px;
-    --topbar-h: 52px;
-  }
-  body {
-    font-size: 13px;
-  }
-
-  /* Drawer Behavior on Mobile */
   .sidebar-backdrop.open {
     display: block !important;
     opacity: 1 !important;
@@ -511,11 +501,12 @@ select.form-control {
   .sidebar-aside {
     transform: translateX(-100%) !important;
     box-shadow: none !important;
-    z-index: 999 !important;
+    z-index: 1000 !important;
+    width: var(--sidebar-w) !important;
   }
   .sidebar-aside.mobile-open {
     transform: translateX(0) !important;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.85) !important;
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.9) !important;
   }
 
   .mobile-hamburger-btn {
@@ -532,15 +523,15 @@ select.form-control {
   }
 
   main {
-    padding: 14px 12px !important;
+    padding: 16px 14px !important;
   }
 
-  /* Modals on Mobile */
+  /* Modals on Mobile & Tablet */
   .modal-overlay {
     padding: 12px !important;
   }
   .modal-card {
-    padding: 18px 16px !important;
+    padding: 20px 18px !important;
     max-height: calc(100vh - 24px) !important;
     overflow-y: auto !important;
     width: 100% !important;
@@ -548,12 +539,20 @@ select.form-control {
 
   /* Buttons & Touch Targets */
   .btn {
-    padding: 7px 12px;
+    padding: 8px 13px;
     font-size: 12px;
   }
 }
 
-@media (min-width: 769px) {
+/* Frame Breakpoint: Medium Tablets & Small Laptops (<= 860px) */
+@media (max-width: 860px) {
+  .topbar-search-wrap {
+    display: none !important;
+  }
+}
+
+/* Frame Breakpoint: Desktop Mode (>= 1025px) */
+@media (min-width: 1025px) {
   .mobile-hamburger-btn {
     display: none !important;
   }
@@ -562,6 +561,9 @@ select.form-control {
   }
   .sidebar-aside {
     transform: translateX(0) !important;
+  }
+  .sidebar-backdrop {
+    display: none !important;
   }
 }
 

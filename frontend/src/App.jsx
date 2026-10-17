@@ -40,6 +40,40 @@ function AppContent() {
     }
   }, [currentRole, currentPage]);
 
+  // Handle Escape key to close mobile sidebar
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && mobileSidebarOpen) {
+        setMobileSidebarOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileSidebarOpen]);
+
+  // Auto-close drawer if window widens to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 1024 && mobileSidebarOpen) {
+        setMobileSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [mobileSidebarOpen]);
+
+  // Prevent background scroll when mobile sidebar drawer is open
+  useEffect(() => {
+    if (mobileSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileSidebarOpen]);
+
   if (loading) {
     return (
       <div style={{
@@ -145,9 +179,11 @@ function AppContent() {
       </div>
 
       <style>{`
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .main-content-wrapper {
             margin-left: 0 !important;
+            width: 100% !important;
+            max-width: 100vw !important;
           }
           main {
             padding: 16px 14px !important;
