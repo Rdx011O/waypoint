@@ -27,14 +27,31 @@
     "weightTeu": 24,
     "costPerTeu": 1200,
     "costUsd": 12247,
-    "status": "QUEUED",
+    "status": "TRANSMITTED",
     "bookedAt": "2026-10-17T03:50:37.172Z",
     "notes": "Space locked by shipper via WAYPOINT Route Optimizer. Chosen corridor: Route A — Best Balanced.",
     "transmission": {
-      "status": "PENDING",
-      "sentAt": null,
-      "portEdi": null,
-      "carrierEdi": null
+      "status": "SENT",
+      "sentAt": "2026-10-17T03:52:14.126Z",
+      "portEdi": {
+        "originPortAuthority": "Chennai Port Authority (PCS)",
+        "destinationPortAuthority": "Singapore Port Operations Command",
+        "ediTransmissionCode": "PORT-EDI-EC14-74319",
+        "berthClearanceStatus": "BERTH_CONFIRMED_DOCK_2",
+        "customsExportEntryNumber": "CUSTOMS-EXP-557974",
+        "portCommunityNetworkStatus": "ELECTRONIC_MANIFEST_ACCEPTED",
+        "transmittedAt": "2026-10-17T03:52:14.126Z",
+        "targetTerminalGate": "Terminal 1 Ingate Automated EDI Gate"
+      },
+      "carrierEdi": {
+        "shippingCompany": "Shipping Corporation of India (SCI)",
+        "carrierBookingConfirmationCode": "BKG-SHI-74796",
+        "vesselAssigned": "SCI Chennai (IMO: IMO 9445215)",
+        "stowagePosition": "BAY-42 / ROW-04 / TIER-84",
+        "slotReservationStatus": "SLOT_LOCKED_IN_LOAD_PLAN",
+        "carrierEDIFACTMessage": "IFTMBF_FIRM_BOOKING_ACCEPTED",
+        "confirmedAt": "2026-10-17T03:52:14.126Z"
+      }
     }
   },
   {
