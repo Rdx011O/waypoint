@@ -80,7 +80,7 @@ export default function AuthPage() {
         padding: '34px 30px',
         boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
         backdropFilter: 'blur(10px)'
-      }}>
+      }} className="auth-card">
         {/* Pure Typographic Logo with NO icon */}
         <div style={{ marginBottom: '20px', textAlign: 'left' }}>
           <div className="waypoint-brand" style={{ fontSize: '22px' }}>

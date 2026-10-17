@@ -19,33 +19,12 @@ export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMo
   return (
     <>
       {/* Mobile backdrop */}
-      {mobileOpen && (
-        <div
-          onClick={onCloseMobile}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 190
-          }}
-        />
-      )}
+      <div
+        className={`sidebar-backdrop ${mobileOpen ? 'open' : ''}`}
+        onClick={onCloseMobile}
+      />
 
-      <aside style={{
-        width: 'var(--sidebar-w)',
-        background: '#070D18',
-        borderRight: '1px solid var(--border-subtle)',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        zIndex: 200,
-        transform: mobileOpen ? 'translateX(0)' : undefined,
-        transition: 'transform 0.25s ease'
-      }}>
+      <aside className={`sidebar-aside ${mobileOpen ? 'mobile-open' : ''}`}>
         {/* Header with Pure Typographic Logo (NO icon) */}
         <div style={{
           padding: '18px 20px 14px',
@@ -61,13 +40,18 @@ export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMo
             <button
               onClick={onCloseMobile}
               style={{
-                display: 'none',
-                background: 'transparent',
-                border: 'none',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '6px',
                 color: 'var(--text-secondary)',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'none',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
               className="mobile-close-btn"
+              aria-label="Close navigation menu"
             >
               <Icon name="X" size={18} />
             </button>
