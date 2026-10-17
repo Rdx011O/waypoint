@@ -16,6 +16,8 @@ import RouteAssistant from './pages/RouteAssistant';
 import Settings from './pages/Settings';
 import TradeCatalog from './pages/TradeCatalog';
 import CargoTracking from './pages/CargoTracking';
+import MyBookings from './pages/MyBookings';
+import BookedSlotsQueue from './pages/BookedSlotsQueue';
 import './index.css';
 
 function AppContent() {
@@ -26,12 +28,12 @@ function AppContent() {
   // When role changes, ensure current page is valid for that role
   useEffect(() => {
     if (currentRole === 'shipper') {
-      const shipperPages = ['dashboard', 'tracking', 'plan', 'compare', 'catalog', 'saved', 'assistant', 'settings'];
+      const shipperPages = ['dashboard', 'mybookings', 'tracking', 'plan', 'compare', 'catalog', 'saved', 'assistant', 'settings'];
       if (!shipperPages.includes(currentPage)) {
         setCurrentPage('dashboard');
       }
     } else if (currentRole === 'manager') {
-      const managerPages = ['dashboard', 'tracking', 'riskmap', 'catalog', 'rerouting', 'alerts', 'analytics', 'assistant', 'settings'];
+      const managerPages = ['dashboard', 'queue', 'tracking', 'riskmap', 'catalog', 'rerouting', 'alerts', 'analytics', 'assistant', 'settings'];
       if (!managerPages.includes(currentPage)) {
         setCurrentPage('dashboard');
       }
@@ -76,6 +78,10 @@ function AppContent() {
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard onNavigate={navigateTo} />;
+      case 'mybookings':
+        return <MyBookings onNavigate={navigateTo} />;
+      case 'queue':
+        return <BookedSlotsQueue onNavigate={navigateTo} />;
       case 'tracking':
         return <CargoTracking onNavigate={navigateTo} />;
       case 'plan':

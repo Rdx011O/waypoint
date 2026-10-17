@@ -4,6 +4,7 @@ import { synthesizeMaritimeRoutes } from '../services/routingAlgorithm';
 import { getVesselSchedulesForDate } from '../services/vesselScheduleService';
 import { CSV_INDIAN_PORTS, CSV_FOREIGN_PORTS } from '../data/maritimeCsvData';
 import { saveRouteToCloud } from '../services/firebase';
+import { createBooking } from '../services/bookingService';
 import { useAuth } from '../context/AuthContext';
 import Icon from '../components/Icon';
 
@@ -104,27 +105,69 @@ export default function CompareRoutes({ onNavigate }) {
       ? scheduleData?.vessels?.find(v => v.id === selectedVesselId)
       : scenario.selectedVessel;
 
-    const routeRecord = {
-      name: `${origin.name} → ${destination.name} (${route.name})`,
-      origin: origin.name,
-      dest: destination.name,
-      cargo: cargoType,
-      cost: `$${route.cost.toLocaleString()}`,
-      transit: `${route.transitDays} d`,
-      risk: route.riskScore,
+    const bookingPayload = {
+      shipperName: userProfile?.displayName || userProfile?.email || "Captain Sarah Chen (TechFlow Logistics)",
+      shipperId: userProfile?.uid || "shipper-01",
+      vesselName: chosenVessel ? chosenVessel.vesselName : "MSC Gulsun",
+      imoNumber: chosenVessel ? chosenVessel.imoNumber : "9839438",
+      carrier: chosenVessel ? chosenVessel.carrier : "MSC (Mediterranean Shipping Co)",
+      serviceCode: chosenVessel ? chosenVessel.serviceCode : "Falcon Express",
+      vesselType: vesselType || "Panamax / Post-Panamax",
+      originPort: origin.name,
+      originPortId: origin.portId || scenario.originId || "EC14",
+      destinationPort: destination.name,
+      destinationPortId: destination.portId || scenario.destId || "FP02",
+      departureDate: scenario.departureDate || new Date().toISOString().split('T')[0],
+      departureTime: chosenVessel ? chosenVessel.departureTime : "06:30 UTC",
+      transitDays: route.transitDays,
       distanceNm: route.distanceNm,
-      lastSaved: new Date().toISOString().split('T')[0],
-      badge: 'Active',
-      vessel: chosenVessel ? chosenVessel.vesselName : null,
-      carrier: chosenVessel ? chosenVessel.carrier : null,
-      departureDate: scenario.departureDate || null,
-      departureTime: chosenVessel ? chosenVessel.departureTime : null
+      routeId: route.id,
+      routeName: route.name,
+      routeCorridor: chosenVessel?.routeCorridor || `${origin.name} → ${destination.name} Main Channel`,
+      routePassages: route.waypoints ? route.waypoints.join(' -> ') : "Direct Maritime Corridor",
+      cargoType: cargoType || "Containers",
+      containerCount: 12,
+      weightTeu: 24,
+      costUsd: route.cost,
+      notes: `Space locked by shipper via WAYPOINT Route Optimizer. Chosen corridor: ${route.name}.`
     };
 
-    await saveRouteToCloud(routeRecord, userProfile?.uid);
-    setConfirmModalRoute(null);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 4000);
+    try {
+      // 1. Store in DB (Persistent file store / backend API)
+      await createBooking(bookingPayload);
+
+      // 2. Also save to cloud portfolio
+      const routeRecord = {
+        name: `${origin.name} → ${destination.name} (${route.name})`,
+        origin: origin.name,
+        dest: destination.name,
+        cargo: cargoType,
+        cost: `$${route.cost.toLocaleString()}`,
+        transit: `${route.transitDays} d`,
+        risk: route.riskScore,
+        distanceNm: route.distanceNm,
+        lastSaved: new Date().toISOString().split('T')[0],
+        badge: 'Active',
+        vessel: chosenVessel ? chosenVessel.vesselName : null,
+        carrier: chosenVessel ? chosenVessel.carrier : null,
+        departureDate: scenario.departureDate || null,
+        departureTime: chosenVessel ? chosenVessel.departureTime : null
+      };
+      await saveRouteToCloud(routeRecord, userProfile?.uid);
+
+      setConfirmModalRoute(null);
+      setSaveSuccess(true);
+
+      // 3. Immediately redirect to "My Bookings" in Shipper Operations
+      if (onNavigate) {
+        setTimeout(() => {
+          onNavigate('mybookings');
+        }, 800);
+      }
+    } catch (err) {
+      console.error('Booking creation error:', err);
+      alert(`Booking failed: ${err.message}`);
+    }
   };
 
   const selectedVessel = selectedVesselId
@@ -781,8 +824,8 @@ export default function CompareRoutes({ onNavigate }) {
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button className="btn btn-outline" onClick={() => setConfirmModalRoute(null)}>Cancel</button>
               <button className="btn btn-primary" onClick={() => handleBookRoute(confirmModalRoute)}>
-                <Icon name="Check" size={14} />
-                <span>Save to Cloud Portfolio</span>
+                <Icon name="Bookmark" size={14} />
+                <span>Confirm Slot Booking (Store in DB & View Manifest)</span>
               </button>
             </div>
           </div>

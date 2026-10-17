@@ -21,6 +21,13 @@ const {
   getContainersByShip,
   getContainersByShipper
 } = require("./src/services/containerTrackingService");
+const {
+  getBookings,
+  getBookingById,
+  createBooking,
+  transmitBookingData,
+  batchTransmitBookings
+} = require("./src/services/bookingService");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
@@ -972,6 +979,77 @@ app.post("/api/assistant/chat", async (req, res) => {
   } catch (err) {
     console.error("AI Assistant Execution Error:", err);
     res.status(500).json({ error: "AI_GENERATION_ERROR", message: err.message });
+  }
+});
+
+// 9. Maritime Slot Booking & Logistics Dispatch Endpoints
+app.get("/api/bookings", (req, res) => {
+  try {
+    const { vessel, destination, origin, date, minDistance, maxDistance, status, shipperId, search } = req.query;
+    const bookings = getBookings({
+      vessel,
+      destination,
+      origin,
+      date,
+      minDistance,
+      maxDistance,
+      status,
+      shipperId,
+      search
+    });
+    res.json({ success: true, count: bookings.length, bookings });
+  } catch (err) {
+    res.status(500).json({ error: "BOOKINGS_FETCH_ERROR", message: err.message });
+  }
+});
+
+app.get("/api/bookings/:id", (req, res) => {
+  try {
+    const booking = getBookingById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ error: "BOOKING_NOT_FOUND", message: `Booking ${req.params.id} does not exist.` });
+    }
+    res.json({ success: true, booking });
+  } catch (err) {
+    res.status(500).json({ error: "BOOKING_FETCH_ERROR", message: err.message });
+  }
+});
+
+app.post("/api/bookings", (req, res) => {
+  try {
+    const payload = req.body || {};
+    const booking = createBooking(payload);
+    res.status(201).json({ success: true, message: "Booking confirmed and queued in logistics dispatch.", booking });
+  } catch (err) {
+    res.status(400).json({ error: "BOOKING_CREATION_ERROR", message: err.message });
+  }
+});
+
+app.post(["/api/bookings/:id/transmit", "/api/bookings/:id/send-data"], (req, res) => {
+  try {
+    const booking = transmitBookingData(req.params.id);
+    res.json({
+      success: true,
+      message: `Data successfully transported to ${booking.originPort} Port Authority, ${booking.destinationPort} Port Operations, and ${booking.carrier} Shipping Company Fleet Systems.`,
+      booking
+    });
+  } catch (err) {
+    res.status(400).json({ error: "TRANSMIT_ERROR", message: err.message });
+  }
+});
+
+app.post("/api/bookings/batch-transmit", (req, res) => {
+  try {
+    const { ids } = req.body || {};
+    const updated = batchTransmitBookings(ids || []);
+    res.json({
+      success: true,
+      message: `Successfully transported ${updated.length} booked slot(s) data to respective Port Authorities and Shipping Lines.`,
+      count: updated.length,
+      bookings: updated
+    });
+  } catch (err) {
+    res.status(500).json({ error: "BATCH_TRANSMIT_ERROR", message: err.message });
   }
 });
 
