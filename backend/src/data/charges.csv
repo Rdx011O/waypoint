@@ -1,4 +1,11 @@
 port_id,port_name,terminal_handling_usd,documentation_fee_usd,security_fee_usd,currency,data_status
+MAA,Chennai,260,70,40,USD,active
+VTZ,Visakhapatnam,250,65,35,USD,active
+CCU,Kolkata,240,75,40,USD,active
+HAL,Haldia,245,70,35,USD,active
+PRT,Paradip,255,65,40,USD,active
+TUT,Tuticorin,235,60,35,USD,active
+KRI,Krishnapatnam,250,65,35,USD,active
 BOM,Mumbai,280,75,45,USD,illustrative
 SIN,Singapore,340,90,50,USD,illustrative
 DXB,Dubai,310,80,40,USD,illustrative
