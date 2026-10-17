@@ -36,8 +36,6 @@ import {
   Send,
   User,
   Building,
-  Menu,
-  Calendar,
   Anchor,
   Battery,
   Thermometer,
