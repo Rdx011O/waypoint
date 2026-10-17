@@ -20,8 +20,7 @@ export default function Topbar({ currentPage, onNavigate, onToggleMobile, alertC
     settings: 'Configuration & Settings',
     mybookings: 'My Bookings',
     queue: 'Booked Slots Dispatch Queue',
-    tracking: 'Live Cargo IoT Tracking',
-    auth: 'Authentication & Account Creation'
+    tracking: 'Live Cargo IoT Tracking'
   };
 
   return (
