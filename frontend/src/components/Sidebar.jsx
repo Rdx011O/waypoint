@@ -5,7 +5,7 @@ import { WAYPOINT_DATA } from '../data/maritimeData';
 import Icon from './Icon';
 
 export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMobile }) {
-  const { currentRole, userProfile, logout } = useAuth();
+  const { currentRole, userProfile, logout, switchRole } = useAuth();
   const isShipper = currentRole === 'shipper';
   const navItems = WAYPOINT_DATA.navItems[currentRole] || [];
 
@@ -61,7 +61,7 @@ export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMo
           )}
         </div>
 
-        {/* Locked Role Badge (NO account switch option) */}
+        {/* Role Badge with Instant 1-Click Role Switcher */}
         <div style={{
           margin: '12px 14px 6px',
           padding: '8px 12px',
@@ -70,20 +70,50 @@ export default function Sidebar({ currentPage, onNavigate, mobileOpen, onCloseMo
           borderRadius: 'var(--radius-sm)',
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-between',
           gap: '8px'
         }}>
-          <div style={{ color: isShipper ? 'var(--safe-teal)' : 'var(--caution-amber)' }}>
-            <Icon name={isShipper ? 'Package' : 'Compass'} size={15} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ color: isShipper ? 'var(--safe-teal)' : 'var(--caution-amber)' }}>
+              <Icon name={isShipper ? 'Package' : 'Compass'} size={15} />
+            </div>
+            <div style={{
+              fontSize: '10.5px',
+              fontWeight: 700,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              color: isShipper ? 'var(--safe-teal)' : 'var(--caution-amber)'
+            }}>
+              {isShipper ? 'Shipper Workspace' : 'Logistics Console'}
+            </div>
           </div>
-          <div style={{
-            fontSize: '10.5px',
-            fontWeight: 700,
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            color: isShipper ? 'var(--safe-teal)' : 'var(--caution-amber)'
-          }}>
-            {isShipper ? 'Shipper Workspace' : 'Logistics Console'}
-          </div>
+          {switchRole && (
+            <button
+              type="button"
+              onClick={() => {
+                const next = switchRole();
+                onNavigate(next === 'manager' ? 'dashboard' : 'dashboard');
+              }}
+              title={`Switch workspace to ${isShipper ? 'Logistics Console' : 'Shipper Workspace'}`}
+              style={{
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                borderRadius: '4px',
+                color: '#fff',
+                fontSize: '9.5px',
+                fontWeight: 700,
+                padding: '3px 7px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>Switch</span>
+              <Icon name="RefreshCw" size={10} />
+            </button>
+          )}
         </div>
 
         {/* Role-Specific Navigation Suite */}

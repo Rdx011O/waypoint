@@ -4,8 +4,11 @@
   "private": true,
   "description": "WAYPOINT — Maritime Route Intelligence System",
   "scripts": {
-    "dev": "npm --prefix frontend run dev",
+    "dev": "node start-dev.js",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run start",
     "build": "npm --prefix frontend run build",
-    "preview": "npm --prefix frontend run preview"
+    "preview": "npm --prefix frontend run preview",
+    "test": "npm --prefix backend run test"
   }
 }

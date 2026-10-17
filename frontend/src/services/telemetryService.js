@@ -293,15 +293,24 @@ export async function acceptRerouteDispatch(dispatchData = {}) {
 
 // 8. IoT Device & Container Live Tracking for Shippers
 export async function fetchContainers(query = "") {
-  try {
-    const url = query ? `${BACKEND_URL}/api/tracking/containers?q=${encodeURIComponent(query)}` : `${BACKEND_URL}/api/tracking/containers`;
-    const res = await fetch(url);
-    if (res.ok) {
-      const data = await res.json();
-      return data.containers || [];
+  const endpoints = [
+    query ? `${BACKEND_URL}/api/containers?q=${encodeURIComponent(query)}` : `${BACKEND_URL}/api/containers`,
+    query ? `${BACKEND_URL}/api/tracking/containers?q=${encodeURIComponent(query)}` : `${BACKEND_URL}/api/tracking/containers`,
+    query ? `/api/containers?q=${encodeURIComponent(query)}` : `/api/containers`
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.containers) && data.containers.length > 0) {
+          return data.containers;
+        }
+      }
+    } catch (err) {
+      // try next
     }
-  } catch (err) {
-    console.warn("fetchContainers error:", err.message);
   }
 
   // Resilient fallback to local static data
@@ -310,7 +319,9 @@ export async function fetchContainers(query = "") {
   return INITIAL_CONTAINERS.filter(c => 
     c.deviceCode.toUpperCase().includes(q) ||
     c.containerId.toUpperCase().includes(q) ||
-    (c.shipperName && c.shipperName.toUpperCase().includes(q))
+    (c.shipperName && c.shipperName.toUpperCase().includes(q)) ||
+    (c.shipName && c.shipName.toUpperCase().includes(q)) ||
+    (c.cargoType && c.cargoType.toUpperCase().includes(q))
   );
 }
 
@@ -318,22 +329,34 @@ export async function fetchContainerByCode(code) {
   if (!code) return null;
   const clean = String(code).trim().toUpperCase();
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/tracking/container/${encodeURIComponent(clean)}`);
-    if (res.ok) {
-      const data = await res.json();
-      return data.container;
+  const endpoints = [
+    `${BACKEND_URL}/api/containers/${encodeURIComponent(clean)}`,
+    `${BACKEND_URL}/api/tracking/container/${encodeURIComponent(clean)}`,
+    `/api/containers/${encodeURIComponent(clean)}`
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.container) {
+          return data.container;
+        }
+      }
+    } catch (err) {
+      // try next
     }
-  } catch (err) {
-    console.warn("fetchContainerByCode API error:", err.message);
   }
 
-  // Local fallback
+  // Local fallback with robust substring & fuzzy matching
   const found = INITIAL_CONTAINERS.find(c => 
     c.deviceCode.toUpperCase() === clean ||
     c.containerId.toUpperCase() === clean ||
     c.deviceCode.toUpperCase().replace(/-/g, "") === clean.replace(/-/g, "") ||
-    c.containerId.toUpperCase().replace(/-/g, "") === clean.replace(/-/g, "")
+    c.containerId.toUpperCase().replace(/-/g, "") === clean.replace(/-/g, "") ||
+    c.deviceCode.toUpperCase().includes(clean) ||
+    c.containerId.toUpperCase().includes(clean)
   );
 
   if (found) {

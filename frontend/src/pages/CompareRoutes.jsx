@@ -106,7 +106,7 @@ export default function CompareRoutes({ onNavigate }) {
       : scenario.selectedVessel;
 
     const bookingPayload = {
-      shipperName: userProfile?.displayName || userProfile?.email || "Captain Sarah Chen (TechFlow Logistics)",
+      shipperName: userProfile?.displayName || userProfile?.name || userProfile?.email || "Captain Sarah Chen (TechFlow Logistics)",
       shipperId: userProfile?.uid || "shipper-01",
       vesselName: chosenVessel ? chosenVessel.vesselName : "MSC Gulsun",
       imoNumber: chosenVessel ? chosenVessel.imoNumber : "9839438",
@@ -133,27 +133,31 @@ export default function CompareRoutes({ onNavigate }) {
     };
 
     try {
-      // 1. Store in DB (Persistent file store / backend API)
-      await createBooking(bookingPayload);
+      // 1. Store in DB & Client State (Persistent file store + LocalStorage)
+      const created = await createBooking(bookingPayload);
 
-      // 2. Also save to cloud portfolio
-      const routeRecord = {
-        name: `${origin.name} → ${destination.name} (${route.name})`,
-        origin: origin.name,
-        dest: destination.name,
-        cargo: cargoType,
-        cost: `$${route.cost.toLocaleString()}`,
-        transit: `${route.transitDays} d`,
-        risk: route.riskScore,
-        distanceNm: route.distanceNm,
-        lastSaved: new Date().toISOString().split('T')[0],
-        badge: 'Active',
-        vessel: chosenVessel ? chosenVessel.vesselName : null,
-        carrier: chosenVessel ? chosenVessel.carrier : null,
-        departureDate: scenario.departureDate || null,
-        departureTime: chosenVessel ? chosenVessel.departureTime : null
-      };
-      await saveRouteToCloud(routeRecord, userProfile?.uid);
+      // 2. Save to cloud portfolio if available (non-blocking)
+      try {
+        const routeRecord = {
+          name: `${origin.name} → ${destination.name} (${route.name})`,
+          origin: origin.name,
+          dest: destination.name,
+          cargo: cargoType,
+          cost: `$${route.cost.toLocaleString()}`,
+          transit: `${route.transitDays} d`,
+          risk: route.riskScore,
+          distanceNm: route.distanceNm,
+          lastSaved: new Date().toISOString().split('T')[0],
+          badge: 'Active',
+          vessel: chosenVessel ? chosenVessel.vesselName : null,
+          carrier: chosenVessel ? chosenVessel.carrier : null,
+          departureDate: scenario.departureDate || null,
+          departureTime: chosenVessel ? chosenVessel.departureTime : null
+        };
+        await saveRouteToCloud(routeRecord, userProfile?.uid);
+      } catch (cloudErr) {
+        console.warn('Portfolio cloud sync note:', cloudErr.message);
+      }
 
       setConfirmModalRoute(null);
       setSaveSuccess(true);
@@ -162,11 +166,20 @@ export default function CompareRoutes({ onNavigate }) {
       if (onNavigate) {
         setTimeout(() => {
           onNavigate('mybookings');
-        }, 800);
+        }, 500);
       }
     } catch (err) {
       console.error('Booking creation error:', err);
-      alert(`Booking failed: ${err.message}`);
+      // Fallback: save locally
+      try {
+        const local = localStorage.getItem('waypoint_local_bookings');
+        const list = local ? JSON.parse(local) : [];
+        list.unshift(bookingPayload);
+        localStorage.setItem('waypoint_local_bookings', JSON.stringify(list));
+        if (onNavigate) onNavigate('mybookings');
+      } catch (e) {
+        alert(`Booking notice: ${err.message}`);
+      }
     }
   };
 
@@ -419,15 +432,22 @@ export default function CompareRoutes({ onNavigate }) {
                   </div>
 
                   {!isFull && (
-                    <button
-                      type="button"
-                      className={`btn btn-sm ${isSelected ? 'btn-primary' : 'btn-outline'}`}
-                      style={{ fontSize: '11px', padding: '5px 10px' }}
-                      onClick={(e) => { e.stopPropagation(); handleSelectVessel(v); }}
-                    >
-                      <Icon name={isSelected ? 'Check' : 'Compass'} size={12} />
-                      <span>{isSelected ? 'Selected for Booking' : 'Select This Ship'}</span>
-                    </button>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        type="button"
+                        className={`btn btn-sm ${isSelected ? 'btn-primary' : 'btn-outline'}`}
+                        style={{ fontSize: '11px', padding: '5px 10px', flex: 1 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectVessel(v);
+                          const recRoute = routes.find(r => r.isRecommended) || routes[0];
+                          if (recRoute) setConfirmModalRoute(recRoute);
+                        }}
+                      >
+                        <Icon name={isSelected ? 'Check' : 'Bookmark'} size={12} />
+                        <span>{isSelected ? '✓ Selected for Booking (Confirm)' : 'Select for Booking'}</span>
+                      </button>
+                    </div>
                   )}
                 </div>
               );
@@ -475,7 +495,7 @@ export default function CompareRoutes({ onNavigate }) {
               </div>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <div style={{ textAlign: 'right', fontSize: '11px' }}>
               <div style={{ color: 'var(--text-muted)' }}>Corridor Assigned:</div>
               <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{selectedVessel.routeCorridor}</div>
@@ -483,6 +503,24 @@ export default function CompareRoutes({ onNavigate }) {
             <span className="badge badge-teal">
               ✓ Space Locked ({selectedVessel.capacity?.available || 'Confirmed'})
             </span>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              style={{
+                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                color: '#fff',
+                boxShadow: '0 2px 10px rgba(5, 150, 105, 0.4)',
+                fontWeight: 700,
+                padding: '7px 14px'
+              }}
+              onClick={() => {
+                const recRoute = routes.find(r => r.isRecommended) || routes[0];
+                if (recRoute) setConfirmModalRoute(recRoute);
+              }}
+            >
+              <Icon name="Bookmark" size={14} />
+              <span>Confirm & Store in My Bookings</span>
+            </button>
           </div>
         </div>
       )}

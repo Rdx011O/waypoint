@@ -460,8 +460,8 @@ app.get("/api/tracking/cargos/:id", (req, res) => {
 });
 
 // ─── IoT Device & Container Tracking Endpoints for Shippers ────────────────
-// GET /api/tracking/containers - List all 50 containers with live ship coordinates & IoT sensors
-app.get("/api/tracking/containers", (req, res) => {
+// GET /api/containers or /api/tracking/containers - List all 50 containers with live ship coordinates & IoT sensors
+app.get(["/api/containers", "/api/tracking/containers"], (req, res) => {
   const { shipId, shipper, q } = req.query;
   let results = getAllContainers();
 
@@ -491,8 +491,8 @@ app.get("/api/tracking/containers", (req, res) => {
   });
 });
 
-// GET /api/tracking/container/:code - Lookup by IoT Device Code (e.g. TRK-PAC-101) or Container ID (e.g. MSKU-729101-1)
-app.get(["/api/tracking/container/:code", "/api/tracking/device/:code"], (req, res) => {
+// GET /api/containers/:code or /api/tracking/container/:code - Lookup by IoT Device Code or Container ID
+app.get(["/api/containers/:code", "/api/tracking/container/:code", "/api/tracking/device/:code"], (req, res) => {
   const code = req.params.code;
   const container = findContainerByCode(code);
 
